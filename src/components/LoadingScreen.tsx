@@ -29,7 +29,7 @@ const LoadingScreen: React.FC<LoadingScreenProps> = memo(({ message = 'Chargemen
           className="flex items-center justify-center mb-8"
         >
           <img
-            src="/src/assets/logo-web-transparent-black.png"
+            src="/logo.png"
             alt="COFFICE - Coworking Space"
             className="h-20"
           />

@@ -84,7 +84,7 @@ const ERPNavigation: React.FC<ERPNavigationProps> = ({ children }) => {
           <div className="flex items-center justify-between p-6 border-b dark:border-gray-700">
             <Link to="/erp" className="flex items-center space-x-3">
               <img
-                src="/src/assets/logo-web-transparent-black.png"
+                src="/logo.png"
                 alt="COFFICE ERP"
                 className="h-10"
               />

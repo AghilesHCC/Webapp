@@ -61,7 +61,7 @@ const About = () => {
               className="animate-on-scroll"
             >
               <img
-                src="/WhatsApp Image 2025-04-17 at 01.05.30 (1).jpeg"
+                src="/espace_de_cowoking_vue_.jpeg"
                 alt="Espace Coffice - Open Space"
                 className="rounded-2xl shadow-2xl"
               />
