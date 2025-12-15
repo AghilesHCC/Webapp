@@ -253,14 +253,27 @@ const DomiciliationPublic = () => {
     }
   ]
 
-  const documents = [
-    'Extrait de registre du commerce',
-    'Statuts de la société',
-    'PV de nomination du gérant',
-    'Copie NIF et NIS',
-    'Article d\'imposition',
-    'Pièce d\'identité du gérant',
-    'Justificatif de domicile du gérant'
+  const documentsNewCreation = [
+    {
+      text: 'Dénomination de la société',
+      note: 'Peut être faite au niveau du CNRC juste au-dessus de nous'
+    },
+    { text: 'Pièce d\'identité' },
+    { text: 'Extrait de naissance' },
+    { text: 'Justificatif de domicile (Résidence)' }
+  ]
+
+  const documentsTransfer = [
+    { text: 'Extrait de registre du commerce' },
+    { text: 'Statuts de la société' },
+    { text: 'PV de nomination du gérant' },
+    {
+      text: 'Copie NIF et NIS',
+      optional: true
+    },
+    { text: 'Article d\'imposition' },
+    { text: 'Pièce d\'identité du gérant' },
+    { text: 'Justificatif de domicile du gérant' }
   ]
 
   return (
@@ -604,7 +617,7 @@ const DomiciliationPublic = () => {
 
       {/* Documents Section */}
       <section className="py-20 px-4 bg-gray-50">
-        <div className="container mx-auto max-w-4xl">
+        <div className="container mx-auto max-w-6xl">
           <div className="text-center mb-12">
             <h2 className="text-3xl md:text-4xl font-bold text-primary mb-4">
               Documents nécessaires
@@ -614,23 +627,75 @@ const DomiciliationPublic = () => {
             </p>
           </div>
 
-          <Card className="p-8">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {documents.map((doc, index) => (
-                <motion.div
-                  key={doc}
-                  initial={{ opacity: 0, x: -20 }}
-                  whileInView={{ opacity: 1, x: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ delay: index * 0.05 }}
-                  className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg"
-                >
-                  <CheckCircle className="w-5 h-5 text-teal flex-shrink-0" />
-                  <span className="text-gray-700">{doc}</span>
-                </motion.div>
-              ))}
-            </div>
-          </Card>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            {/* Nouvelle création */}
+            <Card className="p-8">
+              <div className="flex items-center gap-3 mb-6">
+                <div className="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center">
+                  <Building className="w-6 h-6 text-blue-600" />
+                </div>
+                <div>
+                  <h3 className="text-xl font-bold text-primary">1. Nouvelle création</h3>
+                  <p className="text-sm text-gray-600">Pour les nouvelles sociétés</p>
+                </div>
+              </div>
+
+              <div className="space-y-3">
+                {documentsNewCreation.map((doc, index) => (
+                  <motion.div
+                    key={index}
+                    initial={{ opacity: 0, x: -20 }}
+                    whileInView={{ opacity: 1, x: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ delay: index * 0.05 }}
+                    className="flex items-start gap-3 p-3 bg-blue-50 rounded-lg"
+                  >
+                    <CheckCircle className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
+                    <div className="flex-1">
+                      <span className="text-gray-700">{doc.text}</span>
+                      {doc.note && (
+                        <p className="text-xs text-blue-600 mt-1 italic">{doc.note}</p>
+                      )}
+                    </div>
+                  </motion.div>
+                ))}
+              </div>
+            </Card>
+
+            {/* Transfert de siège social */}
+            <Card className="p-8">
+              <div className="flex items-center gap-3 mb-6">
+                <div className="w-12 h-12 bg-teal-100 rounded-xl flex items-center justify-center">
+                  <FileText className="w-6 h-6 text-teal-600" />
+                </div>
+                <div>
+                  <h3 className="text-xl font-bold text-primary">2. Transfert de siège social</h3>
+                  <p className="text-sm text-gray-600">Pour les sociétés existantes</p>
+                </div>
+              </div>
+
+              <div className="space-y-3">
+                {documentsTransfer.map((doc, index) => (
+                  <motion.div
+                    key={index}
+                    initial={{ opacity: 0, x: -20 }}
+                    whileInView={{ opacity: 1, x: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ delay: index * 0.05 }}
+                    className="flex items-start gap-3 p-3 bg-teal-50 rounded-lg"
+                  >
+                    <CheckCircle className="w-5 h-5 text-teal-600 flex-shrink-0 mt-0.5" />
+                    <div className="flex-1">
+                      <span className="text-gray-700">{doc.text}</span>
+                      {doc.optional && (
+                        <Badge className="ml-2 text-xs bg-gray-200 text-gray-600">Optionnel mais recommandé</Badge>
+                      )}
+                    </div>
+                  </motion.div>
+                ))}
+              </div>
+            </Card>
+          </div>
         </div>
       </section>
 
