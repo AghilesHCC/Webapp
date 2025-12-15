@@ -136,9 +136,7 @@ const DomiciliationPublic = () => {
       bgColor: 'bg-rose-50',
       features: [
         'Rédaction de contrats commerciaux',
-        'Modifications statutaires',
         'Cession de parts et augmentation capital',
-        'Résolution de litiges commerciaux',
         'Propriété intellectuelle et marques',
         'Conseil en droit des affaires'
       ]
@@ -202,7 +200,7 @@ const DomiciliationPublic = () => {
       icon: FileText,
       color: 'warm',
       title: 'Service Complet',
-      description: 'Gestion complète du courrier, attestations administratives, certificats de domiciliation pour toutes vos démarches.'
+      description: 'Attestations et certificats de domiciliation pour toutes vos démarches administratives.'
     },
     {
       icon: Clock,
