@@ -311,7 +311,7 @@ const Home = () => {
             >
               <div className="h-64 relative overflow-hidden">
                 <img
-                  src="/salle_de_réunion_5 copy.jpeg"
+                  src="/salle_de_réunion_5 copy copy.jpeg"
                   alt="Salle de réunion Coffice"
                   className="object-cover h-full w-full hover:scale-110 transition-transform duration-500"
                 />
