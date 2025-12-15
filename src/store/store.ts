@@ -84,7 +84,7 @@ export const useAppStore = create<AppState>()(
 
       initializeData: async () => {
         const state = get()
-        if (state.initialized) return
+        if (state.loading) return
 
         set({ loading: true })
 
@@ -548,11 +548,7 @@ export const useAppStore = create<AppState>()(
     {
       name: 'coffice-app-storage',
       partialize: (state) => ({
-        espaces: state.espaces,
-        abonnements: state.abonnements,
-        domiciliationServices: state.domiciliationServices,
-        notificationSettings: state.notificationSettings,
-        initialized: state.initialized
+        notificationSettings: state.notificationSettings
       })
     }
   )
