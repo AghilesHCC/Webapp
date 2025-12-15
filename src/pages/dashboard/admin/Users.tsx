@@ -87,7 +87,7 @@ const Users = () => {
   }, [users])
 
   const getUserReservations = (userId: string) => {
-    return reservations.filter(r => r.utilisateur?.id === userId)
+    return reservations.filter(r => r.userId === userId)
   }
 
   const exportToCSV = () => {

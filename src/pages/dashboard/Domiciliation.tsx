@@ -326,10 +326,10 @@ const Domiciliation = () => {
               <p className="text-gray-600 mb-6 max-w-md mx-auto">
                 Avant de faire une demande de domiciliation, vous devez renseigner les informations de votre entreprise dans la section "Mon Entreprise".
               </p>
-              <Link to="/dashboard/my-company">
+              <Link to="/app/mon-entreprise">
                 <Button size="lg">
                   <Building className="w-5 h-5 mr-2" />
-                  Compléter mes informations
+                  Completer mes informations
                 </Button>
               </Link>
             </Card>
