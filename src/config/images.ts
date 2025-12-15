@@ -5,31 +5,31 @@ export const IMAGES = {
   },
   spaces: {
     coworking: {
-      url: 'https://images.pexels.com/photos/3184465/pexels-photo-3184465.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750',
+      url: '/espace-coworking.jpeg',
       alt: 'Espace de coworking moderne Coffice Alger',
     },
     meeting: {
-      url: 'https://images.pexels.com/photos/3184611/pexels-photo-3184611.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750',
-      alt: 'Salle de réunion équipée Coffice',
+      url: '/salle-reunion.jpeg',
+      alt: 'Salle de reunion equipee Coffice',
     },
   },
   booths: {
     atlas: {
-      url: 'https://images.pexels.com/photos/5238645/pexels-photo-5238645.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750',
-      alt: 'Private Booth Atlas - Bureau privé 4 places',
+      url: '/booth-atlas.jpeg',
+      alt: 'Private Booth Atlas - Bureau prive 4 places',
     },
     aures: {
-      url: 'https://images.pexels.com/photos/4226140/pexels-photo-4226140.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750',
-      alt: 'Private Booth Aurès - Bureau privé 4 places',
+      url: '/booth-aures.jpeg',
+      alt: 'Private Booth Aures - Bureau prive 4 places',
     },
     hoggar: {
-      url: 'https://images.pexels.com/photos/4226721/pexels-photo-4226721.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750',
-      alt: 'Private Booth Hoggar - Bureau privé 3 places',
+      url: '/booth-hoggar.jpeg',
+      alt: 'Private Booth Hoggar - Bureau prive 3 places',
     },
   },
   backgrounds: {
-    hero: 'https://images.pexels.com/photos/3184292/pexels-photo-3184292.jpeg?auto=compress&cs=tinysrgb&w=1920&h=1080',
-    office: 'https://images.pexels.com/photos/3184360/pexels-photo-3184360.jpeg?auto=compress&cs=tinysrgb&w=1920&h=1080',
+    hero: '/espace-coworking.jpeg',
+    office: '/salle-reunion.jpeg',
   },
   partners: {
     novihost: 'https://images.pexels.com/photos/7688336/pexels-photo-7688336.png?auto=compress&cs=tinysrgb&w=400&h=200',
