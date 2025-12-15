@@ -468,6 +468,32 @@ class ApiClient {
     })
   }
 
+  // ============= ABONNEMENTS =============
+  async getAbonnements() {
+    return this.request('/abonnements/index.php')
+  }
+
+  async createAbonnement(data: any) {
+    return this.request('/abonnements/create.php', {
+      method: 'POST',
+      body: JSON.stringify(data)
+    })
+  }
+
+  async updateAbonnement(id: string, data: any) {
+    return this.request('/abonnements/update.php', {
+      method: 'PUT',
+      body: JSON.stringify({ id, ...data })
+    })
+  }
+
+  async deleteAbonnement(id: string) {
+    return this.request('/abonnements/delete.php', {
+      method: 'DELETE',
+      body: JSON.stringify({ id })
+    })
+  }
+
   // ============= CODES PROMO =============
   async validateCodePromo(code: string, userId: string, montant: number, type: string) {
     return this.request('/codes-promo/validate.php', {

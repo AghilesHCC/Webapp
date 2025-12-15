@@ -53,7 +53,7 @@ const NotificationCenter: React.FC = () => {
 
     try {
       const response = await apiClient.getNotifications()
-      const data = response.data || []
+      const data = (response.data as Notification[]) || []
       setNotifications(data)
       setUnreadCount(data.filter((n: Notification) => !n.lue).length)
     } catch (error) {

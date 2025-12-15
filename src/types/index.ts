@@ -279,11 +279,11 @@ export interface UserForm {
 }
 
 export interface CreateReservationData {
-  userId: string
+  userId?: string
   espaceId: string
   dateDebut: Date
   dateFin: Date
-  montantTotal: number
+  montantTotal?: number
   notes?: string
   codePromo?: string
   participants?: number
@@ -325,6 +325,40 @@ export interface AdminStats {
   reservationsCeMois?: number
   popularSpaces: Array<{ name: string; count: number }>
   recentActivity: Array<{ type: string; description: string; date: Date }>
+}
+
+export interface Abonnement {
+  id: string
+  nom: string
+  type: string
+  prix: number
+  prixAvecDomiciliation?: number
+  creditsMensuels?: number
+  creditMensuel?: number
+  dureeMois: number
+  dureeJours: number
+  description: string
+  avantages: string[]
+  actif: boolean
+  statut?: string
+  couleur?: string
+  ordre: number
+  createdAt?: Date | string
+  updatedAt?: Date | string
+}
+
+export interface AbonnementUtilisateur {
+  id: string
+  userId: string
+  abonnementId: string
+  utilisateur?: User
+  abonnement?: Abonnement
+  dateDebut: Date | string
+  dateFin: Date | string
+  statut: 'actif' | 'expire' | 'suspendu' | 'annule'
+  autoRenouvellement: boolean
+  createdAt?: Date | string
+  updatedAt?: Date | string
 }
 
 export interface NotificationSettings {

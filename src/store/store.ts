@@ -5,7 +5,7 @@ import toast from 'react-hot-toast'
 import type {
   User, Espace, Reservation,
   Transaction, DemandeDomiciliation, DomiciliationService, CodePromo,
-  CreateReservationData, CreateDomiciliationData, AdminStats
+  CreateReservationData, CreateDomiciliationData, AdminStats, Abonnement, AbonnementUtilisateur
 } from '../types'
 
 interface NotificationSettings {
@@ -23,11 +23,17 @@ interface AppState {
   demandesDomiciliation: DemandeDomiciliation[]
   domiciliationServices: DomiciliationService[]
   codesPromo: CodePromo[]
+  abonnements: Abonnement[]
+  abonnementsUtilisateurs: AbonnementUtilisateur[]
   notificationSettings: NotificationSettings
   initialized: boolean
   loading: boolean
 
   initializeData: () => Promise<void>
+
+  loadAbonnements: () => Promise<void>
+  addAbonnement: (data: Partial<Abonnement>) => Promise<{ success: boolean; error?: string }>
+  updateAbonnement: (id: string, data: Partial<Abonnement>) => Promise<{ success: boolean; error?: string }>
 
   loadEspaces: () => Promise<void>
   addEspace: (data: Partial<Espace>) => Promise<{ success: boolean; error?: string }>
@@ -70,6 +76,8 @@ export const useAppStore = create<AppState>()(
       demandesDomiciliation: [],
       domiciliationServices: [],
       codesPromo: [],
+      abonnements: [],
+      abonnementsUtilisateurs: [],
       notificationSettings: defaultNotificationSettings,
       initialized: false,
       loading: false,
@@ -154,6 +162,62 @@ export const useAppStore = create<AppState>()(
           const response = await apiClient.deleteEspace(id)
           if (response.success) {
             await get().loadEspaces()
+            return { success: true }
+          }
+          return { success: false, error: response.error }
+        } catch (error: any) {
+          return { success: false, error: error.message }
+        }
+      },
+
+      loadAbonnements: async () => {
+        try {
+          const response = await apiClient.getAbonnements()
+          if (response.success && response.data && Array.isArray(response.data)) {
+            const abonnements = response.data.map((a: any) => ({
+              id: a.id,
+              nom: a.nom,
+              type: a.type,
+              prix: a.prix,
+              prixAvecDomiciliation: a.prix_avec_domiciliation,
+              creditsMensuels: a.credits_mensuels,
+              creditMensuel: a.credits_mensuels,
+              dureeMois: a.duree_mois,
+              dureeJours: (a.duree_mois || 1) * 30,
+              description: a.description,
+              avantages: a.avantages || [],
+              actif: a.actif,
+              statut: a.statut,
+              couleur: a.couleur || '#3B82F6',
+              ordre: a.ordre,
+              createdAt: a.created_at,
+              updatedAt: a.updated_at
+            }))
+            set({ abonnements })
+          }
+        } catch (error) {
+          console.error('Erreur chargement abonnements:', error)
+        }
+      },
+
+      addAbonnement: async (data) => {
+        try {
+          const response = await apiClient.createAbonnement(data)
+          if (response.success) {
+            await get().loadAbonnements()
+            return { success: true }
+          }
+          return { success: false, error: response.error }
+        } catch (error: any) {
+          return { success: false, error: error.message }
+        }
+      },
+
+      updateAbonnement: async (id, data) => {
+        try {
+          const response = await apiClient.updateAbonnement(id, data)
+          if (response.success) {
+            await get().loadAbonnements()
             return { success: true }
           }
           return { success: false, error: response.error }
