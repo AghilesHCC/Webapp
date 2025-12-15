@@ -6,6 +6,7 @@ import {
   Wifi, Clock, Shield, Target, Zap, Star, MapPin, Building2, Phone, Mail
 } from 'lucide-react'
 import { useSEO } from '../hooks/useSEO'
+import { IMAGES } from '../config/images'
 
 const Home = () => {
   useSEO()
@@ -68,12 +69,12 @@ const Home = () => {
     <div className="min-h-screen">
       {/* Hero Section */}
       <section className="relative min-h-screen flex items-center justify-center overflow-hidden pt-20">
-        {/* Background Image with Overlay */}
         <div className="absolute inset-0">
           <img
-            src="/espace-coworking.jpeg"
-            alt="Coffice Coworking Space - Réception"
+            src={IMAGES.backgrounds.hero}
+            alt={IMAGES.spaces.coworking.alt}
             className="w-full h-full object-cover"
+            loading="eager"
           />
           <div className="absolute inset-0 bg-gradient-to-br from-primary/95 via-primary/90 to-accent/90"></div>
         </div>
@@ -219,9 +220,10 @@ const Home = () => {
             >
               <div className="h-64 relative overflow-hidden">
                 <img
-                  src="/espace-coworking.jpeg"
-                  alt="Espace de coworking Coffice"
+                  src={IMAGES.spaces.coworking.url}
+                  alt={IMAGES.spaces.coworking.alt}
                   className="object-cover h-full w-full hover:scale-110 transition-transform duration-500"
+                  loading="lazy"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-primary/60 to-transparent"></div>
                 <div className="absolute bottom-4 left-4">
@@ -265,9 +267,10 @@ const Home = () => {
             >
               <div className="h-64 relative overflow-hidden">
                 <img
-                  src="/booth-atlas.jpeg"
-                  alt="Private Booth Coffice"
+                  src={IMAGES.booths.atlas.url}
+                  alt={IMAGES.booths.atlas.alt}
                   className="object-cover h-full w-full hover:scale-110 transition-transform duration-500"
+                  loading="lazy"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-accent/60 to-transparent"></div>
                 <div className="absolute bottom-4 left-4">
@@ -311,9 +314,10 @@ const Home = () => {
             >
               <div className="h-64 relative overflow-hidden">
                 <img
-                  src="/salle-reunion.jpeg"
-                  alt="Salle de réunion Coffice"
+                  src={IMAGES.spaces.meeting.url}
+                  alt={IMAGES.spaces.meeting.alt}
                   className="object-cover h-full w-full hover:scale-110 transition-transform duration-500"
+                  loading="lazy"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-teal/60 to-transparent"></div>
                 <div className="absolute bottom-4 left-4">

@@ -8,6 +8,7 @@ import Button from '../components/ui/Button'
 import Input from '../components/ui/Input'
 import { useAuthStore } from '../store/authStore'
 import { validationRules } from '../utils/validation'
+import Logo from '../components/Logo'
 
 interface LoginForm {
   email: string
@@ -62,11 +63,7 @@ const Login = () => {
         {/* Logo */}
         <div className="text-center mb-8">
           <Link to="/" className="inline-block">
-            <img
-              src="/logo.png"
-              alt="COFFICE - Coworking Space"
-              className="h-16 mx-auto"
-            />
+            <Logo className="h-16 mx-auto" />
           </Link>
         </div>
 

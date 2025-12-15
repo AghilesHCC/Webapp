@@ -13,6 +13,7 @@ import { useAppStore } from '../store/store';
 import { formatDate, formatCurrency, formatTime, getInitials } from '../utils/formatters';
 import toast from 'react-hot-toast';
 import { useState } from 'react';
+import Logo from '../components/Logo';
 
 const ERPSystem = () => {
   const { user, logout } = useAuthStore();
@@ -1113,11 +1114,7 @@ const ERPSystem = () => {
         <div className="flex h-full flex-col">
           {/* Logo */}
           <div className="flex items-center p-6 border-b">
-            <img
-              src="/logo.png"
-              alt="COFFICE Administration"
-              className="h-12"
-            />
+            <Logo className="h-12" />
           </div>
 
           {/* Navigation */}

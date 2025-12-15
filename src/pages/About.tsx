@@ -2,6 +2,7 @@ import React from 'react'
 import { motion } from 'framer-motion'
 import { MapPin, Phone, Mail, Clock, Users, Target, Heart } from 'lucide-react'
 import { useSEO } from '../hooks/useSEO'
+import { IMAGES } from '../config/images'
 
 const About = () => {
   useSEO()
@@ -61,9 +62,10 @@ const About = () => {
               className="animate-on-scroll"
             >
               <img
-                src="/espace-coworking.jpeg"
-                alt="Espace Coffice - Open Space"
+                src={IMAGES.spaces.coworking.url}
+                alt={IMAGES.spaces.coworking.alt}
                 className="rounded-2xl shadow-2xl"
+                loading="lazy"
               />
             </motion.div>
           </div>
@@ -244,7 +246,7 @@ const About = () => {
             >
               <div className="bg-gradient-to-br from-accent/5 to-teal/5 rounded-2xl p-8 border-2 border-accent/20">
                 <div className="flex items-center gap-4 mb-6">
-                  <img src="/novihost-logo.png" alt="Novihost" className="h-16" />
+                  <div className="h-16 w-32 bg-gray-200 rounded-lg flex items-center justify-center text-gray-700 font-bold text-lg">NOVIHOST</div>
                   <div className="h-12 w-px bg-accent/30"></div>
                   <div className="text-2xl font-bold text-primary">COFFICE</div>
                 </div>

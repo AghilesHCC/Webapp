@@ -22,6 +22,7 @@ import {
 import { useAuthStore } from '../../store/authStore'
 import NotificationCenter from '../ui/NotificationCenter'
 import toast from 'react-hot-toast'
+import Logo from '../Logo'
 
 interface DashboardLayoutProps {
   children: React.ReactNode
@@ -119,11 +120,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
         <div className="flex h-full flex-col">
           <div className="flex items-center justify-between p-6 border-b">
             <Link to="/" className="flex items-center">
-              <img
-                src="/logo.png"
-                alt="COFFICE - Coworking Space"
-                className="h-10 w-auto"
-              />
+              <Logo className="h-10 w-auto" />
             </Link>
             <button
               onClick={() => setSidebarOpen(false)}

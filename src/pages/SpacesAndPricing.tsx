@@ -7,6 +7,7 @@ import {
   ChevronRight, Sparkles, Gift, Target, Headphones, Building2
 } from 'lucide-react'
 import { useSEO } from '../hooks/useSEO'
+import { IMAGES } from '../config/images'
 
 const SpacesAndPricing = () => {
   useSEO({
@@ -23,7 +24,7 @@ const SpacesAndPricing = () => {
       name: 'Espace Coworking',
       tagline: 'Votre bureau flexible au coeur d\'Alger',
       description: 'Un environnement dynamique de 200m² avec 24 postes open space',
-      image: '/espace-coworking.jpeg',
+      image: IMAGES.spaces.coworking.url,
       price: '1 200 DA TTC / jour',
       priceValue: 1200,
       period: 'jour',
@@ -50,7 +51,7 @@ const SpacesAndPricing = () => {
       name: 'Salle de Réunion',
       tagline: 'L\'espace parfait pour vos rencontres pros',
       description: 'Équipée pour vos présentations, formations et réunions d\'équipe',
-      image: '/salle-reunion.jpeg',
+      image: IMAGES.spaces.meeting.url,
       price: '2 500 DA TTC / heure',
       priceValue: 2500,
       period: 'heure',
@@ -79,7 +80,7 @@ const SpacesAndPricing = () => {
       name: 'Private Booths',
       tagline: 'Bureaux privés pour concentration maximale',
       description: '3 espaces privatifs pour 2 à 4 personnes : Aurès et Atlas (6m² chacun pour 2-4 personnes) et Hoogar (5m² pour 2 personnes)',
-      image: '/booth-atlas.jpeg',
+      image: IMAGES.booths.atlas.url,
       price: 'À partir de 5 000 DA TTC',
       priceValue: 5000,
       period: 'jour',
@@ -104,7 +105,7 @@ const SpacesAndPricing = () => {
           name: 'Aurès',
           surface: '6m²',
           capacity: '2-4 personnes',
-          image: '/booth-aures.jpeg',
+          image: IMAGES.booths.aures.url,
           description: 'Booth spacieux idéal pour petites équipes et réunions confidentielles',
           priceFullDay: '6 000 DA TTC',
           priceHalfDay: '3 500 DA TTC'
@@ -113,7 +114,7 @@ const SpacesAndPricing = () => {
           name: 'Atlas',
           surface: '6m²',
           capacity: '2-4 personnes',
-          image: '/booth-atlas.jpeg',
+          image: IMAGES.booths.atlas.url,
           description: 'Espace privé confortable avec vue panoramique',
           priceFullDay: '6 000 DA TTC',
           priceHalfDay: '3 500 DA TTC'
@@ -122,7 +123,7 @@ const SpacesAndPricing = () => {
           name: 'Hoogar',
           surface: '5m²',
           capacity: '2 personnes',
-          image: '/booth-hoggar.jpeg',
+          image: IMAGES.booths.hoggar.url,
           description: 'Booth intimiste parfait pour le travail concentré ou les entretiens',
           priceFullDay: '5 000 DA TTC',
           priceHalfDay: '3 000 DA TTC'
@@ -276,6 +277,7 @@ const SpacesAndPricing = () => {
                       src={activeSpaceData.image}
                       alt={activeSpaceData.name}
                       className="w-full h-[400px] object-cover"
+                      loading="lazy"
                     />
                     <div className={`absolute top-4 right-4 px-4 py-2 bg-gradient-to-r ${activeSpaceData.color} text-white rounded-full font-bold`}>
                       {activeSpaceData.price}
@@ -383,6 +385,7 @@ const SpacesAndPricing = () => {
                             src={booth.image}
                             alt={booth.name}
                             className="w-full h-full object-cover"
+                            loading="lazy"
                           />
                           <div className={`absolute top-4 right-4 px-4 py-2 bg-gradient-to-r ${activeSpaceData.color} text-white rounded-full font-bold text-sm`}>
                             {booth.surface}

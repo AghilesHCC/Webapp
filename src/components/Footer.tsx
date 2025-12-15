@@ -1,6 +1,7 @@
 import React from 'react'
 import { Link } from 'react-router-dom'
 import { Instagram, Linkedin, MapPin, Phone, Mail } from 'lucide-react'
+import Logo from './Logo'
 
 const Footer = () => {
   return (
@@ -10,11 +11,7 @@ const Footer = () => {
           {/* Company Info */}
           <div className="col-span-1 md:col-span-2">
             <div className="mb-6">
-              <img
-                src="/logo.png"
-                alt="COFFICE - Coworking Space by IIQC"
-                className="h-12 w-auto brightness-0 invert"
-              />
+              <Logo variant="light" className="h-12 w-auto" />
             </div>
             <p className="text-gray-300 mb-4 max-w-md">
               Coffice est le premier espace de coworking nouvelle génération à Alger, 

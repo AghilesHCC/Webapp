@@ -4,6 +4,7 @@ import { motion } from 'framer-motion';
 import { LayoutDashboard, Building, Calendar, Users, CreditCard, FileText, Settings, LogOut, Menu, X, BarChart3, PenTool as Tool, Package, Briefcase, HelpCircle, Bell, Search, ChevronDown, ChevronRight, User, Sun, Moon } from 'lucide-react';
 import Badge from '../ui/Badge';
 import { useAuthStore } from '../../store/authStore';
+import Logo from '../Logo';
 
 interface ERPNavigationProps {
   children: React.ReactNode;
@@ -83,11 +84,7 @@ const ERPNavigation: React.FC<ERPNavigationProps> = ({ children }) => {
           {/* Logo */}
           <div className="flex items-center justify-between p-6 border-b dark:border-gray-700">
             <Link to="/erp" className="flex items-center space-x-3">
-              <img
-                src="/logo.png"
-                alt="COFFICE ERP"
-                className="h-10"
-              />
+              <Logo className="h-10" />
             </Link>
             <button
               onClick={() => setSidebarOpen(false)}

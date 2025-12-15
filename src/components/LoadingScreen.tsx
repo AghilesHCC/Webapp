@@ -1,6 +1,7 @@
 import React, { memo } from 'react'
 import { motion } from 'framer-motion'
 import LoadingSpinner from './ui/LoadingSpinner'
+import Logo from './Logo'
 
 interface LoadingScreenProps {
   message?: string
@@ -28,11 +29,7 @@ const LoadingScreen: React.FC<LoadingScreenProps> = memo(({ message = 'Chargemen
           animate={{ y: 0 }}
           className="flex items-center justify-center mb-8"
         >
-          <img
-            src="/logo.png"
-            alt="COFFICE - Coworking Space"
-            className="h-20"
-          />
+          <Logo className="h-20" />
         </motion.div>
 
         {/* Loading spinner */}

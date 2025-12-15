@@ -10,6 +10,7 @@ import { useAuthStore } from '../store/authStore'
 import { UserForm } from '../types'
 import { apiClient } from '../lib/api-client'
 import { validationRules } from '../utils/validation'
+import Logo from '../components/Logo'
 
 interface RegisterForm extends UserForm {
   passwordConfirm?: string
@@ -87,11 +88,7 @@ const Register = () => {
         {/* Logo */}
         <div className="text-center mb-8">
           <Link to="/" className="inline-block">
-            <img
-              src="/logo.png"
-              alt="COFFICE - Coworking Space"
-              className="h-16 mx-auto"
-            />
+            <Logo className="h-16 mx-auto" />
           </Link>
         </div>
 
