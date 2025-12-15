@@ -471,7 +471,7 @@ const SpacesAndPricing = () => {
             Besoin de domicilier votre entreprise ?
           </h2>
           <p className="text-xl mb-8 text-orange-100">
-            Service exclusif pour startups labelisées et auto-entrepreneurs dès 14 000 DA/mois
+            Service de domiciliation professionnelle dès 14 000 DA/mois
           </p>
           <Link
             to="/domiciliation"

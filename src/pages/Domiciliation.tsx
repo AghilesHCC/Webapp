@@ -291,7 +291,7 @@ const DomiciliationPublic = () => {
             </h1>
             <p className="text-xl text-gray-600 mb-8 max-w-3xl mx-auto">
               Une adresse prestigieuse au Centre Commercial Mohammadia Mall pour donner de la crédibilité
-              à votre entreprise. <strong className="text-primary">Service exclusivement réservé aux startups labelisées par le ministère et aux auto-entrepreneurs.</strong> Contrat notarié 100% conforme à la législation algérienne.
+              à votre entreprise. Contrat notarié 100% conforme à la législation algérienne.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Link to="/inscription">
