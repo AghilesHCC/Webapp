@@ -1,23 +1,8 @@
-[API Client] Added Authorization header with token: eyJ0eXAiOiJKV1QiLCJh...
-dashboard-hZH5SAIY.js:177 [API Client] Request: PUT https://test.coffice.dz/api/users/update.php?id=0d2654f5-acab-4f01-8616-0270c79b9937
-dashboard-hZH5SAIY.js:177  PUT https://test.coffice.dz/api/users/update.php?id=0d2654f5-acab-4f01-8616-0270c79b9937 500 (Internal Server Error)
-request @ dashboard-hZH5SAIY.js:177
-updateUser @ dashboard-hZH5SAIY.js:177
-updateUser @ dashboard-hZH5SAIY.js:177
-c @ dashboard-hZH5SAIY.js:198
-df @ react-vendor-BGpcvQ50.js:29
-hf @ react-vendor-BGpcvQ50.js:29
-mf @ react-vendor-BGpcvQ50.js:29
-_o @ react-vendor-BGpcvQ50.js:29
-ya @ react-vendor-BGpcvQ50.js:29
-(anonyme) @ react-vendor-BGpcvQ50.js:29
-ji @ react-vendor-BGpcvQ50.js:32
-Vs @ react-vendor-BGpcvQ50.js:29
-Hl @ react-vendor-BGpcvQ50.js:29
-fi @ react-vendor-BGpcvQ50.js:29
-Rf @ react-vendor-BGpcvQ50.js:29Comprendre cette erreur
-dashboard-hZH5SAIY.js:177 [API Client] Response status: 500
-installHook.js:1 [API Client] Request error: Error: Erreur lors de la mise à jour
-    at ma.request (dashboard-hZH5SAIY.js:177:12691)
-    at async updateUser (dashboard-hZH5SAIY.js:177:28101)
-    at async c (dashboard-hZH5SAIY.js:198:42009)
+# Configuration pour api/users/
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+
+    # Passer le header Authorization a PHP
+    RewriteCond %{HTTP:Authorization} ^(.*)
+    RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]
+</IfModule>
