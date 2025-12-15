@@ -50,7 +50,7 @@ const SpacesAndPricing = () => {
       name: 'Salle de Réunion',
       tagline: 'L\'espace parfait pour vos rencontres pros',
       description: 'Équipée pour vos présentations, formations et réunions d\'équipe',
-      image: '/salle_de_réunion_5.jpeg',
+      image: '/salle_de_réunion_5 copy.jpeg',
       price: '2 500 DA TTC / heure',
       priceValue: 2500,
       period: 'heure',
