@@ -1,5 +1,4 @@
 import { create } from 'zustand'
-import { persist } from 'zustand/middleware'
 import type { Member, Space, ERPReservation, Invoice, Payment, Expense, Inventory, MaintenanceTask, CommunityEvent, Analytics } from '../types/erp'
 
 interface ERPState {
@@ -119,7 +118,6 @@ const initialAnalytics: Analytics = {
 }
 
 export const useERPStore = create<ERPState>()(
-  persist(
     (set, get) => ({
       members: [],
       spaces: [],
@@ -561,68 +559,54 @@ export const useERPStore = create<ERPState>()(
       getAnalytics: () => get().analytics,
 
       generateAnalytics: (_period) => {
-        const analytics: Analytics = {
-          occupancyRate: 75,
-          revenueBySpace: {
-            'space-1': 150000,
-            'space-2': 200000,
-            'space-3': 180000
-          },
-          memberGrowth: [
-            { period: 'Jan', count: 50, growth: 0 },
-            { period: 'Fév', count: 65, growth: 30 },
-            { period: 'Mar', count: 80, growth: 23 },
-            { period: 'Avr', count: 95, growth: 19 },
-            { period: 'Mai', count: 110, growth: 16 },
-            { period: 'Jun', count: 125, growth: 14 }
-          ],
-          membershipGrowth: [
-            { period: 'Jan', count: 50, growth: 0 },
-            { period: 'Fév', count: 65, growth: 30 },
-            { period: 'Mar', count: 80, growth: 23 },
-            { period: 'Avr', count: 95, growth: 19 },
-            { period: 'Mai', count: 110, growth: 16 },
-            { period: 'Jun', count: 125, growth: 14 }
-          ],
-          topSpaces: [
-            { id: 'space-1', name: 'Zone Principale', bookings: 45, revenue: 150000 },
-            { id: 'space-2', name: 'Box Équipe', bookings: 38, revenue: 200000 },
-            { id: 'space-3', name: 'Salle Réunion', bookings: 32, revenue: 180000 }
-          ],
-          monthlyRevenue: [150000, 180000, 200000, 220000, 250000, 280000],
-          averageBookingValue: 5500,
-          financialSummary: {
-            totalRevenue: 530000,
-            totalExpenses: 280000,
-            netProfit: 250000,
-            pendingInvoices: 15,
-            outstandingInvoices: 8,
-            revenue: 530000,
-            expenses: 280000,
-            profit: 250000
-          },
-          revenueByMembership: {
-            'Starter': 120000,
-            'Standard': 220000,
-            'Premium': 380000
+        const state = get()
+        const totalRevenue = state.payments.reduce((sum, p) => sum + (p.amount || 0), 0)
+        const totalExpenses = state.expenses.reduce((sum, e) => sum + (e.amount || 0), 0)
+        const completedReservations = state.reservations.filter(r => r.status === 'completed')
+        const occupancyRate = state.spaces.length > 0
+          ? Math.round((completedReservations.length / Math.max(state.reservations.length, 1)) * 100)
+          : 0
+        const pendingInvoices = state.invoices.filter(i => i.status === 'pending').length
+        const averageBookingValue = completedReservations.length > 0
+          ? Math.round(totalRevenue / completedReservations.length)
+          : 0
+
+        const revenueBySpace: Record<string, number> = {}
+        state.reservations.forEach(r => {
+          if (r.spaceId) {
+            revenueBySpace[r.spaceId] = (revenueBySpace[r.spaceId] || 0) + (r.totalAmount || 0)
           }
+        })
+
+        const topSpaces = state.spaces.map(space => ({
+          id: space.id,
+          name: space.name,
+          bookings: state.reservations.filter(r => r.spaceId === space.id).length,
+          revenue: revenueBySpace[space.id] || 0
+        })).sort((a, b) => b.bookings - a.bookings).slice(0, 5)
+
+        const analytics: Analytics = {
+          occupancyRate,
+          revenueBySpace,
+          memberGrowth: [],
+          membershipGrowth: [],
+          topSpaces,
+          monthlyRevenue: [],
+          averageBookingValue,
+          financialSummary: {
+            totalRevenue,
+            totalExpenses,
+            netProfit: totalRevenue - totalExpenses,
+            pendingInvoices,
+            outstandingInvoices: pendingInvoices,
+            revenue: totalRevenue,
+            expenses: totalExpenses,
+            profit: totalRevenue - totalExpenses
+          },
+          revenueByMembership: {}
         }
 
         set({ analytics })
       }
-    }),
-    {
-      name: 'erp-storage',
-      partialize: (state) => ({
-        members: state.members,
-        spaces: state.spaces,
-        reservations: state.reservations,
-        invoices: state.invoices,
-        expenses: state.expenses,
-        inventory: state.inventory,
-        maintenanceTasks: state.maintenanceTasks,
-        events: state.events
-      })
-    }
-  )
+    })
 )

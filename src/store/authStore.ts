@@ -232,10 +232,7 @@ export const useAuthStore = create<AuthState>()(
     }),
     {
       name: 'coffice-auth',
-      partialize: (state) => ({
-        user: state.user,
-        isAdmin: state.isAdmin
-      })
+      partialize: () => ({})
     }
   )
 )
