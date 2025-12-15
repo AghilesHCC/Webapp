@@ -11,7 +11,7 @@ require_once '../utils/Auth.php';
 require_once '../utils/Response.php';
 
 try {
-    $auth = Auth::verifyAuth();
+    $auth = Auth::verifyAuth(true);
 
     // Récupérer l'ID depuis query params
     $userId = $_GET['id'] ?? null;

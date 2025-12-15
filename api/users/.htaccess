@@ -1,13 +1,31 @@
-# Autoriser tous les fichiers PHP
-<Files "*.php">
-    Allow from all
-</Files>
-
-# Gérer les méthodes HTTP
 <IfModule mod_rewrite.c>
     RewriteEngine On
 
+    # CRITIQUE: Transmettre le header Authorization à PHP (JWT)
+    RewriteCond %{HTTP:Authorization} ^(.+)$
+    RewriteRule .* - [E=HTTP_AUTHORIZATION:%1]
+
+    # Backup via variable REDIRECT pour compatibilité cPanel
+    RewriteCond %{HTTP:Authorization} ^(.+)$
+    RewriteRule .* - [E=REDIRECT_HTTP_AUTHORIZATION:%1]
+
+    # Gérer les requêtes OPTIONS pour CORS
+    RewriteCond %{REQUEST_METHOD} OPTIONS
+    RewriteRule ^(.*)$ $1 [R=200,L]
+
     # Permettre PUT et DELETE
-    RewriteCond %{REQUEST_METHOD} ^(PUT|DELETE)$
+    RewriteCond %{REQUEST_METHOD} ^(PUT|DELETE|POST)$
     RewriteRule ^(.*)$ $1 [L]
 </IfModule>
+
+# Headers CORS pour ce dossier
+<IfModule mod_headers.c>
+    Header always set Access-Control-Allow-Origin "*"
+    Header always set Access-Control-Allow-Methods "GET, POST, PUT, DELETE, OPTIONS"
+    Header always set Access-Control-Allow-Headers "Content-Type, Authorization, X-Requested-With"
+</IfModule>
+
+# Autoriser tous les fichiers PHP
+<Files "*.php">
+    Require all granted
+</Files>
