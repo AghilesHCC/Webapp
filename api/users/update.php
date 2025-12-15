@@ -26,16 +26,11 @@ try {
     }
 
     $rawInput = file_get_contents("php://input");
-    error_log("Raw input: " . $rawInput);
-
     $data = json_decode($rawInput);
 
     if (!$data) {
-        error_log("JSON decode failed: " . json_last_error_msg());
         Response::error("Données manquantes ou JSON invalide", 400);
     }
-
-    error_log("Decoded data: " . print_r($data, true));
 
     $db = Database::getInstance()->getConnection();
 
@@ -104,9 +99,6 @@ try {
 
     $query = "UPDATE users SET " . implode(', ', $updates) . " WHERE id = :id";
 
-    error_log("SQL Query: " . $query);
-    error_log("SQL Params: " . print_r($params, true));
-
     $stmt = $db->prepare($query);
 
     if (!$stmt) {
@@ -114,15 +106,17 @@ try {
         throw new Exception("Erreur de préparation de la requête");
     }
 
+    $checkStmt = $db->prepare("SELECT id FROM users WHERE id = :id");
+    $checkStmt->execute([':id' => $userId]);
+    if (!$checkStmt->fetch()) {
+        Response::error("Utilisateur non trouvé", 404);
+    }
+
     $result = $stmt->execute($params);
 
     if (!$result) {
         error_log("Execute failed: " . print_r($stmt->errorInfo(), true));
         throw new Exception("Erreur d'exécution de la requête: " . implode(', ', $stmt->errorInfo()));
-    }
-
-    if ($stmt->rowCount() === 0) {
-        Response::error("Utilisateur non trouvé ou aucune modification", 404);
     }
 
     Response::success(['id' => $userId], "Utilisateur mis à jour avec succès");
