@@ -136,6 +136,30 @@ const ReservationForm: React.FC<ReservationFormProps> = ({ isOpen, onClose, sele
     }
   }
 
+  const checkAvailability = async (espaceId: string, dateDebut: Date, dateFin: Date): Promise<boolean> => {
+    try {
+      const response = await apiClient.getReservations()
+      if (!response.success || !response.data) {
+        return true
+      }
+
+      const reservations = response.data as any[]
+      const conflicts = reservations.filter(r => {
+        if (r.espace_id !== espaceId) return false
+        if (!['confirmee', 'en_attente', 'en_cours'].includes(r.statut)) return false
+
+        const resDebut = new Date(r.date_debut)
+        const resFin = new Date(r.date_fin)
+
+        return !(dateFin <= resDebut || dateDebut >= resFin)
+      })
+
+      return conflicts.length === 0
+    } catch (error) {
+      return true
+    }
+  }
+
   const onSubmit = async (data: ReservationFormType) => {
     if (!user) {
       toast.error('Vous devez être connecté pour réserver')
@@ -170,6 +194,17 @@ const ReservationForm: React.FC<ReservationFormProps> = ({ isOpen, onClose, sele
     const participants = Number(data.participants) || 1
     if (selectedSpace && participants > selectedSpace.capacite) {
       toast.error(`Capacité maximale: ${selectedSpace.capacite} personnes`)
+      return
+    }
+
+    if (!selectedSpace?.disponible) {
+      toast.error('Cet espace n\'est pas disponible')
+      return
+    }
+
+    const isAvailable = await checkAvailability(data.espaceId, dateDebut, dateFin)
+    if (!isAvailable) {
+      toast.error('Cet espace n\'est pas disponible pour ces dates. Veuillez choisir d\'autres créneaux horaires.')
       return
     }
 
