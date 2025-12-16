@@ -101,11 +101,11 @@ export const transformReservation = (apiReservation: ApiReservation): Reservatio
   espace: apiReservation.espace ? (
     'prix_heure' in apiReservation.espace
       ? transformEspace(apiReservation.espace as ApiEspace)
-      : {
-          id: apiReservation.espace.id,
-          nom: apiReservation.espace.nom,
-          type: apiReservation.espace.type as Espace['type']
-        }
+      : ({
+          id: (apiReservation.espace as any).id,
+          nom: (apiReservation.espace as any).nom,
+          type: (apiReservation.espace as any).type
+        } as Partial<Espace> as Espace)
   ) : undefined
 })
 

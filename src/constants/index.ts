@@ -18,11 +18,11 @@ export const RESERVATION_STATUT_LABELS: Record<ReservationStatut, string> = {
   [RESERVATION_STATUTS.TERMINEE]: 'Terminee'
 }
 
-export const RESERVATION_STATUT_COLORS: Record<ReservationStatut, string> = {
+export const RESERVATION_STATUT_COLORS: Record<ReservationStatut, 'default' | 'success' | 'warning' | 'danger' | 'info' | 'error'> = {
   [RESERVATION_STATUTS.CONFIRMEE]: 'success',
   [RESERVATION_STATUTS.EN_ATTENTE]: 'warning',
   [RESERVATION_STATUTS.EN_COURS]: 'info',
-  [RESERVATION_STATUTS.ANNULEE]: 'danger',
+  [RESERVATION_STATUTS.ANNULEE]: 'error',
   [RESERVATION_STATUTS.TERMINEE]: 'default'
 }
 
@@ -30,7 +30,7 @@ export function getReservationStatutLabel(statut: string): string {
   return RESERVATION_STATUT_LABELS[statut as ReservationStatut] || statut
 }
 
-export function getReservationStatutColor(statut: string): string {
+export function getReservationStatutColor(statut: string): 'default' | 'success' | 'warning' | 'danger' | 'info' | 'error' {
   return RESERVATION_STATUT_COLORS[statut as ReservationStatut] || 'default'
 }
 

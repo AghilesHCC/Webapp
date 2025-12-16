@@ -331,7 +331,8 @@ export const useAppStore = create<AppState>()(
         try {
           const response = await apiClient.getReservations()
           if (response.success && response.data) {
-            const reservationsData = Array.isArray(response.data) ? response.data : response.data.data
+            const responseData: any = response.data
+            const reservationsData = Array.isArray(responseData) ? responseData : responseData.data
             const reservations = (reservationsData || []).map((r: any) => ({
               id: r.id,
               userId: r.user_id,
@@ -527,7 +528,8 @@ export const useAppStore = create<AppState>()(
         try {
           const response = await apiClient.getUsers()
           if (response.success && response.data) {
-            const usersData = Array.isArray(response.data) ? response.data : response.data.data
+            const responseData: any = response.data
+            const usersData = Array.isArray(responseData) ? responseData : responseData.data
             if (Array.isArray(usersData)) {
               const users = usersData.map((u: any) => ({
                 ...u,
