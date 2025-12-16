@@ -37,13 +37,19 @@ try {
 
     $allowed_fields = [
         'nom', 'type', 'description', 'capacite', 'equipements',
-        'prix_heure', 'prix_demi_journee', 'prix_jour', 'prix_semaine', 'disponible', 'image_url', 'etage'
+        'prix_heure', 'prix_demi_journee', 'prix_jour', 'prix_semaine', 'disponible', 'image_url'
     ];
 
     foreach ($allowed_fields as $field) {
         if (isset($data->$field)) {
             $updates[] = "$field = :$field";
-            $params[":$field"] = $data->$field;
+            if ($field === 'equipements') {
+                $params[":$field"] = is_array($data->$field) ? json_encode($data->$field) : $data->$field;
+            } elseif ($field === 'disponible') {
+                $params[":$field"] = $data->$field ? 1 : 0;
+            } else {
+                $params[":$field"] = $data->$field;
+            }
         }
     }
 

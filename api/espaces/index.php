@@ -12,7 +12,7 @@ try {
     $db = Database::getInstance()->getConnection();
 
     $query = "SELECT id, nom, type, capacite, prix_heure, prix_demi_journee, prix_jour, prix_semaine,
-                     description, equipements, disponible, etage, image_url
+                     description, equipements, disponible, image_url
               FROM espaces
               ORDER BY nom ASC";
 

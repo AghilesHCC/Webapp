@@ -43,7 +43,7 @@ try {
         ':prix_demi_journee' => $data->prix_demi_journee ?? 0,
         ':prix_jour' => $data->prix_jour ?? 0,
         ':prix_semaine' => $data->prix_semaine ?? 0,
-        ':disponible' => $data->disponible ?? true,
+        ':disponible' => isset($data->disponible) ? ($data->disponible ? 1 : 0) : 1,
         ':image_url' => $data->image_url ?? null
     ]);
 
