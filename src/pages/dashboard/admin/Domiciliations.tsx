@@ -230,12 +230,12 @@ export default function Domiciliations() {
 
             <div>
               <h3 className="text-lg font-semibold mb-2">Domaine d'activité</h3>
-              <p className="text-gray-900">{selectedDemande.domaineActivite}</p>
+              <p className="text-gray-900">{selectedDemande.activitePrincipale}</p>
             </div>
 
             <div>
               <h3 className="text-lg font-semibold mb-2">Adresse siège social</h3>
-              <p className="text-gray-900">{selectedDemande.adresseSiegeSocial}</p>
+              <p className="text-gray-900">{selectedDemande.adresseActuelle}</p>
             </div>
 
             {selectedDemande.commentaireAdmin && (

@@ -449,8 +449,8 @@ export const useAppStore = create<AppState>()(
                         ? JSON.parse(d.representant_legal)
                         : d.representant_legal)
                     : { nom: '', prenom: '', email: '', telephone: '' },
-                  domaineActivite: d.domaine_activite,
-                  adresseSiegeSocial: d.adresse_siege_social,
+                  activitePrincipale: d.domaine_activite,
+                  adresseActuelle: d.adresse_siege_social,
                   capital: d.capital,
                   dateCreationEntreprise: d.date_creation_entreprise,
                   statut: d.statut,
@@ -478,8 +478,8 @@ export const useAppStore = create<AppState>()(
                   raisonSociale: d.raisonSociale,
                   dateCreation: d.dateCreationEntreprise,
                   capital: d.capital,
-                  siegeSocial: d.adresseSiegeSocial,
-                  activitePrincipale: d.domaineActivite
+                  siegeSocial: d.adresseActuelle,
+                  activitePrincipale: d.activitePrincipale
                 },
                 startDate: d.dateValidation || d.dateCreation,
                 endDate: new Date(new Date(d.dateValidation || d.dateCreation).setFullYear(new Date(d.dateValidation || d.dateCreation).getFullYear() + 1)),
@@ -490,7 +490,7 @@ export const useAppStore = create<AppState>()(
                 setupFee: 0,
                 documentsLegaux: [],
                 representantLegal: d.representantLegal,
-                activityDomain: d.domaineActivite,
+                activityDomain: d.activitePrincipale,
                 dateSignatureContrat: d.dateValidation,
                 numeroContrat: `DOM-${d.id.substring(0, 8).toUpperCase()}`,
                 visibleSurSite: true,

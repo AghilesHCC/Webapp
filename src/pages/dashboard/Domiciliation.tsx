@@ -66,8 +66,8 @@ const Domiciliation = () => {
     coordonneesFiscales: '',
     coordonneesAdministratives: '',
     representantLegal: { nom: '', prenom: '', fonction: '', telephone: '', email: '' },
-    domaineActivite: '',
-    adresseSiegeSocial: '',
+    activitePrincipale: '',
+    adresseActuelle: '',
     capital: 0,
     dateCreationEntreprise: ''
   })
@@ -95,8 +95,8 @@ const Domiciliation = () => {
           telephone: user.telephone || '',
           email: user.email || ''
         },
-        domaineActivite: user.activitePrincipale || '',
-        adresseSiegeSocial: user.siegeSocial || '',
+        activitePrincipale: user.activitePrincipale || '',
+        adresseActuelle: user.adresse || user.siegeSocial || '',
         capital: parseFloat(user.capital || '0'),
         dateCreationEntreprise: user.dateCreationEntreprise || ''
       })
@@ -255,7 +255,7 @@ const Domiciliation = () => {
               </div>
               <div>
                 <p className="text-sm text-gray-600 mb-1">Domaine d'Activité</p>
-                <p className="font-medium text-gray-900">{demande.domaineActivite || 'Non renseigné'}</p>
+                <p className="font-medium text-gray-900">{demande.activitePrincipale || 'Non renseigné'}</p>
               </div>
             </div>
           </Card>
@@ -472,8 +472,8 @@ const Domiciliation = () => {
                 <Input
                   label="Domaine d'Activite"
                   icon={<Briefcase className="w-5 h-5" />}
-                  value={formData.domaineActivite}
-                  onChange={(e) => setFormData({ ...formData, domaineActivite: e.target.value })}
+                  value={formData.activitePrincipale}
+                  onChange={(e) => setFormData({ ...formData, activitePrincipale: e.target.value })}
                   placeholder="Ex: Services informatiques"
                 />
               </div>
@@ -600,8 +600,8 @@ const Domiciliation = () => {
               <Input
                 label="Adresse du Siège Social Actuel"
                 icon={<MapPin className="w-5 h-5" />}
-                value={formData.adresseSiegeSocial}
-                onChange={(e) => setFormData({ ...formData, adresseSiegeSocial: e.target.value })}
+                value={formData.adresseActuelle}
+                onChange={(e) => setFormData({ ...formData, adresseActuelle: e.target.value })}
                 placeholder="12 Rue Didouche Mourad, Alger"
               />
 

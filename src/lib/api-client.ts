@@ -509,7 +509,7 @@ class ApiClient {
       raison_sociale: data.raisonSociale,
       forme_juridique: data.formeJuridique,
       capital: data.capital || null,
-      activite_principale: data.domaineActivite || data.activitePrincipale || null,
+      activite_principale: data.activitePrincipale || null,
       nif: data.nif || null,
       nis: data.nis || null,
       registre_commerce: data.registreCommerce || null,
@@ -517,9 +517,13 @@ class ApiClient {
       numero_auto_entrepreneur: data.numeroAutoEntrepreneur || null,
       wilaya: data.wilaya || null,
       commune: data.commune || null,
-      adresse_actuelle: data.adresseSiegeSocial || null,
+      adresse_actuelle: data.adresseActuelle || null,
+      coordonnees_fiscales: data.coordonneesFiscales || null,
+      coordonnees_administratives: data.coordonneesAdministratives || null,
+      date_creation_entreprise: data.dateCreationEntreprise || null,
       representant_nom: data.representantLegal?.nom || null,
       representant_prenom: data.representantLegal?.prenom || null,
+      representant_fonction: data.representantLegal?.fonction || null,
       representant_telephone: data.representantLegal?.telephone || null,
       representant_email: data.representantLegal?.email || null,
       montant_mensuel: data.montantMensuel || 5000
@@ -537,6 +541,7 @@ class ApiClient {
     if (data.representantLegal) {
       apiData.representant_nom = data.representantLegal.nom
       apiData.representant_prenom = data.representantLegal.prenom
+      apiData.representant_fonction = data.representantLegal.fonction
       apiData.representant_telephone = data.representantLegal.telephone
       apiData.representant_email = data.representantLegal.email
     }
@@ -548,8 +553,10 @@ class ApiClient {
     if (data.nis !== undefined) apiData.nis = data.nis
     if (data.registreCommerce !== undefined) apiData.registre_commerce = data.registreCommerce
     if (data.articleImposition !== undefined) apiData.article_imposition = data.articleImposition
-    if (data.domaineActivite !== undefined) apiData.activite_principale = data.domaineActivite
-    if (data.adresseSiegeSocial !== undefined) apiData.adresse_actuelle = data.adresseSiegeSocial
+    if (data.activitePrincipale !== undefined) apiData.activite_principale = data.activitePrincipale
+    if (data.adresseActuelle !== undefined) apiData.adresse_actuelle = data.adresseActuelle
+    if (data.coordonneesFiscales !== undefined) apiData.coordonnees_fiscales = data.coordonneesFiscales
+    if (data.coordonneesAdministratives !== undefined) apiData.coordonnees_administratives = data.coordonneesAdministratives
     if (data.dateCreationEntreprise !== undefined) apiData.date_creation_entreprise = data.dateCreationEntreprise
     if (data.statut !== undefined) apiData.statut = data.statut
     if (data.commentaireAdmin !== undefined) apiData.commentaire_admin = data.commentaireAdmin

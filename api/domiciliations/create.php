@@ -59,13 +59,15 @@ try {
               (id, user_id, raison_sociale, forme_juridique, capital,
                activite_principale, nif, nis, registre_commerce, article_imposition,
                numero_auto_entrepreneur, wilaya, commune, adresse_actuelle,
-               representant_nom, representant_prenom, representant_telephone,
+               coordonnees_fiscales, coordonnees_administratives, date_creation_entreprise,
+               representant_nom, representant_prenom, representant_fonction, representant_telephone,
                representant_email, statut, montant_mensuel)
               VALUES
               (:id, :user_id, :raison_sociale, :forme_juridique, :capital,
                :activite_principale, :nif, :nis, :registre_commerce, :article_imposition,
                :numero_auto_entrepreneur, :wilaya, :commune, :adresse_actuelle,
-               :representant_nom, :representant_prenom, :representant_telephone,
+               :coordonnees_fiscales, :coordonnees_administratives, :date_creation_entreprise,
+               :representant_nom, :representant_prenom, :representant_fonction, :representant_telephone,
                :representant_email, 'en_attente', :montant_mensuel)";
 
     $stmt = $db->prepare($query);
@@ -84,8 +86,12 @@ try {
         ':wilaya' => isset($data->wilaya) ? Sanitizer::sanitizeString($data->wilaya) : null,
         ':commune' => isset($data->commune) ? Sanitizer::sanitizeString($data->commune) : null,
         ':adresse_actuelle' => isset($data->adresse_actuelle) ? Sanitizer::sanitizeString($data->adresse_actuelle) : null,
+        ':coordonnees_fiscales' => isset($data->coordonnees_fiscales) ? Sanitizer::sanitizeString($data->coordonnees_fiscales) : null,
+        ':coordonnees_administratives' => isset($data->coordonnees_administratives) ? Sanitizer::sanitizeString($data->coordonnees_administratives) : null,
+        ':date_creation_entreprise' => isset($data->date_creation_entreprise) ? $data->date_creation_entreprise : null,
         ':representant_nom' => isset($data->representant_nom) ? Sanitizer::sanitizeString($data->representant_nom) : null,
         ':representant_prenom' => isset($data->representant_prenom) ? Sanitizer::sanitizeString($data->representant_prenom) : null,
+        ':representant_fonction' => isset($data->representant_fonction) ? Sanitizer::sanitizeString($data->representant_fonction) : null,
         ':representant_telephone' => isset($data->representant_telephone) ? Sanitizer::sanitizeString($data->representant_telephone) : null,
         ':representant_email' => isset($data->representant_email) ? Sanitizer::sanitizeEmail($data->representant_email) : null,
         ':montant_mensuel' => $data->montant_mensuel ?? 5000

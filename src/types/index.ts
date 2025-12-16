@@ -162,8 +162,8 @@ export interface DemandeDomiciliation {
     telephone: string
     email: string
   }
-  domaineActivite: string
-  adresseSiegeSocial: string
+  activitePrincipale: string
+  adresseActuelle: string
   capital?: number
   dateCreationEntreprise?: Date
   statut: 'en_attente' | 'validee' | 'rejetee'

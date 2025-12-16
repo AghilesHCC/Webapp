@@ -148,7 +148,7 @@ const MyCompany = () => {
       case 'personne_physique': return 'PHYSIQUE'
       case 'auto_entrepreneur': return 'AUTO'
       case 'startup': return 'STARTUP'
-      case 'personne_morale': return formData.formeJuridique || 'SARL'
+      case 'personne_morale': return 'MORALE'
       default: return ''
     }
   }
