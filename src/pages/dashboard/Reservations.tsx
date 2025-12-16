@@ -7,6 +7,7 @@ import Card from '../../components/ui/Card'
 import Badge from '../../components/ui/Badge'
 import ReservationForm from '../../components/dashboard/ReservationForm'
 import { formatDate } from '../../utils/formatters'
+import { getEspaceTypeLabel, getReservationStatutColor } from '../../constants'
 
 const Reservations = () => {
   const { user } = useAuthStore()
@@ -26,14 +27,6 @@ const Reservations = () => {
   // Filtrer les réservations par userId plutôt que par utilisateur.id
   const userReservations = reservations.filter(r => r.userId === user.id)
 
-  const getStatusColor = (statut: string) => {
-    switch (statut) {
-      case 'confirmee': return 'success'
-      case 'en_attente': return 'warning'
-      case 'annulee': return 'danger'
-      default: return 'default'
-    }
-  }
 
   return (
     <div className="space-y-6">
@@ -61,7 +54,7 @@ const Reservations = () => {
               <div className="space-y-4">
                 <div className="flex justify-between items-start">
                   <h3 className="font-bold text-lg">{reservation.espace?.nom || 'Espace inconnu'}</h3>
-                  <Badge variant={getStatusColor(reservation.statut)}>
+                  <Badge variant={getReservationStatutColor(reservation.statut)}>
                     {reservation.statut}
                   </Badge>
                 </div>
@@ -78,7 +71,7 @@ const Reservations = () => {
                   {reservation.espace && (
                     <div className="flex items-center gap-2">
                       <MapPin className="w-4 h-4" />
-                      <span>{reservation.espace.type}</span>
+                      <span>{getEspaceTypeLabel(reservation.espace.type)}</span>
                     </div>
                   )}
                 </div>

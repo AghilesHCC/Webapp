@@ -778,28 +778,31 @@ const ERPSystem = () => {
         <Card className="p-6">
           <h3 className="text-lg font-semibold text-primary mb-4">Performance par Type d'Espace</h3>
           <div className="space-y-4">
-            {['bureau', 'open_space', 'salle_reunion'].map(type => {
+            {[
+              { value: 'box_4', label: 'Box 4 places' },
+              { value: 'box_3', label: 'Box 3 places' },
+              { value: 'open_space', label: 'Open Space' },
+              { value: 'salle_reunion', label: 'Salle de Reunion' },
+              { value: 'poste_informatique', label: 'Poste Informatique' }
+            ].map(({ value: type, label }) => {
               const espacesType = espaces.filter(e => e.type === type);
-              const reservationsType = reservations.filter(r => r.espace.type === type);
+              const reservationsType = reservations.filter(r => r.espace?.type === type);
               const caType = reservationsType.reduce((sum, r) => sum + r.montantTotal, 0);
-              const typeLabels: Record<string, string> = {
-                'bureau': 'Bureaux Privés',
-                'open_space': 'Open Space',
-                'salle_reunion': 'Salles de Réunion'
-              };
               const percentage = reservations.length > 0
                 ? (reservationsType.length / reservations.length * 100).toFixed(0)
                 : 0;
+
+              if (espacesType.length === 0) return null;
 
               return (
                 <div key={type} className="space-y-2">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
                       <Building className="w-5 h-5 text-gray-400" />
-                      <span className="font-medium text-gray-700">{typeLabels[type]}</span>
+                      <span className="font-medium text-gray-700">{label}</span>
                     </div>
                     <div className="flex items-center gap-4">
-                      <span className="text-sm text-gray-600">{reservationsType.length} réservations</span>
+                      <span className="text-sm text-gray-600">{reservationsType.length} reservations</span>
                       <span className="text-sm font-semibold text-green-600">{formatCurrency(caType, 'DZD')}</span>
                     </div>
                   </div>

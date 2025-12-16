@@ -24,6 +24,13 @@ import Card from '../../../components/ui/Card'
 import Modal from '../../../components/ui/Modal'
 import Input from '../../../components/ui/Input'
 import toast from 'react-hot-toast'
+import {
+  ESPACE_TYPE_OPTIONS,
+  DEFAULT_ESPACE_TYPE,
+  getEspaceTypeLabel,
+  getEspaceTypeColor,
+  type EspaceType
+} from '../../../constants'
 
 const equipementsList = [
   { id: 'wifi', label: 'WiFi', icon: Wifi },
@@ -45,7 +52,7 @@ const Spaces = () => {
 
   const [formData, setFormData] = useState({
     nom: '',
-    type: 'box_4',
+    type: DEFAULT_ESPACE_TYPE as EspaceType,
     capacite: 1,
     prixHeure: 0,
     prixDemiJournee: 0,
@@ -107,7 +114,7 @@ const Spaces = () => {
   const resetForm = () => {
     setFormData({
       nom: '',
-      type: 'box_4',
+      type: DEFAULT_ESPACE_TYPE as EspaceType,
       capacite: 1,
       prixHeure: 0,
       prixDemiJournee: 0,
@@ -177,27 +184,6 @@ const Spaces = () => {
     capaciteTotal: espaces.reduce((sum, e) => sum + (e.capacite || 0), 0)
   }
 
-  const getTypeLabel = (type: string) => {
-    switch (type) {
-      case 'box_4': return 'Box 4 places'
-      case 'box_3': return 'Box 3 places'
-      case 'open_space': return 'Open Space'
-      case 'salle_reunion': return 'Salle de Reunion'
-      case 'poste_informatique': return 'Poste Informatique'
-      default: return type
-    }
-  }
-
-  const getTypeColor = (type: string) => {
-    switch (type) {
-      case 'box_4': return 'bg-blue-100 text-blue-800'
-      case 'box_3': return 'bg-blue-100 text-blue-800'
-      case 'open_space': return 'bg-teal-100 text-teal-800'
-      case 'salle_reunion': return 'bg-green-100 text-green-800'
-      case 'poste_informatique': return 'bg-amber-100 text-amber-800'
-      default: return 'bg-gray-100 text-gray-800'
-    }
-  }
 
   return (
     <div className="space-y-6">
@@ -280,11 +266,9 @@ const Spaces = () => {
               className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent"
             >
               <option value="all">Tous les types</option>
-              <option value="box_4">Box 4 places</option>
-              <option value="box_3">Box 3 places</option>
-              <option value="open_space">Open Space</option>
-              <option value="salle_reunion">Salle de Reunion</option>
-              <option value="poste_informatique">Poste Informatique</option>
+              {ESPACE_TYPE_OPTIONS.map(opt => (
+                <option key={opt.value} value={opt.value}>{opt.label}</option>
+              ))}
             </select>
 
             <select
@@ -337,8 +321,8 @@ const Spaces = () => {
                   <div className="flex justify-between items-start">
                     <div className="flex-1">
                       <h3 className="font-bold text-lg text-gray-900">{space.nom}</h3>
-                      <span className={`inline-block px-2 py-1 rounded text-xs font-medium mt-1 ${getTypeColor(space.type)}`}>
-                        {getTypeLabel(space.type)}
+                      <span className={`inline-block px-2 py-1 rounded text-xs font-medium mt-1 ${getEspaceTypeColor(space.type)}`}>
+                        {getEspaceTypeLabel(space.type)}
                       </span>
                     </div>
                     <div className={`px-3 py-1 rounded-full text-xs font-medium ${space.disponible ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
@@ -421,15 +405,13 @@ const Spaces = () => {
             <label className="block text-sm font-medium text-gray-700 mb-2">Type d'espace</label>
             <select
               value={formData.type}
-              onChange={(e) => setFormData({ ...formData, type: e.target.value })}
+              onChange={(e) => setFormData({ ...formData, type: e.target.value as EspaceType })}
               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent"
               required
             >
-              <option value="box_4">Box 4 places</option>
-              <option value="box_3">Box 3 places</option>
-              <option value="open_space">Open Space</option>
-              <option value="salle_reunion">Salle de Reunion</option>
-              <option value="poste_informatique">Poste Informatique</option>
+              {ESPACE_TYPE_OPTIONS.map(opt => (
+                <option key={opt.value} value={opt.value}>{opt.label}</option>
+              ))}
             </select>
           </div>
 

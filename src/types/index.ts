@@ -1,3 +1,7 @@
+import type { EspaceType, ReservationStatut, UserRole, UserStatut, DomiciliationStatut, TypeReservation } from '../constants'
+
+export type { EspaceType, ReservationStatut, UserRole, UserStatut, DomiciliationStatut, TypeReservation }
+
 export type TypeEntreprise =
   | 'auto_entrepreneur'
   | 'eurl'
@@ -69,7 +73,7 @@ export interface User {
 export interface Espace {
   id: string
   nom: string
-  type: string
+  type: EspaceType
   capacite: number
   prixHeure: number
   prixDemiJournee: number
@@ -90,11 +94,11 @@ export interface Reservation {
   userId: string
   espaceId: string
   utilisateur?: User
-  espace?: Espace | { id: string; nom: string; type: string }
+  espace?: Espace | { id: string; nom: string; type: EspaceType }
   dateDebut: Date | string
   dateFin: Date | string
-  statut: 'confirmee' | 'en_attente' | 'annulee' | 'en_cours' | 'terminee'
-  typeReservation?: string
+  statut: ReservationStatut
+  typeReservation?: TypeReservation
   montantTotal: number
   montantPaye?: number
   modePaiement?: string

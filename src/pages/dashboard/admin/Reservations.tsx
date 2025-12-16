@@ -20,6 +20,7 @@ import Button from '../../../components/ui/Button'
 import Input from '../../../components/ui/Input'
 import { formatDate, formatCurrency } from '../../../utils/formatters'
 import toast from 'react-hot-toast'
+import { getReservationStatutColor, getReservationStatutLabel, RESERVATION_STATUTS } from '../../../constants'
 
 const Reservations = () => {
   const { reservations, updateReservation, espaces } = useAppStore()
@@ -105,15 +106,6 @@ const Reservations = () => {
 
     return { total, enAttente, confirmees, annulees, revenuTotal }
   }, [reservations])
-
-  const getStatusColor = (statut: string) => {
-    switch (statut) {
-      case 'confirmee': return 'success'
-      case 'en_attente': return 'warning'
-      case 'annulee': return 'danger'
-      default: return 'default'
-    }
-  }
 
   const exportToCSV = () => {
     const headers = ['Date', 'Utilisateur', 'Espace', 'Début', 'Fin', 'Montant', 'Statut']
@@ -215,9 +207,11 @@ const Reservations = () => {
               className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent"
             >
               <option value="tous">Tous les statuts</option>
-              <option value="en_attente">En attente</option>
-              <option value="confirmee">Confirmées</option>
-              <option value="annulee">Annulées</option>
+              <option value={RESERVATION_STATUTS.EN_ATTENTE}>En attente</option>
+              <option value={RESERVATION_STATUTS.CONFIRMEE}>Confirmees</option>
+              <option value={RESERVATION_STATUTS.ANNULEE}>Annulees</option>
+              <option value={RESERVATION_STATUTS.EN_COURS}>En cours</option>
+              <option value={RESERVATION_STATUTS.TERMINEE}>Terminees</option>
             </select>
 
             <select
@@ -343,9 +337,8 @@ const Reservations = () => {
                     </div>
 
                     <div className="flex flex-col items-end gap-2">
-                      <Badge variant={getStatusColor(res.statut)}>
-                        {res.statut === 'confirmee' ? 'Confirmée' :
-                         res.statut === 'en_attente' ? 'En attente' : 'Annulée'}
+                      <Badge variant={getReservationStatutColor(res.statut)}>
+                        {getReservationStatutLabel(res.statut)}
                       </Badge>
 
                       {res.statut === 'en_attente' && (
