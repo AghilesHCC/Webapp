@@ -52,8 +52,20 @@ try {
 
     foreach ($allowedFields as $field) {
         if (isset($data->$field)) {
+            $value = $data->$field;
+
+            // Convertir les dates ISO au format MySQL
+            if ($field === 'date_debut' || $field === 'date_fin') {
+                try {
+                    $dateObj = new DateTime($value);
+                    $value = $dateObj->format('Y-m-d H:i:s');
+                } catch (Exception $e) {
+                    Response::error("Format de date invalide pour $field", 400);
+                }
+            }
+
             $updateFields[] = "$field = :$field";
-            $params[":$field"] = $data->$field;
+            $params[":$field"] = $value;
         }
     }
 

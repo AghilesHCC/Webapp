@@ -19,6 +19,16 @@ try {
         Response::error("Données manquantes", 400);
     }
 
+    // Convertir les dates ISO au format MySQL
+    try {
+        $date_debut = new DateTime($data->date_debut);
+        $date_fin = new DateTime($data->date_fin);
+        $date_debut_mysql = $date_debut->format('Y-m-d H:i:s');
+        $date_fin_mysql = $date_fin->format('Y-m-d H:i:s');
+    } catch (Exception $e) {
+        Response::error("Format de date invalide", 400);
+    }
+
     // Valider le nombre de participants
     $participants = isset($data->participants) ? (int)$data->participants : 1;
     if ($participants < 1) {
@@ -70,8 +80,8 @@ try {
         $stmt = $db->prepare($query);
         $stmt->execute([
             ':espace_id' => $data->espace_id,
-            ':debut' => $data->date_debut,
-            ':fin' => $data->date_fin
+            ':debut' => $date_debut_mysql,
+            ':fin' => $date_fin_mysql
         ]);
 
         $conflits = $stmt->fetchAll();
@@ -81,9 +91,7 @@ try {
         }
 
         // CALCULER LE MONTANT CÔTÉ SERVEUR (ne pas faire confiance au client)
-        $debut = new DateTime($data->date_debut);
-        $fin = new DateTime($data->date_fin);
-        $heures = ($fin->getTimestamp() - $debut->getTimestamp()) / 3600;
+        $heures = ($date_fin->getTimestamp() - $date_debut->getTimestamp()) / 3600;
 
         if ($heures <= 0) {
             $db->rollBack();
@@ -199,8 +207,8 @@ try {
             ':id' => $reservation_id,
             ':user_id' => $auth['id'],
             ':espace_id' => $data->espace_id,
-            ':date_debut' => $data->date_debut,
-            ':date_fin' => $data->date_fin,
+            ':date_debut' => $date_debut_mysql,
+            ':date_fin' => $date_fin_mysql,
             ':statut' => 'en_attente',
             ':type_reservation' => $type_reservation,
             ':montant_total' => $montant_total,
