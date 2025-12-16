@@ -35,7 +35,7 @@ try {
     $db = Database::getInstance()->getConnection();
 
     // Construire dynamiquement la requête UPDATE
-    // Mapping camelCase -> snake_case
+    // Mapping camelCase -> snake_case et snake_case direct
     $fieldMapping = [
         'nom' => 'nom',
         'prenom' => 'prenom',
@@ -48,17 +48,26 @@ try {
         'commune' => 'commune',
         'avatar' => 'avatar',
         'typeEntreprise' => 'type_entreprise',
+        'type_entreprise' => 'type_entreprise',
         'nif' => 'nif',
         'nis' => 'nis',
         'registreCommerce' => 'registre_commerce',
+        'registre_commerce' => 'registre_commerce',
         'articleImposition' => 'article_imposition',
+        'article_imposition' => 'article_imposition',
         'numeroAutoEntrepreneur' => 'numero_auto_entrepreneur',
+        'numero_auto_entrepreneur' => 'numero_auto_entrepreneur',
         'raisonSociale' => 'raison_sociale',
+        'raison_sociale' => 'raison_sociale',
         'dateCreationEntreprise' => 'date_creation_entreprise',
+        'date_creation_entreprise' => 'date_creation_entreprise',
         'capital' => 'capital',
         'siegeSocial' => 'siege_social',
+        'siege_social' => 'siege_social',
         'activitePrincipale' => 'activite_principale',
-        'formeJuridique' => 'forme_juridique'
+        'activite_principale' => 'activite_principale',
+        'formeJuridique' => 'forme_juridique',
+        'forme_juridique' => 'forme_juridique'
     ];
 
     // L'admin peut aussi changer le rôle et le statut
