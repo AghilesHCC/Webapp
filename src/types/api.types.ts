@@ -102,6 +102,7 @@ export interface ApiDomiciliation {
   commentaire_admin?: string
   date_validation?: string
   date_creation: string
+  created_at: string
   updated_at: string
   utilisateur?: ApiUser
   wilaya?: string
