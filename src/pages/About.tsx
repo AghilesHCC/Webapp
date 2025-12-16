@@ -246,9 +246,9 @@ const About = () => {
             >
               <div className="bg-gradient-to-br from-accent/5 to-teal/5 rounded-2xl p-8 border-2 border-accent/20">
                 <div className="flex items-center gap-4 mb-6">
-                  <div className="h-16 w-32 bg-gray-200 rounded-lg flex items-center justify-center text-gray-700 font-bold text-lg">NOVIHOST</div>
+                  <img src="/novihost-logo.png" alt="Novihost" className="h-12 w-auto" />
                   <div className="h-12 w-px bg-accent/30"></div>
-                  <div className="text-2xl font-bold text-primary">COFFICE</div>
+                  <img src="/logo.png" alt="Coffice" className="h-10 w-auto" />
                 </div>
                 <h3 className="text-2xl font-bold text-primary mb-4">
                   Partenariat Novihost × Coffice
