@@ -330,8 +330,9 @@ export const useAppStore = create<AppState>()(
       loadReservations: async () => {
         try {
           const response = await apiClient.getReservations()
-          if (response.success && response.data && Array.isArray(response.data)) {
-            const reservations = response.data.map((r: any) => ({
+          if (response.success && response.data) {
+            const reservationsData = Array.isArray(response.data) ? response.data : response.data.data
+            const reservations = (reservationsData || []).map((r: any) => ({
               id: r.id,
               userId: r.user_id,
               espaceId: r.espace_id,
@@ -523,13 +524,16 @@ export const useAppStore = create<AppState>()(
       loadUsers: async () => {
         try {
           const response = await apiClient.getUsers()
-          if (response.success && response.data && Array.isArray(response.data)) {
-            const users = response.data.map((u: any) => ({
-              ...u,
-              dateCreation: u.created_at,
-              derniereConnexion: u.last_login
-            }))
-            set({ users })
+          if (response.success && response.data) {
+            const usersData = Array.isArray(response.data) ? response.data : response.data.data
+            if (Array.isArray(usersData)) {
+              const users = usersData.map((u: any) => ({
+                ...u,
+                dateCreation: u.created_at,
+                derniereConnexion: u.derniere_connexion
+              }))
+              set({ users })
+            }
           }
         } catch (error) {
           // Erreur silencieuse
