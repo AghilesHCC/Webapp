@@ -6,7 +6,7 @@ import { DataTable, Column, getStatusBadge } from '../../../components/admin/Dat
 import Modal from '../../../components/ui/Modal'
 import Card from '../../../components/ui/Card'
 import Button from '../../../components/ui/Button'
-import { formatDate } from '../../../utils/formatters'
+import { formatDate, formatPrice } from '../../../utils/formatters'
 import type { Reservation } from '../../../types'
 
 export default function Reservations() {
@@ -106,7 +106,7 @@ export default function Reservations() {
       sortable: true,
       render: (reservation) => (
         <span className="text-sm font-medium text-gray-900">
-          {reservation.montantTotal.toLocaleString()} DA
+          {formatPrice(reservation.montantTotal, false)}
         </span>
       ),
     },
@@ -178,7 +178,7 @@ export default function Reservations() {
         <Card className="p-6">
           <p className="text-sm text-gray-600">Revenu Total</p>
           <p className="text-2xl font-bold text-blue-600 mt-1">
-            {stats.totalRevenu.toLocaleString()} DA
+            {formatPrice(stats.totalRevenu, false)}
           </p>
         </Card>
       </div>
@@ -241,7 +241,7 @@ export default function Reservations() {
             <div>
               <h3 className="text-lg font-semibold mb-2">Montant</h3>
               <p className="text-xl font-bold text-blue-600">
-                {selectedReservation.montantTotal.toLocaleString()} DA
+                {formatPrice(selectedReservation.montantTotal, false)}
               </p>
             </div>
 
