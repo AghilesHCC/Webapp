@@ -33,6 +33,7 @@ try {
 
 } catch (Exception $e) {
     error_log("Espaces error: " . $e->getMessage());
-    Response::serverError();
+    error_log("Espaces trace: " . $e->getTraceAsString());
+    Response::error("Erreur serveur: " . $e->getMessage(), 500);
 }
 ?>

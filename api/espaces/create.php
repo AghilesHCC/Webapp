@@ -51,6 +51,7 @@ try {
 
 } catch (Exception $e) {
     error_log("Create espace error: " . $e->getMessage());
-    Response::serverError();
+    error_log("Create espace trace: " . $e->getTraceAsString());
+    Response::error("Erreur serveur: " . $e->getMessage(), 500);
 }
 ?>
