@@ -63,7 +63,6 @@ const Parrainages = () => {
       }
       setStats(statsData)
     } catch (error) {
-      console.error('Erreur chargement parrainages:', error)
       toast.error('Erreur lors du chargement')
     } finally {
       setLoading(false)

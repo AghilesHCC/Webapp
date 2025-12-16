@@ -57,7 +57,6 @@ const CodesPromo = () => {
       const response = await apiClient.getCodesPromo()
       setCodes((response.data || []) as any[])
     } catch (error) {
-      console.error('Erreur chargement codes promo:', error)
       toast.error('Erreur lors du chargement')
     } finally {
       setLoading(false)

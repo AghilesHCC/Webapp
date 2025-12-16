@@ -33,7 +33,6 @@ const Users = () => {
       try {
         await Promise.all([loadUsers(), loadReservations()])
       } catch (error) {
-        console.error('Erreur chargement utilisateurs:', error)
         toast.error('Erreur lors du chargement des utilisateurs')
       } finally {
         setIsLoading(false)

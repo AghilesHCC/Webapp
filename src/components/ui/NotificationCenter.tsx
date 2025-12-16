@@ -57,7 +57,7 @@ const NotificationCenter: React.FC = () => {
       setNotifications(data)
       setUnreadCount(data.filter((n: Notification) => !n.lue).length)
     } catch (error) {
-      console.error('Erreur chargement notifications:', error)
+      // Erreur silencieuse
     }
   }
 
@@ -66,7 +66,7 @@ const NotificationCenter: React.FC = () => {
       await apiClient.markNotificationRead(id)
       loadNotifications()
     } catch (error) {
-      console.error('Erreur marquage lu:', error)
+      // Erreur silencieuse
     }
   }
 
@@ -77,7 +77,7 @@ const NotificationCenter: React.FC = () => {
       await apiClient.markAllNotificationsRead()
       loadNotifications()
     } catch (error) {
-      console.error('Erreur marquage tout lu:', error)
+      // Erreur silencieuse
     }
   }
 
@@ -86,7 +86,7 @@ const NotificationCenter: React.FC = () => {
       await apiClient.deleteNotification(id)
       loadNotifications()
     } catch (error) {
-      console.error('Erreur suppression notification:', error)
+      // Erreur silencieuse
     }
   }
 

@@ -47,7 +47,7 @@ const AdminDashboard = () => {
           setStats(response.data as AdminStats)
         }
       } catch (error) {
-        console.error('Erreur chargement stats admin:', error)
+        // Erreur silencieuse
       } finally {
         setLoading(false)
       }
@@ -517,7 +517,7 @@ const DashboardHome = () => {
           ])
         }
       } catch (error) {
-        console.error('Erreur chargement:', error)
+        // Erreur silencieuse
       } finally {
         if (mounted) {
           setLoading(false)

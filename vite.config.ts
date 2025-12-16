@@ -1,19 +1,25 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
-import { copyFileSync } from 'fs'
+import { copyFileSync, existsSync, mkdirSync } from 'fs'
 import { resolve } from 'path'
 
-// https://vitejs.dev/config/
 export default defineConfig({
   plugins: [
     react(),
     {
       name: 'copy-htaccess',
-      closeBundle() {
-        copyFileSync(
-          resolve(__dirname, '.htaccess'),
-          resolve(__dirname, 'dist', '.htaccess')
-        )
+      writeBundle() {
+        try {
+          const htaccessPath = resolve(__dirname, '.htaccess')
+          const distPath = resolve(__dirname, 'dist')
+          if (!existsSync(distPath)) {
+            mkdirSync(distPath, { recursive: true })
+          }
+          if (existsSync(htaccessPath)) {
+            copyFileSync(htaccessPath, resolve(distPath, '.htaccess'))
+          }
+        } catch (e) {
+        }
       }
     }
   ],
@@ -30,7 +36,6 @@ export default defineConfig({
         manualChunks: {
           'react-vendor': ['react', 'react-dom', 'react-router-dom'],
           'ui-vendor': ['framer-motion', 'lucide-react'],
-          'form-vendor': ['react-hook-form', 'react-datepicker'],
           'utils': ['date-fns', 'zustand'],
           'dashboard': [
             './src/pages/Dashboard.tsx',
@@ -42,10 +47,6 @@ export default defineConfig({
             './src/pages/dashboard/admin/Users.tsx',
             './src/pages/dashboard/admin/Spaces.tsx',
             './src/pages/dashboard/admin/Reservations.tsx'
-          ],
-          'erp': [
-            './src/components/erp/Dashboard.tsx',
-            './src/components/erp/AnalyticsAndReporting.tsx'
           ]
         }
       }

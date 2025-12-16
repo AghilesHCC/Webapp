@@ -96,7 +96,7 @@ export const useAppStore = create<AppState>()(
 
           set({ initialized: true })
         } catch (error) {
-          console.error('Erreur initialisation:', error)
+          // Erreur silencieuse
         } finally {
           set({ loading: false })
         }
@@ -127,7 +127,7 @@ export const useAppStore = create<AppState>()(
             set({ espaces })
           }
         } catch (error) {
-          console.error('Erreur chargement espaces:', error)
+          // Erreur silencieuse
         }
       },
 
@@ -196,7 +196,7 @@ export const useAppStore = create<AppState>()(
             set({ abonnements })
           }
         } catch (error) {
-          console.error('Erreur chargement abonnements:', error)
+          // Erreur silencieuse
         }
       },
 
@@ -261,7 +261,7 @@ export const useAppStore = create<AppState>()(
             set({ reservations })
           }
         } catch (error) {
-          console.error('Erreur chargement reservations:', error)
+          // Erreur silencieuse
         }
       },
 
@@ -398,7 +398,6 @@ export const useAppStore = create<AppState>()(
             set({ demandesDomiciliation: [], domiciliationServices: [] })
           }
         } catch (error) {
-          console.error('Erreur chargement domiciliations:', error)
           set({ demandesDomiciliation: [], domiciliationServices: [] })
         }
       },
@@ -432,7 +431,7 @@ export const useAppStore = create<AppState>()(
             set({ users })
           }
         } catch (error) {
-          console.error('Erreur chargement utilisateurs:', error)
+          // Erreur silencieuse
         }
       },
 

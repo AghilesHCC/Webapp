@@ -60,7 +60,6 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
       await logout()
       navigate('/connexion', { replace: true })
     } catch (error) {
-      console.error('Erreur déconnexion:', error)
       navigate('/connexion', { replace: true })
     }
   }

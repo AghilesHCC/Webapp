@@ -72,7 +72,7 @@ const Register = () => {
         codeParrainage: data.codeParrainage,
       })
     } catch (error) {
-      console.error('Register error:', error)
+      // L'erreur est déjà affichée par le store via toast
     } finally {
       setIsLoading(false)
     }

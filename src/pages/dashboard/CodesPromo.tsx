@@ -33,7 +33,6 @@ const CodesPromo = () => {
       )
       setCodes(activeCodes)
     } catch (error) {
-      console.error('Erreur chargement codes:', error)
       toast.error('Erreur lors du chargement')
     } finally {
       setLoading(false)

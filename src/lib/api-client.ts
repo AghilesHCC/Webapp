@@ -21,10 +21,6 @@ class ApiClient {
   constructor() {
     this.token = localStorage.getItem('auth_token')
     this.refreshToken = localStorage.getItem('refresh_token')
-    console.log('[API Client] Initialized with URL:', API_URL)
-    if (this.token) {
-      console.log('[API Client] Token found in localStorage')
-    }
   }
 
   setToken(token: string | null, refreshToken?: string | null) {
@@ -161,11 +157,9 @@ class ApiClient {
     if (!isPublicEndpoint) {
       // VERIFICATION 1: Token complètement expiré
       if (this.isTokenExpired()) {
-        console.log('[API Client] Token expired, refreshing BEFORE request...')
         try {
           await this.refreshAccessToken()
         } catch (error) {
-          console.error('[API Client] Cannot refresh expired token:', error)
           this.handleAuthError()
           return {
             success: false,
@@ -175,17 +169,15 @@ class ApiClient {
       }
       // VERIFICATION 2: Token expire bientôt
       else if (this.isTokenExpiringSoon() && retryWithRefresh) {
-        console.log('[API Client] Token expires soon, refreshing proactively...')
         try {
           await this.refreshAccessToken()
         } catch (error) {
-          console.warn('[API Client] Proactive refresh failed, will continue with current token')
+          // Continue avec le token actuel
         }
       }
 
       const currentToken = this.getToken()
       if (!currentToken) {
-        console.error('[API Client] No token available for authenticated endpoint')
         this.handleAuthError()
         return {
           success: false,
@@ -194,19 +186,15 @@ class ApiClient {
       }
 
       headers['Authorization'] = `Bearer ${currentToken}`
-      console.log('[API Client] Added Authorization header with token:', currentToken.substring(0, 20) + '...')
     }
 
     const url = `${API_URL}${endpoint}`
-    console.log('[API Client] Request:', options.method || 'GET', url)
 
     try {
       const response = await fetch(url, {
         ...options,
         headers
       })
-
-      console.log('[API Client] Response status:', response.status)
 
       let data: any
       const contentType = response.headers.get('content-type')
@@ -215,11 +203,9 @@ class ApiClient {
         data = await response.json()
       } else {
         const text = await response.text()
-        console.error('[API Client] Non-JSON response:', text.substring(0, 200))
 
         // Retry sur erreurs serveur
         if (response.status >= 500 && retryCount < MAX_RETRIES) {
-          console.log(`[API Client] Server error, retrying... (${retryCount + 1}/${MAX_RETRIES})`)
           await new Promise(resolve => setTimeout(resolve, 1000 * (retryCount + 1)))
           return this.request<T>(endpoint, options, retryWithRefresh, retryCount + 1)
         }
@@ -229,21 +215,15 @@ class ApiClient {
 
       // Gestion spéciale de l'erreur 401
       if (response.status === 401) {
-        console.error('[API Client] 401 Unauthorized received')
-
         if (retryWithRefresh && !isPublicEndpoint) {
-          console.log('[API Client] Attempting token refresh after 401...')
           try {
             await this.refreshAccessToken()
-            console.log('[API Client] Token refreshed successfully, retrying request...')
             return this.request<T>(endpoint, options, false, retryCount)
           } catch (refreshError) {
-            console.error('[API Client] Refresh failed after 401:', refreshError)
             this.handleAuthError()
             throw new Error(data.error || 'Session expirée. Veuillez vous reconnecter.')
           }
         } else {
-          console.error('[API Client] Cannot retry 401 (no refresh or public endpoint)')
           this.handleAuthError()
           throw new Error(data.error || 'Session expirée. Veuillez vous reconnecter.')
         }
@@ -255,11 +235,8 @@ class ApiClient {
 
       return data
     } catch (error: any) {
-      console.error('[API Client] Request error:', error)
-
       // Retry sur erreurs réseau
       if (error.message === 'Failed to fetch' && retryCount < MAX_RETRIES) {
-        console.log(`[API Client] Network error, retrying... (${retryCount + 1}/${MAX_RETRIES})`)
         await new Promise(resolve => setTimeout(resolve, 1000 * (retryCount + 1)))
         return this.request<T>(endpoint, options, retryWithRefresh, retryCount + 1)
       }
@@ -279,7 +256,6 @@ class ApiClient {
   }
 
   private handleAuthError() {
-    console.warn('[API Client] Session expirée - nettoyage complet')
     this.setToken(null, null)
 
     if (typeof window !== 'undefined') {
@@ -290,7 +266,6 @@ class ApiClient {
       const isProtectedPage = protectedPaths.some(path => currentPath.startsWith(path) || currentPath.includes(path))
 
       if (isProtectedPage && !currentPath.includes('/connexion')) {
-        console.log('[API Client] Redirection vers login - session expirée')
         window.location.href = '/connexion?session_expired=1'
       }
     }
@@ -331,7 +306,6 @@ class ApiClient {
       })
     } catch (error) {
       // Continuer même si l'appel échoue
-      console.warn('Erreur lors de l\'appel logout API:', error)
     } finally {
       // Toujours nettoyer le token côté client
       this.setToken(null)

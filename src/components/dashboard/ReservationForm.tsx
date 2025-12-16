@@ -92,7 +92,7 @@ const ReservationForm: React.FC<ReservationFormProps> = ({ isOpen, onClose, sele
           setEstimatedAmount(amount)
         }
       } catch (error) {
-        console.error('Erreur calcul montant:', error)
+        // Erreur silencieuse
       }
     }
   }, [watchedFields.espaceId, watchedFields.dateDebut, watchedFields.dateFin, watchedFields.codePromo, calculateReservationAmount])
@@ -200,7 +200,6 @@ const ReservationForm: React.FC<ReservationFormProps> = ({ isOpen, onClose, sele
       toast.success('Réservation créée avec succès!')
       handleClose()
     } catch (error: any) {
-      console.error('Erreur réservation:', error)
       const errorMsg = error?.message || error?.error || 'Erreur lors de la création de la réservation'
       toast.error(errorMsg)
     }

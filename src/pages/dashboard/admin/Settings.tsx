@@ -56,7 +56,7 @@ const loadSettings = (): AllSettings => {
       return { ...defaultSettings, ...JSON.parse(saved) }
     }
   } catch (e) {
-    console.error('Erreur chargement parametres:', e)
+    // Erreur silencieuse
   }
   return defaultSettings
 }
@@ -65,7 +65,7 @@ const saveSettings = (settings: AllSettings): void => {
   try {
     localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings))
   } catch (e) {
-    console.error('Erreur sauvegarde parametres:', e)
+    // Erreur silencieuse
   }
 }
 

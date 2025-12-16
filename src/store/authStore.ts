@@ -83,13 +83,11 @@ export const useAuthStore = create<AuthState>()(
 
           if (!response.success || !response.data) {
             // Token invalide ou expiré - nettoyer SILENCIEUSEMENT
-            console.log('[Auth] Token invalide lors de l\'initialisation')
             apiClient.setToken(null)
             set({ user: null, isAdmin: false, isInitialized: true, isLoading: false })
             return
           }
 
-          console.log('[Auth] Utilisateur initialisé:', response.data)
           set({
             user: response.data as User,
             isAdmin: (response.data as User).role === 'admin',
@@ -97,7 +95,6 @@ export const useAuthStore = create<AuthState>()(
             isLoading: false
           })
         } catch (error) {
-          console.error('[Auth] Initialize error:', error)
           apiClient.setToken(null)
           set({ user: null, isAdmin: false, isInitialized: true, isLoading: false })
         }
@@ -126,7 +123,6 @@ export const useAuthStore = create<AuthState>()(
           toast.success('Connexion réussie')
         } catch (error: any) {
           set({ isLoading: false })
-          console.error('Login error:', error)
           toast.error(error.message || 'Erreur de connexion')
           throw error
         }
@@ -160,7 +156,6 @@ export const useAuthStore = create<AuthState>()(
           }
         } catch (error: any) {
           set({ isLoading: false })
-          console.error('Register error:', error)
           toast.error(error.message || 'Erreur lors de l\'inscription')
           throw error
         }
@@ -168,7 +163,6 @@ export const useAuthStore = create<AuthState>()(
 
       logout: async () => {
         try {
-          console.log('[Auth] Déconnexion en cours...')
           await apiClient.logout()
 
           if (typeof window !== 'undefined') {
@@ -178,7 +172,6 @@ export const useAuthStore = create<AuthState>()(
           set({ user: null, isAdmin: false, isInitialized: true })
           toast.success('Déconnexion réussie')
         } catch (error) {
-          console.error('Logout error:', error)
           apiClient.setToken(null, null)
 
           if (typeof window !== 'undefined') {
@@ -212,7 +205,6 @@ export const useAuthStore = create<AuthState>()(
           toast.success('Profil mis à jour')
         } catch (error: any) {
           set({ isLoading: false })
-          console.error('Update profile error:', error)
           toast.error(error.message || 'Erreur lors de la mise à jour')
           throw error
         }
@@ -226,7 +218,7 @@ export const useAuthStore = create<AuthState>()(
             set({ user: response.data as User })
           }
         } catch (error) {
-          console.error('Load user error:', error)
+          // Erreur silencieuse
         }
       }
     }),

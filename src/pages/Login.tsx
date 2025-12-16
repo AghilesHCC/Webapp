@@ -47,7 +47,6 @@ const Login = () => {
       await login(data.email, data.password)
       navigate('/app')
     } catch (error) {
-      console.error('Login error:', error)
       // L'erreur est déjà affichée par le store via toast
     } finally {
       setIsLoading(false)
