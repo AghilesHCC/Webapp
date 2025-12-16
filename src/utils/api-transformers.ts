@@ -79,26 +79,20 @@ export const transformEspace = (apiEspace: ApiEspace): Espace => ({
   etage: apiEspace.etage
 })
 
-export const transformReservation = (apiReservation: ApiReservation): Reservation => ({
-  id: apiReservation.id,
-  userId: apiReservation.user_id,
-  espaceId: apiReservation.espace_id,
-  dateDebut: apiReservation.date_debut,
-  dateFin: apiReservation.date_fin,
-  statut: apiReservation.statut as Reservation['statut'],
-  typeReservation: apiReservation.type_reservation as Reservation['typeReservation'],
-  montantTotal: apiReservation.montant_total,
-  montantPaye: apiReservation.montant_paye,
-  modePaiement: apiReservation.mode_paiement,
-  reduction: apiReservation.reduction,
-  codePromo: apiReservation.code_promo,
-  notes: apiReservation.notes,
-  participants: apiReservation.participants,
-  dateCreation: apiReservation.date_creation ? new Date(apiReservation.date_creation) : undefined,
-  createdAt: apiReservation.created_at,
-  updatedAt: apiReservation.updated_at,
-  utilisateur: apiReservation.utilisateur ? transformUser(apiReservation.utilisateur) : undefined,
-  espace: apiReservation.espace ? (
+export const transformReservation = (apiReservation: ApiReservation): Reservation => {
+  const utilisateur = (apiReservation as any).user_email ? {
+    id: apiReservation.user_id,
+    email: (apiReservation as any).user_email,
+    nom: (apiReservation as any).user_nom || '',
+    prenom: (apiReservation as any).user_prenom || '',
+    role: 'user' as const
+  } as User : (apiReservation.utilisateur ? transformUser(apiReservation.utilisateur) : undefined)
+
+  const espace = (apiReservation as any).espace_nom ? {
+    id: apiReservation.espace_id,
+    nom: (apiReservation as any).espace_nom,
+    type: (apiReservation as any).espace_type
+  } as Partial<Espace> as Espace : (apiReservation.espace ? (
     'prix_heure' in apiReservation.espace
       ? transformEspace(apiReservation.espace as ApiEspace)
       : ({
@@ -106,8 +100,30 @@ export const transformReservation = (apiReservation: ApiReservation): Reservatio
           nom: (apiReservation.espace as any).nom,
           type: (apiReservation.espace as any).type
         } as Partial<Espace> as Espace)
-  ) : undefined
-})
+  ) : undefined)
+
+  return {
+    id: apiReservation.id,
+    userId: apiReservation.user_id,
+    espaceId: apiReservation.espace_id,
+    dateDebut: apiReservation.date_debut,
+    dateFin: apiReservation.date_fin,
+    statut: apiReservation.statut as Reservation['statut'],
+    typeReservation: apiReservation.type_reservation as Reservation['typeReservation'],
+    montantTotal: apiReservation.montant_total,
+    montantPaye: apiReservation.montant_paye,
+    modePaiement: apiReservation.mode_paiement,
+    reduction: apiReservation.reduction,
+    codePromo: apiReservation.code_promo,
+    notes: apiReservation.notes,
+    participants: apiReservation.participants,
+    dateCreation: apiReservation.date_creation ? new Date(apiReservation.date_creation) : new Date(apiReservation.created_at),
+    createdAt: apiReservation.created_at,
+    updatedAt: apiReservation.updated_at,
+    utilisateur,
+    espace
+  }
+}
 
 export const transformDomiciliation = (apiDom: ApiDomiciliation): DemandeDomiciliation => {
   const representantLegal = {
@@ -118,10 +134,18 @@ export const transformDomiciliation = (apiDom: ApiDomiciliation): DemandeDomicil
     email: apiDom.representant_email || ''
   }
 
+  const utilisateur = (apiDom as any).email ? {
+    id: apiDom.user_id,
+    email: (apiDom as any).email,
+    nom: (apiDom as any).nom || '',
+    prenom: (apiDom as any).prenom || '',
+    role: 'user' as const
+  } as User : (apiDom.utilisateur ? transformUser(apiDom.utilisateur) : undefined)
+
   return {
     id: apiDom.id,
     userId: apiDom.user_id,
-    utilisateur: apiDom.utilisateur ? transformUser(apiDom.utilisateur) : {} as User,
+    utilisateur,
     raisonSociale: apiDom.raison_sociale,
     formeJuridique: apiDom.forme_juridique as DemandeDomiciliation['formeJuridique'],
     nif: apiDom.nif || '',
@@ -138,7 +162,7 @@ export const transformDomiciliation = (apiDom: ApiDomiciliation): DemandeDomicil
     statut: apiDom.statut,
     commentaireAdmin: apiDom.commentaire_admin,
     dateValidation: apiDom.date_validation ? new Date(apiDom.date_validation) : undefined,
-    dateCreation: new Date(apiDom.date_creation),
+    dateCreation: new Date(apiDom.date_creation || apiDom.created_at),
     updatedAt: new Date(apiDom.updated_at)
   }
 }

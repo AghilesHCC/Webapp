@@ -161,12 +161,16 @@ const ReservationForm: React.FC<ReservationFormProps> = ({ isOpen, onClose, sele
   }
 
   const onSubmit = async (data: ReservationFormType) => {
+    if (currentStep !== 3) {
+      toast.error('Veuillez compléter toutes les étapes avant de confirmer')
+      return
+    }
+
     if (!user) {
       toast.error('Vous devez être connecté pour réserver')
       return
     }
 
-    // Validation finale avant envoi
     if (!data.espaceId) {
       toast.error('Veuillez sélectionner un espace')
       return
@@ -328,7 +332,7 @@ const ReservationForm: React.FC<ReservationFormProps> = ({ isOpen, onClose, sele
 
   return (
     <Modal isOpen={isOpen} onClose={handleClose} title="Nouvelle Réservation" size="xl">
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-6" noValidate>
         {/* Indicateur d'étapes */}
         <div className="relative">
           <div className="flex items-center justify-between mb-8">
@@ -717,12 +721,19 @@ const ReservationForm: React.FC<ReservationFormProps> = ({ isOpen, onClose, sele
             </Button>
           )}
           {currentStep < 3 ? (
-            <Button type="button" onClick={nextStep} className={currentStep === 1 ? 'w-full' : 'flex-1'}>
+            <Button
+              type="button"
+              onClick={(e) => {
+                e.preventDefault()
+                nextStep()
+              }}
+              className={currentStep === 1 ? 'w-full' : 'flex-1'}
+            >
               Suivant
               <ChevronRight className="w-4 h-4 ml-2" />
             </Button>
           ) : (
-            <Button type="submit" loading={isSubmitting} className="flex-1">
+            <Button type="submit" loading={isSubmitting} className="flex-1" disabled={currentStep !== 3}>
               <Check className="w-4 h-4 mr-2" />
               Confirmer la réservation
             </Button>
