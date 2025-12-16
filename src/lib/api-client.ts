@@ -3,8 +3,6 @@
  * Remplace complètement Supabase
  */
 
-import { objectToSnakeCase } from '../utils/case-converter'
-
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost/api'
 
 interface ApiResponse<T = any> {
@@ -292,7 +290,16 @@ class ApiClient {
   }) {
     return this.request('/auth/register.php', {
       method: 'POST',
-      body: JSON.stringify(objectToSnakeCase(data))
+      body: JSON.stringify({
+        email: data.email,
+        password: data.password,
+        nom: data.nom,
+        prenom: data.prenom,
+        telephone: data.telephone,
+        profession: data.profession,
+        entreprise: data.entreprise,
+        code_parrainage: data.codeParrainage
+      })
     })
   }
 
@@ -325,9 +332,42 @@ class ApiClient {
   }
 
   async updateUser(id: string, data: any) {
+    const apiData: Record<string, any> = {}
+    const fieldMap: Record<string, string> = {
+      nom: 'nom',
+      prenom: 'prenom',
+      telephone: 'telephone',
+      profession: 'profession',
+      entreprise: 'entreprise',
+      adresse: 'adresse',
+      bio: 'bio',
+      wilaya: 'wilaya',
+      commune: 'commune',
+      avatar: 'avatar',
+      role: 'role',
+      statut: 'statut',
+      typeEntreprise: 'type_entreprise',
+      nif: 'nif',
+      nis: 'nis',
+      registreCommerce: 'registre_commerce',
+      articleImposition: 'article_imposition',
+      numeroAutoEntrepreneur: 'numero_auto_entrepreneur',
+      raisonSociale: 'raison_sociale',
+      dateCreationEntreprise: 'date_creation_entreprise',
+      capital: 'capital',
+      siegeSocial: 'siege_social',
+      activitePrincipale: 'activite_principale',
+      formeJuridique: 'forme_juridique'
+    }
+    Object.keys(data).forEach(key => {
+      const apiKey = fieldMap[key] || key
+      if (data[key] !== undefined) {
+        apiData[apiKey] = data[key]
+      }
+    })
     return this.request(`/users/update.php?id=${id}`, {
       method: 'PUT',
-      body: JSON.stringify(objectToSnakeCase(data))
+      body: JSON.stringify(apiData)
     })
   }
 
@@ -349,14 +389,41 @@ class ApiClient {
   async createEspace(data: any) {
     return this.request('/espaces/create.php', {
       method: 'POST',
-      body: JSON.stringify(objectToSnakeCase(data))
+      body: JSON.stringify({
+        nom: data.nom,
+        type: data.type,
+        capacite: data.capacite,
+        prix_heure: data.prixHeure,
+        prix_demi_journee: data.prixDemiJournee,
+        prix_jour: data.prixJour,
+        prix_semaine: data.prixSemaine,
+        description: data.description,
+        equipements: data.equipements,
+        disponible: data.disponible,
+        etage: data.etage,
+        image_url: data.imageUrl
+      })
     })
   }
 
   async updateEspace(id: string, data: any) {
     return this.request('/espaces/update.php', {
       method: 'PUT',
-      body: JSON.stringify({ id, ...objectToSnakeCase(data) })
+      body: JSON.stringify({
+        id,
+        nom: data.nom,
+        type: data.type,
+        capacite: data.capacite,
+        prix_heure: data.prixHeure,
+        prix_demi_journee: data.prixDemiJournee,
+        prix_jour: data.prixJour,
+        prix_semaine: data.prixSemaine,
+        description: data.description,
+        equipements: data.equipements,
+        disponible: data.disponible,
+        etage: data.etage,
+        image_url: data.imageUrl
+      })
     })
   }
 
@@ -386,26 +453,38 @@ class ApiClient {
     codePromo?: string
     montantTotal?: number
   }) {
-    const apiData = {
-      ...objectToSnakeCase(data),
-      participants: data.participants || 1,
-      montant_total: data.montantTotal || 0,
-      statut: 'en_attente',
-      type_reservation: 'heure',
-      mode_paiement: null,
-      montant_paye: 0
-    }
-
     return this.request('/reservations/create.php', {
       method: 'POST',
-      body: JSON.stringify(apiData)
+      body: JSON.stringify({
+        espace_id: data.espaceId,
+        date_debut: data.dateDebut,
+        date_fin: data.dateFin,
+        participants: data.participants || 1,
+        notes: data.notes,
+        code_promo: data.codePromo,
+        montant_total: data.montantTotal || 0,
+        statut: 'en_attente',
+        type_reservation: 'heure',
+        mode_paiement: null,
+        montant_paye: 0
+      })
     })
   }
 
   async updateReservation(id: string, data: any) {
     return this.request('/reservations/update.php', {
       method: 'PUT',
-      body: JSON.stringify({ id, ...objectToSnakeCase(data) })
+      body: JSON.stringify({
+        id,
+        espace_id: data.espaceId,
+        date_debut: data.dateDebut,
+        date_fin: data.dateFin,
+        statut: data.statut,
+        notes: data.notes,
+        montant_total: data.montantTotal,
+        montant_paye: data.montantPaye,
+        mode_paiement: data.modePaiement
+      })
     })
   }
 
@@ -453,18 +532,27 @@ class ApiClient {
   }
 
   async updateDemandeDomiciliation(id: string, data: any) {
-    const apiData: any = { id }
+    const apiData: Record<string, any> = { id }
 
     if (data.representantLegal) {
       apiData.representant_nom = data.representantLegal.nom
       apiData.representant_prenom = data.representantLegal.prenom
       apiData.representant_telephone = data.representantLegal.telephone
       apiData.representant_email = data.representantLegal.email
-      const { representantLegal, ...rest } = data
-      Object.assign(apiData, objectToSnakeCase(rest))
-    } else {
-      Object.assign(apiData, objectToSnakeCase(data))
     }
+
+    if (data.raisonSociale !== undefined) apiData.raison_sociale = data.raisonSociale
+    if (data.formeJuridique !== undefined) apiData.forme_juridique = data.formeJuridique
+    if (data.capital !== undefined) apiData.capital = data.capital
+    if (data.nif !== undefined) apiData.nif = data.nif
+    if (data.nis !== undefined) apiData.nis = data.nis
+    if (data.registreCommerce !== undefined) apiData.registre_commerce = data.registreCommerce
+    if (data.articleImposition !== undefined) apiData.article_imposition = data.articleImposition
+    if (data.domaineActivite !== undefined) apiData.activite_principale = data.domaineActivite
+    if (data.adresseSiegeSocial !== undefined) apiData.adresse_actuelle = data.adresseSiegeSocial
+    if (data.dateCreationEntreprise !== undefined) apiData.date_creation_entreprise = data.dateCreationEntreprise
+    if (data.statut !== undefined) apiData.statut = data.statut
+    if (data.commentaireAdmin !== undefined) apiData.commentaire_admin = data.commentaireAdmin
 
     return this.request('/domiciliations/update.php', {
       method: 'PUT',
@@ -480,14 +568,39 @@ class ApiClient {
   async createAbonnement(data: any) {
     return this.request('/abonnements/create.php', {
       method: 'POST',
-      body: JSON.stringify(objectToSnakeCase(data))
+      body: JSON.stringify({
+        nom: data.nom,
+        type: data.type,
+        prix: data.prix,
+        prix_avec_domiciliation: data.prixAvecDomiciliation,
+        credits_mensuels: data.creditsMensuels || data.creditMensuel,
+        duree_mois: data.dureeMois,
+        description: data.description,
+        avantages: data.avantages,
+        actif: data.actif,
+        couleur: data.couleur,
+        ordre: data.ordre
+      })
     })
   }
 
   async updateAbonnement(id: string, data: any) {
     return this.request('/abonnements/update.php', {
       method: 'PUT',
-      body: JSON.stringify({ id, ...objectToSnakeCase(data) })
+      body: JSON.stringify({
+        id,
+        nom: data.nom,
+        type: data.type,
+        prix: data.prix,
+        prix_avec_domiciliation: data.prixAvecDomiciliation,
+        credits_mensuels: data.creditsMensuels || data.creditMensuel,
+        duree_mois: data.dureeMois,
+        description: data.description,
+        avantages: data.avantages,
+        actif: data.actif,
+        couleur: data.couleur,
+        ordre: data.ordre
+      })
     })
   }
 
@@ -526,14 +639,36 @@ class ApiClient {
   async createCodePromo(data: any) {
     return this.request('/codes-promo/create.php', {
       method: 'POST',
-      body: JSON.stringify(objectToSnakeCase(data))
+      body: JSON.stringify({
+        code: data.code,
+        type: data.type,
+        valeur: data.valeur,
+        date_debut: data.dateDebut,
+        date_fin: data.dateFin,
+        usage_max: data.usageMax,
+        usage_actuel: data.usageActuel || 0,
+        actif: data.actif,
+        type_reservation: data.typeReservation,
+        montant_minimum: data.montantMinimum
+      })
     })
   }
 
   async updateCodePromo(id: string, data: any) {
     return this.request(`/codes-promo/update.php?id=${encodeURIComponent(id)}`, {
       method: 'PUT',
-      body: JSON.stringify(objectToSnakeCase(data))
+      body: JSON.stringify({
+        code: data.code,
+        type: data.type,
+        valeur: data.valeur,
+        date_debut: data.dateDebut,
+        date_fin: data.dateFin,
+        usage_max: data.usageMax,
+        usage_actuel: data.usageActuel,
+        actif: data.actif,
+        type_reservation: data.typeReservation,
+        montant_minimum: data.montantMinimum
+      })
     })
   }
 
