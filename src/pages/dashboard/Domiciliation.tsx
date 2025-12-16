@@ -46,7 +46,15 @@ const Domiciliation = () => {
   }, [user, loadDemandesDomiciliation])
 
   const demande = user ? getUserDemandeDomiciliation(user.id) : null
-  const hasCompanyInfo = user?.raisonSociale && user?.nif
+
+  const hasCompanyInfo = (() => {
+    if (!user?.typeEntreprise) return false
+    const type = user.typeEntreprise
+    if (type === 'PHYSIQUE') return !!(user.siegeSocial && user.wilaya)
+    if (type === 'AUTO') return !!(user.raisonSociale && user.numeroAutoEntrepreneur)
+    if (type === 'STARTUP') return !!(user.raisonSociale && user.activitePrincipale)
+    return !!(user.raisonSociale && user.nif && user.formeJuridique)
+  })()
 
   const [formData, setFormData] = useState({
     raisonSociale: '',
@@ -66,9 +74,14 @@ const Domiciliation = () => {
 
   useEffect(() => {
     if (user && hasCompanyInfo) {
+      const type = user.typeEntreprise
+      const isPhysique = type === 'PHYSIQUE'
+      const isStartup = type === 'STARTUP'
+      const isAuto = type === 'AUTO'
+
       setFormData({
-        raisonSociale: user.raisonSociale || '',
-        formeJuridique: user.formeJuridique || '',
+        raisonSociale: isPhysique ? `${user.prenom} ${user.nom}` : (user.raisonSociale || ''),
+        formeJuridique: isPhysique ? 'Personne Physique' : (isStartup ? 'Startup' : (isAuto ? 'Auto-Entrepreneur' : (user.formeJuridique || ''))),
         nif: user.nif || '',
         nis: user.nis || '',
         registreCommerce: user.registreCommerce || '',
@@ -78,7 +91,7 @@ const Domiciliation = () => {
         representantLegal: {
           nom: user.nom || '',
           prenom: user.prenom || '',
-          fonction: '',
+          fonction: isPhysique ? 'Titulaire' : (isAuto ? 'Auto-Entrepreneur' : (isStartup ? 'Fondateur' : 'Gerant')),
           telephone: user.telephone || '',
           email: user.email || ''
         },
@@ -160,7 +173,8 @@ const Domiciliation = () => {
     if (currentStep > 1) setCurrentStep(currentStep - 1)
   }
 
-  const canProceedStep1 = formData.raisonSociale && formData.formeJuridique && formData.nif
+  const isPersonneMorale = user?.typeEntreprise && !['PHYSIQUE', 'AUTO', 'STARTUP'].includes(user.typeEntreprise)
+  const canProceedStep1 = formData.raisonSociale && formData.formeJuridique && (isPersonneMorale ? formData.nif : true)
   const canProceedStep2 = formData.representantLegal.nom && formData.representantLegal.prenom && formData.representantLegal.email
 
   return (
@@ -440,21 +454,23 @@ const Domiciliation = () => {
                   <select
                     value={formData.formeJuridique}
                     onChange={(e) => setFormData({ ...formData, formeJuridique: e.target.value })}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent"
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent disabled:bg-gray-50"
                     required
+                    disabled={!!user?.typeEntreprise}
                   >
-                    <option value="">Sélectionnez</option>
+                    <option value="">Selectionnez</option>
+                    <option value="Personne Physique">Personne Physique</option>
+                    <option value="Auto-Entrepreneur">Auto-Entrepreneur</option>
+                    <option value="Startup">Startup / Projet</option>
                     <option value="SARL">SARL</option>
                     <option value="EURL">EURL</option>
                     <option value="SPA">SPA</option>
                     <option value="SNC">SNC</option>
-                    <option value="EI">Entreprise Individuelle</option>
-                    <option value="AUTO">Auto-Entrepreneur</option>
                   </select>
                 </div>
 
                 <Input
-                  label="Domaine d'Activité"
+                  label="Domaine d'Activite"
                   icon={<Briefcase className="w-5 h-5" />}
                   value={formData.domaineActivite}
                   onChange={(e) => setFormData({ ...formData, domaineActivite: e.target.value })}
@@ -464,12 +480,12 @@ const Domiciliation = () => {
 
               <div className="grid grid-cols-2 gap-4">
                 <Input
-                  label="NIF"
+                  label={isPersonneMorale ? "NIF (requis)" : "NIF (optionnel)"}
                   icon={<Hash className="w-5 h-5" />}
                   value={formData.nif}
                   onChange={(e) => setFormData({ ...formData, nif: e.target.value })}
-                  required
-                  placeholder="099012345678901"
+                  required={isPersonneMorale}
+                  placeholder={isPersonneMorale ? "099012345678901" : "Si disponible"}
                 />
 
                 <Input
