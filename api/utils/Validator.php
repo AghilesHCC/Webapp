@@ -38,6 +38,26 @@ class Validator {
             return false;
         }
 
+        if (!preg_match('/[A-Z]/', $password)) {
+            $this->errors[$fieldName] = "Le mot de passe doit contenir au moins une majuscule";
+            return false;
+        }
+
+        if (!preg_match('/[a-z]/', $password)) {
+            $this->errors[$fieldName] = "Le mot de passe doit contenir au moins une minuscule";
+            return false;
+        }
+
+        if (!preg_match('/[0-9]/', $password)) {
+            $this->errors[$fieldName] = "Le mot de passe doit contenir au moins un chiffre";
+            return false;
+        }
+
+        if (!preg_match('/[^A-Za-z0-9]/', $password)) {
+            $this->errors[$fieldName] = "Le mot de passe doit contenir au moins un caractère spécial";
+            return false;
+        }
+
         return true;
     }
 

@@ -1,8 +1,7 @@
-import React from 'react'
 import { Link } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import {
-  Users, Calendar, Headphones, Gift, ArrowRight, Check, Coffee, Presentation, Mic,
+  Users, ArrowRight, Check, Coffee, Presentation,
   Wifi, Clock, Shield, Target, Zap, Star, MapPin, Building2, Phone, Mail
 } from 'lucide-react'
 import { useSEO } from '../hooks/useSEO'

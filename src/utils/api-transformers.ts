@@ -27,7 +27,7 @@ export const transformUser = (apiUser: ApiUser): User => ({
   telephone: apiUser.telephone,
   role: apiUser.role,
   statut: apiUser.statut,
-  dateCreation: new Date(apiUser.date_creation || apiUser.created_at),
+  dateCreation: new Date(apiUser.date_creation || apiUser.created_at || Date.now()),
   created_at: apiUser.created_at,
   createdAt: apiUser.created_at,
   derniereConnexion: apiUser.derniere_connexion ? new Date(apiUser.derniere_connexion) : undefined,
@@ -72,8 +72,8 @@ export const transformEspace = (apiEspace: ApiEspace): Espace => ({
   equipements: typeof apiEspace.equipements === 'string'
     ? JSON.parse(apiEspace.equipements)
     : apiEspace.equipements,
-  createdAt: new Date(apiEspace.created_at),
-  updatedAt: new Date(apiEspace.updated_at),
+  createdAt: new Date(apiEspace.created_at || Date.now()),
+  updatedAt: new Date(apiEspace.updated_at || Date.now()),
   image: apiEspace.image,
   imageUrl: apiEspace.image_url,
   etage: apiEspace.etage
@@ -117,7 +117,7 @@ export const transformReservation = (apiReservation: ApiReservation): Reservatio
     codePromo: apiReservation.code_promo,
     notes: apiReservation.notes,
     participants: apiReservation.participants,
-    dateCreation: apiReservation.date_creation ? new Date(apiReservation.date_creation) : new Date(apiReservation.created_at),
+    dateCreation: apiReservation.date_creation ? new Date(apiReservation.date_creation) : (apiReservation.created_at ? new Date(apiReservation.created_at) : new Date()),
     createdAt: apiReservation.created_at,
     updatedAt: apiReservation.updated_at,
     utilisateur,
@@ -140,7 +140,13 @@ export const transformDomiciliation = (apiDom: ApiDomiciliation): DemandeDomicil
     nom: (apiDom as any).nom || '',
     prenom: (apiDom as any).prenom || '',
     role: 'user' as const
-  } as User : (apiDom.utilisateur ? transformUser(apiDom.utilisateur) : undefined)
+  } as User : (apiDom.utilisateur ? transformUser(apiDom.utilisateur) : {
+    id: apiDom.user_id,
+    email: '',
+    nom: '',
+    prenom: '',
+    role: 'user' as const
+  } as User)
 
   return {
     id: apiDom.id,
@@ -162,8 +168,8 @@ export const transformDomiciliation = (apiDom: ApiDomiciliation): DemandeDomicil
     statut: apiDom.statut,
     commentaireAdmin: apiDom.commentaire_admin,
     dateValidation: apiDom.date_validation ? new Date(apiDom.date_validation) : undefined,
-    dateCreation: new Date(apiDom.date_creation || apiDom.created_at),
-    updatedAt: new Date(apiDom.updated_at)
+    dateCreation: new Date(apiDom.date_creation || apiDom.created_at || Date.now()),
+    updatedAt: new Date(apiDom.updated_at || Date.now())
   }
 }
 
@@ -172,8 +178,8 @@ export const transformCodePromo = (apiCode: ApiCodePromo): CodePromo => ({
   code: apiCode.code,
   type: apiCode.type,
   valeur: apiCode.valeur,
-  dateDebut: new Date(apiCode.date_debut),
-  dateFin: new Date(apiCode.date_fin),
+  dateDebut: new Date(apiCode.date_debut || Date.now()),
+  dateFin: new Date(apiCode.date_fin || Date.now()),
   utilisationsMax: apiCode.usage_max,
   utilisationsActuelles: apiCode.usage_actuel,
   actif: apiCode.actif,
@@ -185,8 +191,8 @@ export const transformCodePromo = (apiCode: ApiCodePromo): CodePromo => ({
   typesApplication: apiCode.type_reservation ? [apiCode.type_reservation as 'reservation' | 'domiciliation'] : undefined,
   premiereCommandeSeulement: apiCode.premiere_commande_seulement,
   codeParrainageRequis: apiCode.code_parrainage_requis,
-  createdAt: new Date(apiCode.created_at),
-  updatedAt: new Date(apiCode.updated_at)
+  createdAt: new Date(apiCode.created_at || Date.now()),
+  updatedAt: new Date(apiCode.updated_at || Date.now())
 })
 
 export const transformParrainage = (apiParrainage: ApiParrainage): Parrainage => ({
@@ -197,12 +203,12 @@ export const transformParrainage = (apiParrainage: ApiParrainage): Parrainage =>
   statut: apiParrainage.statut,
   recompenseParrain: apiParrainage.recompense_parrain,
   recompenseFilleul: apiParrainage.recompense_filleul,
-  dateInscriptionFilleul: new Date(apiParrainage.date_inscription_filleul),
+  dateInscriptionFilleul: new Date(apiParrainage.date_inscription_filleul || Date.now()),
   dateValidation: apiParrainage.date_validation ? new Date(apiParrainage.date_validation) : undefined,
   dateRecompense: apiParrainage.date_recompense ? new Date(apiParrainage.date_recompense) : undefined,
   notes: apiParrainage.notes,
-  createdAt: new Date(apiParrainage.created_at),
-  updatedAt: new Date(apiParrainage.updated_at)
+  createdAt: new Date(apiParrainage.created_at || Date.now()),
+  updatedAt: new Date(apiParrainage.updated_at || Date.now())
 })
 
 export const transformAbonnement = (apiAbo: ApiAbonnement): Abonnement => ({
@@ -233,7 +239,7 @@ export const transformNotification = (apiNotif: ApiNotification): Notification =
   message: apiNotif.message,
   type: apiNotif.type,
   lu: apiNotif.lu,
-  dateCreation: new Date(apiNotif.date_creation)
+  dateCreation: new Date(apiNotif.date_creation || Date.now())
 })
 
 export const userToApi = (user: Partial<User>): Record<string, unknown> => {

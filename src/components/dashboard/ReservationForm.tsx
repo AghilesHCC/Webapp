@@ -25,7 +25,7 @@ import DateTimePicker from '../ui/DateTimePicker'
 import { useAppStore } from '../../store/store'
 import { useAuthStore } from '../../store/authStore'
 import { ReservationForm as ReservationFormType, Espace } from '../../types'
-import { format, addHours, isAfter, isBefore } from 'date-fns'
+import { format, isAfter, isBefore } from 'date-fns'
 import { fr } from 'date-fns/locale'
 import { apiClient } from '../../lib/api-client'
 
@@ -41,7 +41,6 @@ const ReservationForm: React.FC<ReservationFormProps> = ({ isOpen, onClose, sele
   const [currentStep, setCurrentStep] = useState(1)
   const [estimatedAmount, setEstimatedAmount] = useState(0)
   const [discount, setDiscount] = useState(0)
-  const [validatedPromoCode, setValidatedPromoCode] = useState<{codePromoId: string, reduction: number} | null>(null)
   const [isValidatingCode, setIsValidatingCode] = useState(false)
   const [codePromoValid, setCodePromoValid] = useState<boolean | null>(null)
   const [selectedSpace, setSelectedSpace] = useState<Espace | undefined>(selectedEspace)
@@ -103,7 +102,6 @@ const ReservationForm: React.FC<ReservationFormProps> = ({ isOpen, onClose, sele
     setIsValidatingCode(true)
     setCodePromoValid(null)
     setDiscount(0)
-    setValidatedPromoCode(null)
 
     try {
       const result = await apiClient.validateCodePromo(
@@ -115,21 +113,15 @@ const ReservationForm: React.FC<ReservationFormProps> = ({ isOpen, onClose, sele
       if (result.valid && result.codePromoId) {
         setCodePromoValid(true)
         setDiscount(result.reduction)
-        setValidatedPromoCode({
-          codePromoId: result.codePromoId,
-          reduction: result.reduction
-        })
         toast.success(`Code promo appliqué! -${result.reduction.toLocaleString()} DA`)
       } else {
         setCodePromoValid(false)
         setDiscount(0)
-        setValidatedPromoCode(null)
         toast.error(result.error || 'Code promo invalide')
       }
     } catch (error) {
       setCodePromoValid(false)
       setDiscount(0)
-      setValidatedPromoCode(null)
       toast.error('Erreur lors de la validation du code')
     } finally {
       setIsValidatingCode(false)
@@ -250,7 +242,6 @@ const ReservationForm: React.FC<ReservationFormProps> = ({ isOpen, onClose, sele
     setEstimatedAmount(0)
     setDiscount(0)
     setCodePromoValid(null)
-    setValidatedPromoCode(null)
     setSelectedSpace(undefined)
     setDuration(0)
     onClose()
@@ -314,21 +305,6 @@ const ReservationForm: React.FC<ReservationFormProps> = ({ isOpen, onClose, sele
     { number: 2, title: 'Date & Heure', icon: Calendar },
     { number: 3, title: 'Confirmation', icon: CheckCircle2 }
   ]
-
-  const getMinDateTime = () => {
-    const now = new Date()
-    now.setMinutes(now.getMinutes() + 30)
-    return format(now, "yyyy-MM-dd'T'HH:mm")
-  }
-
-  const getMinEndDateTime = () => {
-    if (watchedFields.dateDebut) {
-      const start = new Date(watchedFields.dateDebut)
-      start.setHours(start.getHours() + 1)
-      return format(start, "yyyy-MM-dd'T'HH:mm")
-    }
-    return getMinDateTime()
-  }
 
   return (
     <Modal isOpen={isOpen} onClose={handleClose} title="Nouvelle Réservation" size="xl">

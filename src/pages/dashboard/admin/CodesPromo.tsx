@@ -190,9 +190,9 @@ export default function CodesPromo() {
 
   const stats = {
     total: codesPromo.length,
-    actifs: codesPromo.filter(c => c.actif).length,
-    expires: codesPromo.filter(c => new Date(c.dateFin) < new Date()).length,
-    utilises: codesPromo.reduce((sum, c) => sum + c.utilisationsActuelles, 0),
+    actifs: codesPromo.filter((c: CodePromo) => c.actif).length,
+    expires: codesPromo.filter((c: CodePromo) => new Date(c.dateFin) < new Date()).length,
+    utilises: codesPromo.reduce((sum: number, c: CodePromo) => sum + c.utilisationsActuelles, 0),
   }
 
   return (

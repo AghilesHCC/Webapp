@@ -19,10 +19,17 @@ class Database {
     private function __construct() {
         self::loadEnv();
 
+        if (!isset($_ENV['DB_NAME'])) {
+            throw new Exception('DB_NAME environment variable is required');
+        }
+        if (!isset($_ENV['DB_USER'])) {
+            throw new Exception('DB_USER environment variable is required');
+        }
+
         $this->host = $_ENV['DB_HOST'] ?? 'localhost';
         $this->port = $_ENV['DB_PORT'] ?? '3306';
-        $this->db_name = $_ENV['DB_NAME'] ?? 'cofficed_coffice';
-        $this->username = $_ENV['DB_USER'] ?? 'cofficed_user';
+        $this->db_name = $_ENV['DB_NAME'];
+        $this->username = $_ENV['DB_USER'];
         $this->password = $_ENV['DB_PASSWORD'] ?? '';
         $this->charset = $_ENV['DB_CHARSET'] ?? 'utf8mb4';
     }

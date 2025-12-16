@@ -219,9 +219,9 @@ export default function Spaces() {
 
   const stats = {
     total: espaces.length,
-    disponibles: espaces.filter(e => e.disponible).length,
-    salleReunion: espaces.filter(e => e.type === 'salle_reunion').length,
-    booth: espaces.filter(e => e.type === 'box_4' || e.type === 'box_3').length,
+    disponibles: espaces.filter((e: Espace) => e.disponible).length,
+    salleReunion: espaces.filter((e: Espace) => e.type === 'salle_reunion').length,
+    booth: espaces.filter((e: Espace) => e.type === 'box_4' || e.type === 'box_3').length,
   }
 
   return (

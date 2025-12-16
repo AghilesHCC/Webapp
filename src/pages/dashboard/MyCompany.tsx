@@ -233,10 +233,6 @@ const MyCompany = () => {
     }
   }
 
-  const startNewProfile = () => {
-    setSelectedType(null)
-    setIsEditing(true)
-  }
 
   const selectedWilaya = wilayas.find(w => w.code === formData.wilaya)
   const communes = selectedWilaya?.communes || []

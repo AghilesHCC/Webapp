@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import { useState } from 'react'
 import { Calendar, Clock, MapPin, Plus } from 'lucide-react'
 import { useAuthStore } from '../../store/authStore'
 import { useAppStore } from '../../store/store'
@@ -11,7 +11,7 @@ import { getEspaceTypeLabel, getReservationStatutColor } from '../../constants'
 
 const Reservations = () => {
   const { user } = useAuthStore()
-  const { reservations, espaces } = useAppStore()
+  const { reservations } = useAppStore()
   const [showForm, setShowForm] = useState(false)
   const [selectedEspace, setSelectedEspace] = useState<any>(null)
 

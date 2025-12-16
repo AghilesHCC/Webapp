@@ -11,11 +11,7 @@ export interface PaymentResult {
   error?: string
 }
 
-export const processPayment = async (
-  amount: number,
-  paymentDetails: PaymentDetails,
-  customerId: string
-): Promise<PaymentResult> => {
+export const processPayment = async (): Promise<PaymentResult> => {
   try {
     return {
       success: true,

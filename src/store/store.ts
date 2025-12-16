@@ -610,7 +610,7 @@ export const useAppStore = create<AppState>()(
         const thisYear = today.getFullYear()
 
         const reservationsCeMois = state.reservations.filter(r => {
-          const date = new Date(r.dateCreation || r.createdAt)
+          const date = new Date(r.dateCreation || r.createdAt || Date.now())
           return date.getMonth() === thisMonth && date.getFullYear() === thisYear
         })
 
@@ -638,7 +638,7 @@ export const useAppStore = create<AppState>()(
           recentActivity: state.reservations.slice(0, 10).map(r => ({
             type: 'reservation',
             description: `Reservation ${r.espace?.nom || 'Espace'}`,
-            date: new Date(r.dateCreation || r.createdAt)
+            date: new Date(r.dateCreation || r.createdAt || Date.now())
           }))
         }
       },

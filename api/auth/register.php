@@ -10,8 +10,12 @@ require_once '../utils/Auth.php';
 require_once '../utils/Response.php';
 require_once '../utils/UuidHelper.php';
 require_once '../utils/Validator.php';
+require_once '../utils/RateLimiter.php';
 
 try {
+    $rateLimiter = new RateLimiter();
+    $rateLimiter->checkLimit('register');
+
     $data = json_decode(file_get_contents("php://input"));
 
     if (json_last_error() !== JSON_ERROR_NONE) {

@@ -1,7 +1,6 @@
 import { useQuery, useMutation } from '@tanstack/react-query'
 import { apiClient } from '../../lib/api-client'
 import { transformParrainage } from '../../utils/api-transformers'
-import type { ApiParrainage } from '../../types/api.types'
 
 export const useParrainages = (userId?: string) => {
   return useQuery({

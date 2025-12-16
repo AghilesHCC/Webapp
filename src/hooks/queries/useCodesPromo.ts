@@ -1,7 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { apiClient } from '../../lib/api-client'
 import { transformCodePromo } from '../../utils/api-transformers'
-import type { ApiCodePromo } from '../../types/api.types'
 import type { CodePromo } from '../../types'
 import toast from 'react-hot-toast'
 

@@ -1,9 +1,8 @@
-import React from 'react'
+import { useState, useEffect } from 'react'
 import { Link, Navigate, useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { Mail, Lock, ArrowRight } from 'lucide-react'
 import { useForm } from 'react-hook-form'
-import toast from 'react-hot-toast'
 import Button from '../components/ui/Button'
 import Input from '../components/ui/Input'
 import { useAuthStore } from '../store/authStore'
@@ -18,8 +17,8 @@ interface LoginForm {
 
 const Login = () => {
   const navigate = useNavigate()
-  const { login, user, isLoading: authLoading } = useAuthStore()
-  const [isLoading, setIsLoading] = React.useState(false)
+  const { login, user } = useAuthStore()
+  const [isLoading, setIsLoading] = useState(false)
 
   const {
     register,
@@ -28,10 +27,9 @@ const Login = () => {
   } = useForm<LoginForm>()
 
   // Vérifier si l'utilisateur arrive après une session expirée
-  React.useEffect(() => {
+  useEffect(() => {
     const params = new URLSearchParams(window.location.search)
     if (params.get('session_expired') === '1') {
-      toast.error('Votre session a expiré. Veuillez vous reconnecter.')
       // Nettoyer l'URL
       window.history.replaceState({}, '', '/connexion')
     }

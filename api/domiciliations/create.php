@@ -9,14 +9,31 @@ require_once '../config/database.php';
 require_once '../utils/Auth.php';
 require_once '../utils/Response.php';
 require_once '../utils/UuidHelper.php';
+require_once '../utils/Validator.php';
+require_once '../utils/Sanitizer.php';
 
 try {
     $auth = Auth::verifyAuth();
 
     $data = json_decode(file_get_contents("php://input"));
 
-    if (empty($data->raison_sociale) || empty($data->forme_juridique)) {
-        Response::error("Raison sociale et forme juridique requises", 400);
+    $validator = new Validator();
+
+    if (!$validator->validateRequired($data->raison_sociale ?? '', 'raison_sociale') ||
+        !$validator->validateRequired($data->forme_juridique ?? '', 'forme_juridique')) {
+        Response::error($validator->getErrors(), 400);
+    }
+
+    if (isset($data->representant_email) && !empty($data->representant_email)) {
+        if (!$validator->validateEmail($data->representant_email, 'representant_email')) {
+            Response::error($validator->getErrors(), 400);
+        }
+    }
+
+    if (isset($data->capital) && !empty($data->capital)) {
+        if (!$validator->validateNumeric($data->capital, 'capital')) {
+            Response::error($validator->getErrors(), 400);
+        }
     }
 
     $database = Database::getInstance();
@@ -55,22 +72,22 @@ try {
     $stmt->execute([
         ':id' => $id,
         ':user_id' => $auth['id'],
-        ':raison_sociale' => $data->raison_sociale,
-        ':forme_juridique' => $data->forme_juridique,
-        ':capital' => $data->capital ?? null,
-        ':activite_principale' => $data->activite_principale ?? null,
-        ':nif' => $data->nif ?? null,
-        ':nis' => $data->nis ?? null,
-        ':registre_commerce' => $data->registre_commerce ?? null,
-        ':article_imposition' => $data->article_imposition ?? null,
-        ':numero_auto_entrepreneur' => $data->numero_auto_entrepreneur ?? null,
-        ':wilaya' => $data->wilaya ?? null,
-        ':commune' => $data->commune ?? null,
-        ':adresse_actuelle' => $data->adresse_actuelle ?? null,
-        ':representant_nom' => $data->representant_nom ?? null,
-        ':representant_prenom' => $data->representant_prenom ?? null,
-        ':representant_telephone' => $data->representant_telephone ?? null,
-        ':representant_email' => $data->representant_email ?? null,
+        ':raison_sociale' => Sanitizer::sanitizeString($data->raison_sociale),
+        ':forme_juridique' => Sanitizer::sanitizeString($data->forme_juridique),
+        ':capital' => isset($data->capital) ? Sanitizer::sanitizeString($data->capital) : null,
+        ':activite_principale' => isset($data->activite_principale) ? Sanitizer::sanitizeString($data->activite_principale) : null,
+        ':nif' => isset($data->nif) ? Sanitizer::sanitizeString($data->nif) : null,
+        ':nis' => isset($data->nis) ? Sanitizer::sanitizeString($data->nis) : null,
+        ':registre_commerce' => isset($data->registre_commerce) ? Sanitizer::sanitizeString($data->registre_commerce) : null,
+        ':article_imposition' => isset($data->article_imposition) ? Sanitizer::sanitizeString($data->article_imposition) : null,
+        ':numero_auto_entrepreneur' => isset($data->numero_auto_entrepreneur) ? Sanitizer::sanitizeString($data->numero_auto_entrepreneur) : null,
+        ':wilaya' => isset($data->wilaya) ? Sanitizer::sanitizeString($data->wilaya) : null,
+        ':commune' => isset($data->commune) ? Sanitizer::sanitizeString($data->commune) : null,
+        ':adresse_actuelle' => isset($data->adresse_actuelle) ? Sanitizer::sanitizeString($data->adresse_actuelle) : null,
+        ':representant_nom' => isset($data->representant_nom) ? Sanitizer::sanitizeString($data->representant_nom) : null,
+        ':representant_prenom' => isset($data->representant_prenom) ? Sanitizer::sanitizeString($data->representant_prenom) : null,
+        ':representant_telephone' => isset($data->representant_telephone) ? Sanitizer::sanitizeString($data->representant_telephone) : null,
+        ':representant_email' => isset($data->representant_email) ? Sanitizer::sanitizeEmail($data->representant_email) : null,
         ':montant_mensuel' => $data->montant_mensuel ?? 5000
     ]);
 

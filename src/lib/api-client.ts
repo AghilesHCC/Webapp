@@ -202,7 +202,7 @@ class ApiClient {
       if (contentType && contentType.includes('application/json')) {
         data = await response.json()
       } else {
-        const text = await response.text()
+        await response.text()
 
         // Retry sur erreurs serveur
         if (response.status >= 500 && retryCount < MAX_RETRIES) {

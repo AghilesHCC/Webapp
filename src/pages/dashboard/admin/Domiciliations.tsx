@@ -1,5 +1,4 @@
 import { useState } from 'react'
-import { Building, Mail, Phone } from 'lucide-react'
 import { useDomiciliations, useUpdateDemandeDomiciliation } from '../../../hooks/queries'
 import { AdminPageLayout } from '../../../components/admin/AdminPageLayout'
 import { DataTable, Column, getStatusBadge } from '../../../components/admin/DataTable'
@@ -136,9 +135,9 @@ export default function Domiciliations() {
 
   const stats = {
     total: domiciliations.length,
-    enAttente: domiciliations.filter(d => d.statut === 'en_attente').length,
-    validees: domiciliations.filter(d => d.statut === 'validee').length,
-    rejetees: domiciliations.filter(d => d.statut === 'rejetee').length,
+    enAttente: domiciliations.filter((d: DemandeDomiciliation) => d.statut === 'en_attente').length,
+    validees: domiciliations.filter((d: DemandeDomiciliation) => d.statut === 'validee').length,
+    rejetees: domiciliations.filter((d: DemandeDomiciliation) => d.statut === 'rejetee').length,
   }
 
   return (

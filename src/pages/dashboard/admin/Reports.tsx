@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react'
+import { useMemo, useState } from 'react'
 import { motion } from 'framer-motion'
 import {
   BarChart3,
@@ -25,15 +25,14 @@ const Reports = () => {
     const today = new Date()
     const thisMonth = today.getMonth()
     const lastMonth = thisMonth - 1
-    const thisYear = today.getFullYear()
 
     // Réservations
     const totalReservations = reservations.length
     const reservationsThisMonth = reservations.filter(r =>
-      new Date(r.dateCreation).getMonth() === thisMonth
+      new Date(r.dateCreation || Date.now()).getMonth() === thisMonth
     ).length
     const reservationsLastMonth = reservations.filter(r =>
-      new Date(r.dateCreation).getMonth() === lastMonth
+      new Date(r.dateCreation || Date.now()).getMonth() === lastMonth
     ).length
 
     // Revenus
@@ -44,14 +43,14 @@ const Reports = () => {
     const revenuThisMonth = reservations
       .filter(r =>
         r.statut === 'confirmee' &&
-        new Date(r.dateCreation).getMonth() === thisMonth
+        new Date(r.dateCreation || Date.now()).getMonth() === thisMonth
       )
       .reduce((sum, r) => sum + r.montantTotal, 0)
 
     const revenuLastMonth = reservations
       .filter(r =>
         r.statut === 'confirmee' &&
-        new Date(r.dateCreation).getMonth() === lastMonth
+        new Date(r.dateCreation || Date.now()).getMonth() === lastMonth
       )
       .reduce((sum, r) => sum + r.montantTotal, 0)
 
@@ -59,7 +58,7 @@ const Reports = () => {
     const totalUsers = users.length
     const activeUsers = users.filter(u => u.statut === 'actif').length
     const newUsersThisMonth = users.filter(u =>
-      new Date(u.dateCreation).getMonth() === thisMonth
+      new Date(u.dateCreation || Date.now()).getMonth() === thisMonth
     ).length
 
     // Espaces

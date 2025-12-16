@@ -1,10 +1,8 @@
-import React, { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
-import { motion } from 'framer-motion'
 import {
   Home,
   Calendar,
-  CreditCard,
   Users,
   Settings,
   LogOut,
@@ -14,7 +12,6 @@ import {
   Building,
   FileText,
   BarChart3,
-  UserCog,
   RefreshCw,
   Tag,
   Gift

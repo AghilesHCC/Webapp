@@ -1,10 +1,10 @@
-import React, { useState } from 'react'
+import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
   ArrowRight, Users, Wifi, Coffee, Presentation, Volume2, PenTool,
-  Monitor, Clock, Star, Zap, Shield, TrendingUp, Calendar, Check,
-  ChevronRight, Sparkles, Gift, Target, Headphones, Building2
+  Monitor, Clock, Star, Zap, Shield, TrendingUp,
+  ChevronRight, Sparkles, Building2
 } from 'lucide-react'
 import { useSEO } from '../hooks/useSEO'
 import { IMAGES } from '../config/images'

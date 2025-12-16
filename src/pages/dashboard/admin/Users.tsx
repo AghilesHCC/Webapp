@@ -217,9 +217,9 @@ export default function Users() {
 
   const stats = {
     total: users.length,
-    active: users.filter(u => u.statut === 'actif').length,
-    admin: users.filter(u => u.role === 'admin').length,
-    recent: users.filter(u => {
+    active: users.filter((u: User) => u.statut === 'actif').length,
+    admin: users.filter((u: User) => u.role === 'admin').length,
+    recent: users.filter((u: User) => {
       const date = new Date(u.dateCreation || new Date())
       const now = new Date()
       const diff = now.getTime() - date.getTime()

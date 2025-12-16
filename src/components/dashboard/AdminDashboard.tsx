@@ -15,7 +15,7 @@ export function AdminDashboard() {
 
   const recentReservations = useMemo(() => {
     return reservations
-      .sort((a, b) => {
+      .sort((a: typeof reservations[0], b: typeof reservations[0]) => {
         const aDate = new Date(a.dateCreation || a.createdAt || 0)
         const bDate = new Date(b.dateCreation || b.createdAt || 0)
         return bDate.getTime() - aDate.getTime()
@@ -24,11 +24,11 @@ export function AdminDashboard() {
   }, [reservations])
 
   const pendingReservations = useMemo(() => {
-    return reservations.filter(r => r.statut === 'en_attente').length
+    return reservations.filter((r: typeof reservations[0]) => r.statut === 'en_attente').length
   }, [reservations])
 
   const pendingDomiciliations = useMemo(() => {
-    return domiciliations.filter(d => d.statut === 'en_attente').length
+    return domiciliations.filter((d: typeof domiciliations[0]) => d.statut === 'en_attente').length
   }, [domiciliations])
 
   if (statsLoading) {

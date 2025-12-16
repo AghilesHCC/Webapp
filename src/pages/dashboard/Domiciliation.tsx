@@ -173,7 +173,7 @@ const Domiciliation = () => {
     if (currentStep > 1) setCurrentStep(currentStep - 1)
   }
 
-  const isPersonneMorale = user?.typeEntreprise && !['PHYSIQUE', 'AUTO', 'STARTUP'].includes(user.typeEntreprise)
+  const isPersonneMorale = !!(user?.typeEntreprise && !['PHYSIQUE', 'AUTO', 'STARTUP'].includes(user.typeEntreprise))
   const canProceedStep1 = formData.raisonSociale && formData.formeJuridique && (isPersonneMorale ? formData.nif : true)
   const canProceedStep2 = formData.representantLegal.nom && formData.representantLegal.prenom && formData.representantLegal.email
 

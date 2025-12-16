@@ -73,14 +73,14 @@ export function DataTable<T>({
     filters.forEach(filter => {
       const filterValue = activeFilters[filter.key]
       if (filterValue && filterValue !== 'tous') {
-        result = result.filter(item => item[filter.key] === filterValue)
+        result = result.filter(item => (item as Record<string, unknown>)[filter.key] === filterValue)
       }
     })
 
     if (sortKey) {
-      result.sort((a, b) => {
-        const aVal = a[sortKey]
-        const bVal = b[sortKey]
+      result.sort((a: T, b: T) => {
+        const aVal = (a as Record<string, unknown>)[sortKey]
+        const bVal = (b as Record<string, unknown>)[sortKey]
 
         if (aVal == null) return 1
         if (bVal == null) return -1
@@ -205,7 +205,7 @@ export function DataTable<T>({
                       >
                         {column.render
                           ? column.render(item)
-                          : String(item[column.key] ?? '')}
+                          : String((item as Record<string, unknown>)[column.key] ?? '')}
                       </td>
                     ))}
                   </tr>
