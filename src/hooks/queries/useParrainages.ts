@@ -11,7 +11,9 @@ export const useParrainages = (userId?: string) => {
       if (!response.success || !response.data) {
         throw new Error(response.error || 'Failed to fetch parrainages')
       }
-      return (response.data as ApiParrainage[]).map(transformParrainage)
+      const responseData = response.data as any
+      const parrainages = Array.isArray(responseData) ? responseData : (responseData.data || [])
+      return parrainages.map(transformParrainage)
     },
   })
 }
