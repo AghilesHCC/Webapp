@@ -33,8 +33,8 @@ class Validator {
             return false;
         }
 
-        if (strlen($password) < 6) {
-            $this->errors[$fieldName] = "Le mot de passe doit contenir au moins 6 caractères";
+        if (strlen($password) < 8) {
+            $this->errors[$fieldName] = "Le mot de passe doit contenir au moins 8 caractères";
             return false;
         }
 

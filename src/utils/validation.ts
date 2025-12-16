@@ -15,8 +15,8 @@ export const validationRules = {
   password: {
     required: 'Mot de passe requis',
     minLength: {
-      value: 6,
-      message: 'Le mot de passe doit contenir au moins 6 caractères'
+      value: 8,
+      message: 'Le mot de passe doit contenir au moins 8 caractères'
     },
     maxLength: {
       value: 128,
@@ -138,7 +138,7 @@ export function isValidPhone(phone: string): boolean {
  * Valider manuellement un mot de passe
  */
 export function isValidPassword(password: string): boolean {
-  return password.length >= 6 && password.length <= 128
+  return password.length >= 8 && password.length <= 128
 }
 
 /**

@@ -50,7 +50,7 @@ ini_set('post_max_size', '10M');
 
 // Session configuration (si nécessaire pour certains endpoints)
 ini_set('session.cookie_httponly', '1');
-ini_set('session.cookie_secure', '0'); // Mettre à 1 en HTTPS
+ini_set('session.cookie_secure', $isProduction ? '1' : '0');
 ini_set('session.use_strict_mode', '1');
 ini_set('session.cookie_samesite', 'Lax');
 

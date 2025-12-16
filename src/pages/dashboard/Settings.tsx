@@ -55,14 +55,18 @@ const loadSettings = (): UserSettings => {
     if (saved) {
       return { ...defaultSettings, ...JSON.parse(saved) }
     }
-  } catch (e) {}
+  } catch (e) {
+    console.error('Erreur lors du chargement des parametres:', e)
+  }
   return defaultSettings
 }
 
 const saveSettings = (settings: UserSettings): void => {
   try {
     localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings))
-  } catch (e) {}
+  } catch (e) {
+    console.error('Erreur lors de la sauvegarde des parametres:', e)
+  }
 }
 
 const Settings = () => {
@@ -113,8 +117,8 @@ const Settings = () => {
       toast.error('Les mots de passe ne correspondent pas')
       return
     }
-    if (passwords.new.length < 6) {
-      toast.error('Le mot de passe doit contenir au moins 6 caracteres')
+    if (passwords.new.length < 8) {
+      toast.error('Le mot de passe doit contenir au moins 8 caracteres')
       return
     }
 
