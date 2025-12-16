@@ -13,7 +13,9 @@ export const useUsers = () => {
       if (!response.success || !response.data) {
         throw new Error(response.error || 'Failed to fetch users')
       }
-      return (response.data as ApiUser[]).map(transformUser)
+      const responseData = response.data as any
+      const users = Array.isArray(responseData) ? responseData : (responseData.data || [])
+      return users.map(transformUser)
     },
   })
 }

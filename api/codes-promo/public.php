@@ -16,9 +16,9 @@ try {
     $database = Database::getInstance();
     $db = $database->getConnection();
 
-    $query = "SELECT id, code, type, valeur, type_reduction, date_debut, date_fin,
+    $query = "SELECT id, code, type, valeur, date_debut, date_fin,
                      utilisations_max, utilisations_actuelles, description,
-                     montant_min, types_application, type_applicable
+                     montant_min, types_application, created_at
               FROM codes_promo
               WHERE actif = 1
               AND date_debut <= NOW()

@@ -13,7 +13,9 @@ export const useEspaces = () => {
       if (!response.success || !response.data) {
         throw new Error(response.error || 'Failed to fetch espaces')
       }
-      return (response.data as ApiEspace[]).map(transformEspace)
+      const responseData = response.data as any
+      const espaces = Array.isArray(responseData) ? responseData : (responseData.data || [])
+      return espaces.map(transformEspace)
     },
   })
 }

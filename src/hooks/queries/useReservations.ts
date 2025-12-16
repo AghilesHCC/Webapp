@@ -13,7 +13,9 @@ export const useReservations = (userId?: string) => {
       if (!response.success || !response.data) {
         throw new Error(response.error || 'Failed to fetch reservations')
       }
-      return (response.data as ApiReservation[]).map(transformReservation)
+      const responseData = response.data as any
+      const reservations = Array.isArray(responseData) ? responseData : (responseData.data || [])
+      return reservations.map(transformReservation)
     },
   })
 }

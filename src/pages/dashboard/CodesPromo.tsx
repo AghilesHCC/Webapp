@@ -24,10 +24,16 @@ const CodesPromo = () => {
     setLoading(true)
     try {
       const response = await apiClient.getPublicCodesPromo()
-      const data = (response.data || []) as any[]
-      setCodes(data)
+      if (response.success && response.data) {
+        const responseData = response.data as any
+        const codesData = Array.isArray(responseData) ? responseData : (responseData.data || [])
+        setCodes(codesData)
+      } else {
+        setCodes([])
+      }
     } catch (error) {
       toast.error('Erreur lors du chargement')
+      setCodes([])
     } finally {
       setLoading(false)
     }
@@ -45,11 +51,11 @@ const CodesPromo = () => {
       if (result.valid) {
         toast.success(`Code valide ! Réduction de ${result.reduction} DA`)
       } else {
-        toast.error(result.error || 'Code invalide')
+        toast.error(result.error || 'Code invalide ou expiré')
       }
       setVerifyCode('')
     } catch (error) {
-      toast.error('Erreur lors de la vérification')
+      toast.error('Code invalide ou expiré')
     } finally {
       setVerifying(false)
     }
@@ -70,7 +76,6 @@ const CodesPromo = () => {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
       <div>
         <h1 className="text-3xl font-display font-bold text-primary">
           Codes Promo
@@ -80,7 +85,6 @@ const CodesPromo = () => {
         </p>
       </div>
 
-      {/* Verify Code */}
       <Card>
         <h2 className="text-xl font-bold text-primary mb-4">Vérifier un Code</h2>
         <div className="flex gap-3">
@@ -101,7 +105,6 @@ const CodesPromo = () => {
         </p>
       </Card>
 
-      {/* Available Codes */}
       {codes.length > 0 && (
         <div>
           <h2 className="text-xl font-bold text-gray-900 mb-4">Codes Disponibles</h2>
@@ -114,7 +117,6 @@ const CodesPromo = () => {
               >
                 <Card className="hover:shadow-lg transition-shadow">
                   <div className="space-y-4">
-                    {/* Code */}
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
                         <Tag className="w-5 h-5 text-accent" />
@@ -129,16 +131,14 @@ const CodesPromo = () => {
                       </button>
                     </div>
 
-                    {/* Description */}
                     {code.description && (
                       <p className="text-sm text-gray-600">{code.description}</p>
                     )}
 
-                    {/* Value */}
                     <div className="p-4 bg-accent/5 rounded-lg">
                       <p className="text-sm text-gray-600 mb-1">Réduction</p>
                       <p className="text-2xl font-bold text-accent">
-                        {code.type_reduction === 'pourcentage' ? (
+                        {code.type === 'pourcentage' ? (
                           <span>-{code.valeur}%</span>
                         ) : (
                           <span>-{code.valeur} DA</span>
@@ -146,7 +146,6 @@ const CodesPromo = () => {
                       </p>
                     </div>
 
-                    {/* Info */}
                     <div className="space-y-2 text-sm">
                       <div className="flex justify-between">
                         <span className="text-gray-600">Valide jusqu'au:</span>
@@ -154,28 +153,30 @@ const CodesPromo = () => {
                           {format(new Date(code.date_fin), 'dd/MM/yyyy')}
                         </span>
                       </div>
-                      {code.montant_min_commande > 0 && (
+                      {code.montant_min > 0 && (
                         <div className="flex justify-between">
                           <span className="text-gray-600">Montant min:</span>
-                          <span className="font-medium">{code.montant_min_commande} DA</span>
+                          <span className="font-medium">{code.montant_min} DA</span>
                         </div>
                       )}
-                      <div className="flex justify-between">
-                        <span className="text-gray-600">Utilisations restantes:</span>
-                        <span className="font-medium">
-                          {code.utilisations_max - code.utilisations_actuelles}
-                        </span>
-                      </div>
+                      {code.utilisations_max && (
+                        <div className="flex justify-between">
+                          <span className="text-gray-600">Utilisations restantes:</span>
+                          <span className="font-medium">
+                            {code.utilisations_max - (code.utilisations_actuelles || 0)}
+                          </span>
+                        </div>
+                      )}
                     </div>
 
-                    {/* Applicable */}
                     <div className="pt-4 border-t">
                       <p className="text-xs text-gray-500 mb-2">Applicable à:</p>
                       <Badge variant="default" className="text-xs">
-                        {code.type_applicable === 'tous' ? 'Tous les services' :
-                         code.type_applicable === 'reservation' ? 'Réservations' :
-                         code.type_applicable === 'abonnement' ? 'Abonnements' :
-                         'Domiciliation'}
+                        {code.types_application ? 
+                          (typeof code.types_application === 'string' ? 
+                            JSON.parse(code.types_application).join(', ') : 
+                            code.types_application.join(', ')
+                          ) : 'Tous les services'}
                       </Badge>
                     </div>
                   </div>
@@ -200,7 +201,6 @@ const CodesPromo = () => {
         </Card>
       )}
 
-      {/* How to use */}
       <Card className="bg-gradient-to-br from-accent/5 to-teal/5">
         <h2 className="text-lg font-bold text-primary mb-3 flex items-center gap-2">
           <CheckCircle className="w-5 h-5 text-accent" />

@@ -13,7 +13,9 @@ export const useCodesPromo = () => {
       if (!response.success || !response.data) {
         throw new Error(response.error || 'Failed to fetch codes promo')
       }
-      return (response.data as ApiCodePromo[]).map(transformCodePromo)
+      const responseData = response.data as any
+      const codes = Array.isArray(responseData) ? responseData : (responseData.data || [])
+      return codes.map(transformCodePromo)
     },
   })
 }
@@ -26,7 +28,9 @@ export const usePublicCodesPromo = () => {
       if (!response.success || !response.data) {
         throw new Error(response.error || 'Failed to fetch public codes promo')
       }
-      return (response.data as ApiCodePromo[]).map(transformCodePromo)
+      const responseData = response.data as any
+      const codes = Array.isArray(responseData) ? responseData : (responseData.data || [])
+      return codes.map(transformCodePromo)
     },
   })
 }

@@ -13,7 +13,9 @@ export const useDomiciliations = () => {
       if (!response.success || !response.data) {
         throw new Error(response.error || 'Failed to fetch domiciliations')
       }
-      return (response.data as ApiDomiciliation[]).map(transformDomiciliation)
+      const responseData = response.data as any
+      const domiciliations = Array.isArray(responseData) ? responseData : (responseData.data || [])
+      return domiciliations.map(transformDomiciliation)
     },
   })
 }
@@ -26,7 +28,9 @@ export const useUserDomiciliation = (userId: string) => {
       if (!response.success || !response.data) {
         throw new Error(response.error || 'Failed to fetch user domiciliation')
       }
-      return transformDomiciliation(response.data as ApiDomiciliation)
+      const responseData = response.data as any
+      const domiciliation = Array.isArray(responseData) ? responseData[0] : responseData
+      return domiciliation ? transformDomiciliation(domiciliation as ApiDomiciliation) : null
     },
     enabled: !!userId,
   })
