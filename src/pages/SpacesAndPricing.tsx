@@ -25,9 +25,11 @@ const SpacesAndPricing = () => {
       tagline: 'Votre bureau flexible au coeur d\'Alger',
       description: 'Un environnement dynamique de 200m² avec 24 postes open space',
       image: IMAGES.spaces.coworking.url,
-      price: '1 200 DA TTC / jour',
-      priceValue: 1200,
-      period: 'jour',
+      price: '200 DA TTC / heure',
+      priceValue: 200,
+      period: 'heure',
+      priceHour: '200 DA TTC',
+      priceHalfDay: '600 DA TTC',
       priceFullDay: '1 200 DA TTC',
       color: 'from-blue-500 to-cyan-500',
       textColor: 'text-blue-600',
@@ -107,8 +109,9 @@ const SpacesAndPricing = () => {
           capacity: '2-4 personnes',
           image: IMAGES.booths.aures.url,
           description: 'Booth spacieux idéal pour petites équipes et réunions confidentielles',
-          priceFullDay: '6 000 DA TTC',
-          priceHalfDay: '3 500 DA TTC'
+          priceHour: '1 000 DA TTC',
+          priceHalfDay: '3 500 DA TTC',
+          priceFullDay: '6 000 DA TTC'
         },
         {
           name: 'Atlas',
@@ -116,8 +119,9 @@ const SpacesAndPricing = () => {
           capacity: '2-4 personnes',
           image: IMAGES.booths.atlas.url,
           description: 'Espace privé confortable avec vue panoramique',
-          priceFullDay: '6 000 DA TTC',
-          priceHalfDay: '3 500 DA TTC'
+          priceHour: '1 000 DA TTC',
+          priceHalfDay: '3 500 DA TTC',
+          priceFullDay: '6 000 DA TTC'
         },
         {
           name: 'Hoogar',
@@ -125,8 +129,9 @@ const SpacesAndPricing = () => {
           capacity: '2 personnes',
           image: IMAGES.booths.hoggar.url,
           description: 'Booth intimiste parfait pour le travail concentré ou les entretiens',
-          priceFullDay: '5 000 DA TTC',
-          priceHalfDay: '3 000 DA TTC'
+          priceHour: '800 DA TTC',
+          priceHalfDay: '3 000 DA TTC',
+          priceFullDay: '5 000 DA TTC'
         }
       ]
     }
@@ -313,9 +318,20 @@ const SpacesAndPricing = () => {
                     {/* Pricing Details */}
                     {activeSpace === 'coworking' && (
                       <div className="mb-6 p-4 bg-blue-50 rounded-xl border-2 border-blue-200">
-                        <h4 className="font-bold text-primary mb-3">Tarif :</h4>
-                        <div className="flex justify-center items-center">
-                          <span className="text-2xl font-bold text-blue-600">{activeSpaceData.priceFullDay}</span>
+                        <h4 className="font-bold text-primary mb-3">Tarifs :</h4>
+                        <div className="space-y-2">
+                          <div className="flex justify-between items-center">
+                            <span className="text-gray-700">À l'heure</span>
+                            <span className="font-bold text-blue-600">{activeSpaceData.priceHour}</span>
+                          </div>
+                          <div className="flex justify-between items-center">
+                            <span className="text-gray-700">Demi-journée</span>
+                            <span className="font-bold text-blue-600">{activeSpaceData.priceHalfDay}</span>
+                          </div>
+                          <div className="flex justify-between items-center">
+                            <span className="text-gray-700">Journée complète</span>
+                            <span className="font-bold text-blue-600">{activeSpaceData.priceFullDay}</span>
+                          </div>
                         </div>
                       </div>
                     )}
@@ -399,14 +415,18 @@ const SpacesAndPricing = () => {
                           </div>
                           <p className="text-gray-600 text-sm mb-4">{booth.description}</p>
 
-                          <div className="mb-6 p-3 bg-amber-50 rounded-lg">
-                            <div className="flex justify-between items-center mb-2">
-                              <span className="text-sm text-gray-600">Journee complete</span>
-                              <span className="font-bold text-amber-600">{booth.priceFullDay}</span>
+                          <div className="mb-6 p-3 bg-amber-50 rounded-lg space-y-2">
+                            <div className="flex justify-between items-center">
+                              <span className="text-sm text-gray-600">À l'heure</span>
+                              <span className="font-bold text-amber-600">{booth.priceHour}</span>
                             </div>
                             <div className="flex justify-between items-center">
-                              <span className="text-sm text-gray-600">Demi-journee</span>
+                              <span className="text-sm text-gray-600">Demi-journée</span>
                               <span className="font-bold text-amber-600">{booth.priceHalfDay}</span>
+                            </div>
+                            <div className="flex justify-between items-center">
+                              <span className="text-sm text-gray-600">Journée complète</span>
+                              <span className="font-bold text-amber-600">{booth.priceFullDay}</span>
                             </div>
                           </div>
 

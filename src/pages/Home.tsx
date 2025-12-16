@@ -248,7 +248,7 @@ const Home = () => {
                   </li>
                 </ul>
                 <div className="pt-4 border-t">
-                  <p className="text-2xl font-bold text-accent mb-3">À partir de 1 200 DA TTC/jour</p>
+                  <p className="text-2xl font-bold text-accent mb-3">À partir de 200 DA TTC/heure</p>
                   <Link to="/espaces" className="btn-primary w-full text-center">
                     Découvrir
                     <ArrowRight className="w-4 h-4 ml-2 inline" />

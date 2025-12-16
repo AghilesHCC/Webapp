@@ -298,11 +298,11 @@ INSERT INTO `users` (`id`, `email`, `password_hash`, `nom`, `prenom`, `role`, `s
 
 -- Espaces de travail par defaut
 INSERT INTO `espaces` (`id`, `nom`, `type`, `description`, `capacite`, `equipements`, `prix_heure`, `prix_demi_journee`, `prix_jour`, `prix_semaine`, `disponible`, `image_url`) VALUES
-(UUID(), 'Booth Atlas', 'booth', 'Espace de travail individuel calme et confortable', 1, '["WiFi", "Prise électrique", "Climatisation", "Éclairage LED"]', 500, 1500, 2500, 12000, 1, '/booth-atlas.jpeg'),
-(UUID(), 'Booth Aures', 'booth', 'Booth privatif pour appels et concentration', 1, '["WiFi", "Prise électrique", "Insonorisation", "Climatisation"]', 500, 1500, 2500, 12000, 1, '/booth-aures.jpeg'),
-(UUID(), 'Booth Hoggar', 'booth', 'Espace de travail premium avec vue', 1, '["WiFi", "Prise électrique", "Climatisation", "Vue panoramique"]', 600, 1800, 3000, 15000, 1, '/booth-hoggar.jpeg'),
-(UUID(), 'Espace Coworking', 'coworking', 'Grand espace de coworking partagé', 20, '["WiFi", "Imprimante", "Cuisine", "Climatisation", "Casiers"]', 300, 1000, 1500, 7000, 1, '/espace-coworking.jpeg'),
-(UUID(), 'Salle de Réunion', 'salle_reunion', 'Salle de réunion équipée pour vos meetings', 10, '["WiFi", "Vidéoprojecteur", "Tableau blanc", "Climatisation", "Système audio"]', 2000, 6000, 10000, 45000, 1, '/salle-reunion.jpeg');
+(UUID(), 'Booth Atlas', 'booth', 'Espace de travail individuel calme et confortable', 4, '["WiFi", "Prise électrique", "Climatisation", "Éclairage LED"]', 1000, 3500, 6000, 30000, 1, '/booth-atlas.jpeg'),
+(UUID(), 'Booth Aures', 'booth', 'Booth privatif pour appels et concentration', 4, '["WiFi", "Prise électrique", "Insonorisation", "Climatisation"]', 1000, 3500, 6000, 30000, 1, '/booth-aures.jpeg'),
+(UUID(), 'Booth Hoggar', 'booth', 'Espace de travail premium avec vue', 2, '["WiFi", "Prise électrique", "Climatisation", "Vue panoramique"]', 800, 3000, 5000, 25000, 1, '/booth-hoggar.jpeg'),
+(UUID(), 'Espace Coworking', 'open_space', 'Grand espace de coworking partagé avec 24 postes', 24, '["WiFi", "Imprimante", "Cuisine", "Climatisation", "Casiers", "Café et thé"]', 200, 600, 1200, 6000, 1, '/espace-coworking.jpeg'),
+(UUID(), 'Salle de Réunion', 'salle_reunion', 'Salle de réunion équipée pour vos meetings', 12, '["WiFi", "Vidéoprojecteur", "Tableau blanc", "Climatisation", "Système audio", "TV 75 pouces"]', 2500, 7000, 12000, 50000, 1, '/salle-reunion.jpeg');
 
 -- Abonnements par defaut
 INSERT INTO `abonnements` (`id`, `nom`, `type`, `prix`, `prix_avec_domiciliation`, `duree_mois`, `description`, `avantages`, `actif`, `ordre`) VALUES
