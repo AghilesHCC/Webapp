@@ -265,7 +265,7 @@ try {
     }
 
 } catch (Exception $e) {
-    error_log("Create reservation error: " . $e->getMessage());
-    Response::serverError("Erreur lors de la création de la réservation");
+    error_log("Create reservation error: " . $e->getMessage() . " - " . $e->getTraceAsString());
+    Response::error($e->getMessage(), 500);
 }
 ?>

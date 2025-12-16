@@ -369,7 +369,6 @@ export const useAppStore = create<AppState>()(
 
       createReservation: async (data: CreateReservationData) => {
         try {
-          // Ne jamais envoyer montantTotal - le serveur le calcule de manière sécurisée
           const response = await apiClient.createReservation({
             espaceId: data.espaceId,
             dateDebut: data.dateDebut.toISOString(),
@@ -379,13 +378,13 @@ export const useAppStore = create<AppState>()(
             codePromo: data.codePromo
           })
 
-          if (response.success) {
+          if (response.success && response.data) {
             await get().loadReservations()
             return { success: true, id: (response.data as any)?.id }
           }
-          return { success: false, error: response.error || 'Erreur lors de la creation' }
+          return { success: false, error: response.error || response.message || 'Erreur lors de la creation' }
         } catch (error: any) {
-          return { success: false, error: error.message }
+          return { success: false, error: error.message || 'Erreur de connexion' }
         }
       },
 
