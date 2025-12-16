@@ -1,10 +1,9 @@
 import React, { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import {
-  Tag, Plus, Edit2, Trash2, Search, Calendar, Percent, DollarSign,
-  ToggleLeft, ToggleRight, Copy, CheckCircle, Eye
+  Tag, Plus, Trash2, Search, Copy, ToggleLeft, ToggleRight
 } from 'lucide-react'
-import { apiClient } from '../../../lib/api-client'
+import { useAppStore } from '../../../store/store'
 import Button from '../../../components/ui/Button'
 import Card from '../../../components/ui/Card'
 import Badge from '../../../components/ui/Badge'
@@ -14,27 +13,11 @@ import LoadingSpinner from '../../../components/ui/LoadingSpinner'
 import toast from 'react-hot-toast'
 import { format } from 'date-fns'
 
-interface CodePromo {
-  id: string
-  code: string
-  type: 'pourcentage' | 'montant_fixe'
-  valeur: number
-  actif: boolean
-  date_debut: string
-  date_fin: string
-  utilisations_actuelles: number
-  utilisations_max: number
-  montant_min?: number
-  types_application?: string
-  description?: string
-}
-
 const CodesPromo = () => {
-  const [codes, setCodes] = useState<CodePromo[]>([])
+  const { codesPromo, loadCodesPromo, addCodePromo, updateCodePromo, deleteCodePromo } = useAppStore()
   const [loading, setLoading] = useState(true)
   const [searchQuery, setSearchQuery] = useState('')
   const [showCreateModal, setShowCreateModal] = useState(false)
-  const [selectedCode, setSelectedCode] = useState<CodePromo | null>(null)
   const [formData, setFormData] = useState({
     code: '',
     type: 'pourcentage' as 'pourcentage' | 'montant_fixe',
@@ -48,14 +31,13 @@ const CodesPromo = () => {
   })
 
   useEffect(() => {
-    loadCodes()
+    loadData()
   }, [])
 
-  const loadCodes = async () => {
+  const loadData = async () => {
     setLoading(true)
     try {
-      const response = await apiClient.getCodesPromo()
-      setCodes((response.data || []) as any[])
+      await loadCodesPromo()
     } catch (error) {
       toast.error('Erreur lors du chargement')
     } finally {
@@ -66,42 +48,49 @@ const CodesPromo = () => {
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault()
     try {
-      await apiClient.createCodePromo({
+      const result = await addCodePromo({
         code: formData.code,
         type: formData.type,
         valeur: parseFloat(formData.valeur),
-        date_debut: formData.date_debut,
-        date_fin: formData.date_fin,
-        utilisations_max: parseInt(formData.utilisations_max) || null,
-        montant_min: formData.montant_min ? parseFloat(formData.montant_min) : 0,
-        types_application: [formData.types_application],
-        description: formData.description || null
+        dateDebut: formData.date_debut,
+        dateFin: formData.date_fin,
+        utilisationsMax: parseInt(formData.utilisations_max) || 100,
+        description: formData.description || undefined
       })
-      toast.success('Code promo créé')
-      setShowCreateModal(false)
-      resetForm()
-      loadCodes()
+      if (result.success) {
+        toast.success('Code promo cree')
+        setShowCreateModal(false)
+        resetForm()
+      } else {
+        toast.error(result.error || 'Erreur lors de la creation')
+      }
     } catch (error) {
-      toast.error('Erreur lors de la création')
+      toast.error('Erreur lors de la creation')
     }
   }
 
   const handleToggleActive = async (id: string, actif: boolean) => {
     try {
-      await apiClient.updateCodePromo(id, { actif: !actif })
-      toast.success(actif ? 'Code désactivé' : 'Code activé')
-      loadCodes()
+      const result = await updateCodePromo(id, { actif: !actif })
+      if (result.success) {
+        toast.success(actif ? 'Code desactive' : 'Code active')
+      } else {
+        toast.error(result.error || 'Erreur lors de la mise a jour')
+      }
     } catch (error) {
-      toast.error('Erreur lors de la mise à jour')
+      toast.error('Erreur lors de la mise a jour')
     }
   }
 
   const handleDelete = async (id: string) => {
     if (!confirm('Supprimer ce code promo ?')) return
     try {
-      await apiClient.deleteCodePromo(id)
-      toast.success('Code supprimé')
-      loadCodes()
+      const result = await deleteCodePromo(id)
+      if (result.success) {
+        toast.success('Code supprime')
+      } else {
+        toast.error(result.error || 'Erreur lors de la suppression')
+      }
     } catch (error) {
       toast.error('Erreur lors de la suppression')
     }
@@ -109,7 +98,7 @@ const CodesPromo = () => {
 
   const copyCode = (code: string) => {
     navigator.clipboard.writeText(code)
-    toast.success('Code copié !')
+    toast.success('Code copie !')
   }
 
   const resetForm = () => {
@@ -126,8 +115,8 @@ const CodesPromo = () => {
     })
   }
 
-  const filteredCodes = codes.filter(code =>
-    code.code.toLowerCase().includes(searchQuery.toLowerCase()) ||
+  const filteredCodes = codesPromo.filter(code =>
+    code.code?.toLowerCase().includes(searchQuery.toLowerCase()) ||
     code.description?.toLowerCase().includes(searchQuery.toLowerCase())
   )
 
@@ -147,7 +136,6 @@ const CodesPromo = () => {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
       <div className="flex items-center justify-between">
         <h1 className="text-3xl font-display font-bold text-primary">
           Codes Promo
@@ -158,7 +146,6 @@ const CodesPromo = () => {
         </Button>
       </div>
 
-      {/* Search */}
       <div className="flex gap-4">
         <div className="flex-1">
           <Input
@@ -171,11 +158,14 @@ const CodesPromo = () => {
         </div>
       </div>
 
-      {/* Codes Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {filteredCodes.map((code) => {
-          const isExpired = new Date(code.date_fin) < new Date()
-          const isFullyUsed = code.utilisations_actuelles >= code.utilisations_max
+          const dateFin = code.dateFin || code.date_fin
+          const dateDebut = code.dateDebut || code.date_debut
+          const utilisationsMax = code.utilisationsMax || code.utilisations_max || 0
+          const utilisationsActuelles = code.utilisationsActuelles || code.utilisations_actuelles || 0
+          const isExpired = dateFin ? new Date(dateFin) < new Date() : false
+          const isFullyUsed = utilisationsActuelles >= utilisationsMax
           const isActive = code.actif && !isExpired && !isFullyUsed
 
           return (
@@ -186,7 +176,6 @@ const CodesPromo = () => {
             >
               <Card className={!isActive ? 'opacity-60' : ''}>
                 <div className="space-y-4">
-                  {/* Code */}
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
                       <Tag className="w-5 h-5 text-accent" />
@@ -200,12 +189,10 @@ const CodesPromo = () => {
                     </button>
                   </div>
 
-                  {/* Description */}
                   {code.description && (
                     <p className="text-sm text-gray-600">{code.description}</p>
                   )}
 
-                  {/* Value */}
                   <div className="text-2xl font-bold text-accent">
                     {code.type === 'pourcentage' ? (
                       <span>-{code.valeur}%</span>
@@ -214,37 +201,30 @@ const CodesPromo = () => {
                     )}
                   </div>
 
-                  {/* Stats */}
                   <div className="space-y-2 text-sm">
                     <div className="flex justify-between">
                       <span className="text-gray-600">Utilisations:</span>
                       <span className="font-medium">
-                        {code.utilisations_actuelles} / {code.utilisations_max}
+                        {utilisationsActuelles} / {utilisationsMax}
                       </span>
                     </div>
-                    <div className="flex justify-between">
-                      <span className="text-gray-600">Valide jusqu'au:</span>
-                      <span className="font-medium">
-                        {format(new Date(code.date_fin), 'dd/MM/yyyy')}
-                      </span>
-                    </div>
-                    {code.montant_min && code.montant_min > 0 && (
+                    {dateFin && (
                       <div className="flex justify-between">
-                        <span className="text-gray-600">Min:</span>
-                        <span className="font-medium">{code.montant_min} DA</span>
+                        <span className="text-gray-600">Valide jusqu'au:</span>
+                        <span className="font-medium">
+                          {format(new Date(dateFin), 'dd/MM/yyyy')}
+                        </span>
                       </div>
                     )}
                   </div>
 
-                  {/* Status */}
                   <div className="flex flex-wrap gap-2">
                     {isActive && <Badge variant="success">Actif</Badge>}
-                    {isExpired && <Badge variant="danger">Expiré</Badge>}
-                    {isFullyUsed && <Badge variant="warning">Épuisé</Badge>}
-                    {!code.actif && <Badge variant="default">Désactivé</Badge>}
+                    {isExpired && <Badge variant="danger">Expire</Badge>}
+                    {isFullyUsed && <Badge variant="warning">Epuise</Badge>}
+                    {!code.actif && <Badge variant="default">Desactive</Badge>}
                   </div>
 
-                  {/* Actions */}
                   <div className="flex gap-2 pt-4 border-t">
                     <button
                       onClick={() => handleToggleActive(code.id, code.actif)}
@@ -257,7 +237,7 @@ const CodesPromo = () => {
                       {code.actif ? (
                         <>
                           <ToggleRight className="w-4 h-4" />
-                          <span className="text-sm font-medium">Désactiver</span>
+                          <span className="text-sm font-medium">Desactiver</span>
                         </>
                       ) : (
                         <>
@@ -283,18 +263,17 @@ const CodesPromo = () => {
       {filteredCodes.length === 0 && (
         <div className="text-center py-12">
           <Tag className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-          <p className="text-gray-500">Aucun code promo trouvé</p>
+          <p className="text-gray-500">Aucun code promo trouve</p>
         </div>
       )}
 
-      {/* Create Modal */}
       <Modal
         isOpen={showCreateModal}
         onClose={() => {
           setShowCreateModal(false)
           resetForm()
         }}
-        title="Créer un code promo"
+        title="Creer un code promo"
         size="lg"
       >
         <form onSubmit={handleCreate} className="space-y-4">
@@ -313,7 +292,7 @@ const CodesPromo = () => {
               onClick={generateRandomCode}
               className="mt-6"
             >
-              Générer
+              Generer
             </Button>
           </div>
 
@@ -327,7 +306,7 @@ const CodesPromo = () => {
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Type de réduction
+                Type de reduction
               </label>
               <select
                 value={formData.type}
@@ -352,7 +331,7 @@ const CodesPromo = () => {
 
           <div className="grid grid-cols-2 gap-4">
             <Input
-              label="Date début"
+              label="Date debut"
               type="date"
               value={formData.date_debut}
               onChange={(e) => setFormData({ ...formData, date_debut: e.target.value })}
@@ -367,44 +346,18 @@ const CodesPromo = () => {
             />
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
-            <Input
-              label="Utilisations max"
-              type="number"
-              value={formData.utilisations_max}
-              onChange={(e) => setFormData({ ...formData, utilisations_max: e.target.value })}
-              required
-              placeholder="100"
-            />
-            <Input
-              label="Montant min. commande (DA)"
-              type="number"
-              value={formData.montant_min}
-              onChange={(e) => setFormData({ ...formData, montant_min: e.target.value })}
-              placeholder="0"
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Applicable à
-            </label>
-            <select
-              value={formData.types_application}
-              onChange={(e) => setFormData({ ...formData, types_application: e.target.value })}
-              className="w-full px-4 py-2 border rounded-lg"
-              required
-            >
-              <option value="tous">Tous les services</option>
-              <option value="reservation">Réservations uniquement</option>
-              <option value="abonnement">Abonnements uniquement</option>
-              <option value="domiciliation">Domiciliation uniquement</option>
-            </select>
-          </div>
+          <Input
+            label="Utilisations max"
+            type="number"
+            value={formData.utilisations_max}
+            onChange={(e) => setFormData({ ...formData, utilisations_max: e.target.value })}
+            required
+            placeholder="100"
+          />
 
           <div className="flex gap-3 pt-4">
             <Button type="submit" className="flex-1">
-              Créer le code
+              Creer le code
             </Button>
             <Button
               type="button"

@@ -8,6 +8,21 @@ import type {
   CreateReservationData, CreateDomiciliationData, AdminStats, Abonnement, AbonnementUtilisateur
 } from '../types'
 
+interface Parrainage {
+  id: string
+  parrain_id: string
+  parrain_nom: string
+  parrain_prenom: string
+  parrain_email: string
+  filleul_id: string
+  filleul_nom: string
+  filleul_prenom: string
+  filleul_email: string
+  statut: string
+  credits_accordes: number
+  date_parrainage: string
+}
+
 interface NotificationSettings {
   emailNotificationsEnabled: boolean
   reservationReminders: boolean
@@ -23,6 +38,7 @@ interface AppState {
   demandesDomiciliation: DemandeDomiciliation[]
   domiciliationServices: DomiciliationService[]
   codesPromo: CodePromo[]
+  parrainages: Parrainage[]
   abonnements: Abonnement[]
   abonnementsUtilisateurs: AbonnementUtilisateur[]
   notificationSettings: NotificationSettings
@@ -30,6 +46,13 @@ interface AppState {
   loading: boolean
 
   initializeData: () => Promise<void>
+
+  loadCodesPromo: () => Promise<void>
+  addCodePromo: (data: Partial<CodePromo>) => Promise<{ success: boolean; error?: string }>
+  updateCodePromo: (id: string, data: Partial<CodePromo>) => Promise<{ success: boolean; error?: string }>
+  deleteCodePromo: (id: string) => Promise<{ success: boolean; error?: string }>
+
+  loadParrainages: () => Promise<void>
 
   loadAbonnements: () => Promise<void>
   addAbonnement: (data: Partial<Abonnement>) => Promise<{ success: boolean; error?: string }>
@@ -76,6 +99,7 @@ export const useAppStore = create<AppState>()(
       demandesDomiciliation: [],
       domiciliationServices: [],
       codesPromo: [],
+      parrainages: [],
       abonnements: [],
       abonnementsUtilisateurs: [],
       notificationSettings: defaultNotificationSettings,
@@ -99,6 +123,83 @@ export const useAppStore = create<AppState>()(
           // Erreur silencieuse
         } finally {
           set({ loading: false })
+        }
+      },
+
+      loadCodesPromo: async () => {
+        try {
+          const response = await apiClient.getCodesPromo()
+          if (response.success && response.data && Array.isArray(response.data)) {
+            const codesPromo = response.data.map((c: any) => ({
+              id: c.id,
+              code: c.code,
+              type: c.type,
+              valeur: c.valeur,
+              typeReduction: c.type_reduction,
+              dateDebut: c.date_debut,
+              dateFin: c.date_fin,
+              utilisationsMax: c.utilisations_max,
+              utilisationsActuelles: c.utilisations_actuelles,
+              actif: c.actif,
+              espaceId: c.espace_id,
+              description: c.description,
+              createdAt: c.created_at,
+              updatedAt: c.updated_at
+            }))
+            set({ codesPromo })
+          }
+        } catch (error) {
+          // Erreur silencieuse
+        }
+      },
+
+      addCodePromo: async (data) => {
+        try {
+          const response = await apiClient.createCodePromo(data)
+          if (response.success) {
+            await get().loadCodesPromo()
+            return { success: true }
+          }
+          return { success: false, error: response.error }
+        } catch (error: any) {
+          return { success: false, error: error.message }
+        }
+      },
+
+      updateCodePromo: async (id, data) => {
+        try {
+          const response = await apiClient.updateCodePromo(id, data)
+          if (response.success) {
+            await get().loadCodesPromo()
+            return { success: true }
+          }
+          return { success: false, error: response.error }
+        } catch (error: any) {
+          return { success: false, error: error.message }
+        }
+      },
+
+      deleteCodePromo: async (id) => {
+        try {
+          const response = await apiClient.deleteCodePromo(id)
+          if (response.success) {
+            await get().loadCodesPromo()
+            return { success: true }
+          }
+          return { success: false, error: response.error }
+        } catch (error: any) {
+          return { success: false, error: error.message }
+        }
+      },
+
+      loadParrainages: async () => {
+        try {
+          const response = await apiClient.getParrainages()
+          if (response.success && response.data && Array.isArray(response.data)) {
+            set({ parrainages: response.data as Parrainage[] })
+          }
+        } catch (error) {
+          // Erreur silencieuse
         }
       },
 

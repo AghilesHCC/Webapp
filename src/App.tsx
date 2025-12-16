@@ -12,7 +12,6 @@ import ScrollToTop from './components/ScrollToTop'
 // Hooks
 import { useScrollAnimation } from './hooks/useScrollAnimation'
 import { useAuthStore } from './store/authStore'
-import { apiClient } from './lib/api-client'
 
 // Pages (lazy loaded)
 const Home = lazy(() => import('./pages/Home'))
@@ -23,7 +22,6 @@ const Dashboard = lazy(() => import('./pages/Dashboard'))
 const Login = lazy(() => import('./pages/Login'))
 const Register = lazy(() => import('./pages/Register'))
 const Legal = lazy(() => import('./pages/Legal'))
-const ERPSystem = lazy(() => import('./pages/ERPSystem'))
 
 function App() {
   useScrollAnimation()
@@ -145,9 +143,6 @@ function App() {
           
           {/* Dashboard (application) */}
           <Route path="/app/*" element={<Dashboard />} />
-          
-          {/* ERP System pour admin */}
-          <Route path="/erp/*" element={<ERPSystem />} />
 
           {/* Page 404 - doit être en dernier */}
           <Route path="*" element={
