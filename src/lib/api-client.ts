@@ -636,6 +636,10 @@ class ApiClient {
     return this.request('/codes-promo/index.php')
   }
 
+  async getPublicCodesPromo() {
+    return this.request('/codes-promo/public.php')
+  }
+
   async createCodePromo(data: any) {
     return this.request('/codes-promo/create.php', {
       method: 'POST',

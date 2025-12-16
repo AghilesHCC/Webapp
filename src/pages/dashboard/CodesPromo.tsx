@@ -23,15 +23,9 @@ const CodesPromo = () => {
   const loadCodes = async () => {
     setLoading(true)
     try {
-      const response = await apiClient.getCodesPromo()
+      const response = await apiClient.getPublicCodesPromo()
       const data = (response.data || []) as any[]
-      // Filtrer uniquement les codes actifs et non expirés
-      const activeCodes = data.filter((code: any) =>
-        code.actif &&
-        new Date(code.date_fin) > new Date() &&
-        code.utilisations_actuelles < code.utilisations_max
-      )
-      setCodes(activeCodes)
+      setCodes(data)
     } catch (error) {
       toast.error('Erreur lors du chargement')
     } finally {
