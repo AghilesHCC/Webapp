@@ -73,10 +73,25 @@ const Footer = () => {
           </div>
         </div>
 
-        <div className="border-t border-gray-800 mt-8 pt-8 text-center">
-          <p className="text-gray-400 text-sm">
-            © 2025 Coffice. Tous droits réservés.
-          </p>
+        <div className="border-t border-gray-800 mt-8 pt-8">
+          <div className="flex flex-col md:flex-row items-center justify-between gap-4">
+            <p className="text-gray-400 text-sm">
+              © 2025 Coffice. Tous droits réservés.
+            </p>
+            <a
+              href="https://novihost.dz"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-2 text-gray-400 hover:text-white transition-colors"
+            >
+              <span className="text-xs">Propulse par</span>
+              <img
+                src="/novihost-logo.png"
+                alt="Novihost"
+                className="h-6 w-auto"
+              />
+            </a>
+          </div>
         </div>
       </div>
     </footer>
