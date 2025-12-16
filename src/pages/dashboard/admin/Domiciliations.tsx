@@ -105,12 +105,46 @@ const AdminDomiciliations = () => {
   const submitAction = async () => {
     if (!selectedDemande) return
 
+    if (actionType === 'rejeter' && !commentaire.trim()) {
+      toast.error('Veuillez indiquer la raison du rejet')
+      return
+    }
+
     setLoading(true)
     try {
-      // TODO: Implémenter les appels API pour valider/rejeter/activer
-      toast.success(`Demande ${actionType === 'valider' ? 'validée' : actionType === 'rejeter' ? 'rejetée' : 'activée'} avec succès`)
-      setShowActionModal(false)
-      await loadDemandesDomiciliation()
+      const updateData: any = {}
+
+      if (actionType === 'valider') {
+        updateData.statut = 'validee'
+        if (commentaire) updateData.notes_admin = commentaire
+      } else if (actionType === 'rejeter') {
+        updateData.statut = 'rejetee'
+        updateData.notes_admin = commentaire
+      } else if (actionType === 'activer') {
+        updateData.statut = 'active'
+        updateData.montant_mensuel = montantMensuel
+        updateData.date_debut = new Date(dateDebut).toISOString()
+        updateData.date_fin = new Date(dateFin).toISOString()
+      }
+
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/domiciliations/update.php`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        },
+        body: JSON.stringify({ id: selectedDemande.id, ...updateData })
+      })
+
+      const result = await response.json()
+
+      if (result.success) {
+        toast.success(`Demande ${actionType === 'valider' ? 'validée' : actionType === 'rejeter' ? 'rejetée' : 'activée'} avec succès`)
+        setShowActionModal(false)
+        await loadDemandesDomiciliation()
+      } else {
+        toast.error(result.message || 'Erreur lors de la mise à jour')
+      }
     } catch (error) {
       toast.error('Une erreur est survenue')
     } finally {
