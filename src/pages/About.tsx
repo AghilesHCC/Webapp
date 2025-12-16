@@ -1,6 +1,6 @@
 import React from 'react'
 import { motion } from 'framer-motion'
-import { MapPin, Phone, Mail, Clock, Users, Target, Heart } from 'lucide-react'
+import { Users, Target, Heart } from 'lucide-react'
 import { useSEO } from '../hooks/useSEO'
 import { IMAGES } from '../config/images'
 
@@ -9,28 +9,6 @@ const About = () => {
 
   return (
     <div className="min-h-screen pt-16">
-      {/* Hero Section */}
-      <section className="pt-16 pb-20 bg-gradient-to-r from-accent to-teal text-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <motion.h1 
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="text-5xl font-display font-bold mb-6"
-          >
-            À Propos de Coffice
-          </motion.h1>
-          <motion.p 
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2 }}
-            className="text-xl text-white/90 max-w-3xl mx-auto"
-          >
-            Découvrez l'histoire et la vision de Coffice, le premier espace de coworking 
-            nouvelle génération à Alger
-          </motion.p>
-        </div>
-      </section>
-
       {/* Notre Histoire */}
       <section className="py-20 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -125,101 +103,6 @@ const About = () => {
                 Notre passion pour l'innovation et l'entrepreneuriat nous pousse à créer 
                 des expériences uniques qui inspirent et motivent nos membres.
               </p>
-            </motion.div>
-          </div>
-        </div>
-      </section>
-
-      {/* Localisation */}
-      <section className="py-20 bg-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-            <motion.div
-              initial={{ opacity: 0, x: -50 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              viewport={{ once: true }}
-              className="animate-on-scroll"
-            >
-              <h2 className="text-4xl font-display font-bold text-primary mb-6">
-                Notre Localisation
-              </h2>
-              <p className="text-lg text-gray-600 mb-8 leading-relaxed">
-                Situé au cœur d'Alger, Coffice bénéficie d'un emplacement stratégique 
-                facilement accessible en transport en commun et disposant de nombreuses 
-                places de parking à proximité.
-              </p>
-
-              <div className="space-y-6">
-                <div className="flex items-start space-x-4">
-                  <div className="w-12 h-12 bg-accent/10 rounded-full flex items-center justify-center flex-shrink-0">
-                    <MapPin className="w-6 h-6 text-accent" />
-                  </div>
-                  <div>
-                    <h3 className="font-semibold text-primary mb-1">Adresse</h3>
-                    <p className="text-gray-600">
-                      Centre Commercial Mohammadia Mall<br/>
-                      4ème étage, Bureau 1178<br/>
-                      Mohammadia, Alger
-                    </p>
-                    <p className="text-sm text-gray-500 mt-2">
-                      <strong>Commodités :</strong> Parking couvert sécurisé 24/7, antennes CNRC et CASNOS dans l'immeuble, notaires et services aux entrepreneurs à proximité
-                    </p>
-                  </div>
-                </div>
-
-                <div className="flex items-start space-x-4">
-                  <div className="w-12 h-12 bg-teal/10 rounded-full flex items-center justify-center flex-shrink-0">
-                    <Phone className="w-6 h-6 text-teal" />
-                  </div>
-                  <div>
-                    <h3 className="font-semibold text-primary mb-1">Téléphone</h3>
-                    <p className="text-gray-600">+213 23 804 924</p>
-                  </div>
-                </div>
-
-                <div className="flex items-start space-x-4">
-                  <div className="w-12 h-12 bg-warm/10 rounded-full flex items-center justify-center flex-shrink-0">
-                    <Mail className="w-6 h-6 text-warm" />
-                  </div>
-                  <div>
-                    <h3 className="font-semibold text-primary mb-1">Email</h3>
-                    <p className="text-gray-600">desk@coffice.dz</p>
-                  </div>
-                </div>
-
-                <div className="flex items-start space-x-4">
-                  <div className="w-12 h-12 bg-rose/10 rounded-full flex items-center justify-center flex-shrink-0">
-                    <Clock className="w-6 h-6 text-rose" />
-                  </div>
-                  <div>
-                    <h3 className="font-semibold text-primary mb-1">Horaires</h3>
-                    <p className="text-gray-600">
-                      Dimanche - Jeudi : 08h30 - 16h30
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </motion.div>
-
-            <motion.div
-              initial={{ opacity: 0, x: 50 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              viewport={{ once: true }}
-              className="animate-on-scroll"
-            >
-              <div className="bg-gradient-to-br from-accent/10 to-teal/10 rounded-2xl overflow-hidden shadow-lg">
-                <iframe
-                  src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3196.9!2d3.052!3d36.731!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zMzbCsDQzJzUxLjYiTiAzwrAwMycwNy4yIkU!5e0!3m2!1sfr!2sdz!4v1234567890"
-                  width="100%"
-                  height="400"
-                  style={{ border: 0 }}
-                  allowFullScreen
-                  loading="lazy"
-                  referrerPolicy="no-referrer-when-downgrade"
-                  title="Localisation Coffice - Centre Commercial Mohammadia Mall"
-                  className="w-full h-96"
-                ></iframe>
-              </div>
             </motion.div>
           </div>
         </div>
