@@ -51,9 +51,9 @@ const AdminDomiciliations = () => {
 
   const filteredDemandes = demandesDomiciliation.filter(demande => {
     const matchesSearch =
-      demande.raisonSociale.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      demande.raisonSociale?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       demande.nif?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      demande.representantLegal.nom.toLowerCase().includes(searchTerm.toLowerCase())
+      demande.representantLegal?.nom?.toLowerCase().includes(searchTerm.toLowerCase())
 
     const matchesStatus = statusFilter === 'tous' || demande.statut === statusFilter
 
@@ -127,7 +127,7 @@ const AdminDomiciliations = () => {
         d.formeJuridique,
         d.statut,
         formatDate(d.dateCreation),
-        `${d.representantLegal.prenom} ${d.representantLegal.nom}`
+        `${d.representantLegal?.prenom || ''} ${d.representantLegal?.nom || ''}`
       ])
     ].map(row => row.join(',')).join('\n')
 
@@ -277,9 +277,9 @@ const AdminDomiciliations = () => {
                     <td className="px-6 py-4">
                       <div className="text-sm">
                         <p className="text-gray-900">
-                          {demande.representantLegal.prenom} {demande.representantLegal.nom}
+                          {demande.representantLegal?.prenom} {demande.representantLegal?.nom}
                         </p>
-                        <p className="text-gray-500">{demande.representantLegal.email}</p>
+                        <p className="text-gray-500">{demande.representantLegal?.email}</p>
                       </div>
                     </td>
                     <td className="px-6 py-4">
@@ -397,19 +397,19 @@ const AdminDomiciliations = () => {
                 <div className="flex items-center gap-2">
                   <User className="w-4 h-4 text-gray-400" />
                   <span>
-                    {selectedDemande.representantLegal.prenom} {selectedDemande.representantLegal.nom}
+                    {selectedDemande.representantLegal?.prenom} {selectedDemande.representantLegal?.nom}
                   </span>
-                  {selectedDemande.representantLegal.fonction && (
+                  {selectedDemande.representantLegal?.fonction && (
                     <span className="text-sm text-gray-500">- {selectedDemande.representantLegal.fonction}</span>
                   )}
                 </div>
-                {selectedDemande.representantLegal.email && (
+                {selectedDemande.representantLegal?.email && (
                   <div className="flex items-center gap-2">
                     <Mail className="w-4 h-4 text-gray-400" />
                     <span>{selectedDemande.representantLegal.email}</span>
                   </div>
                 )}
-                {selectedDemande.representantLegal.telephone && (
+                {selectedDemande.representantLegal?.telephone && (
                   <div className="flex items-center gap-2">
                     <Phone className="w-4 h-4 text-gray-400" />
                     <span>{selectedDemande.representantLegal.telephone}</span>

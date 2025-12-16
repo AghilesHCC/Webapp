@@ -214,9 +214,11 @@ export const domiciliationAdapter = {
     articleImposition: apiData.article_imposition,
     coordonneesFiscales: apiData.coordonnees_fiscales,
     coordonneesAdministratives: apiData.coordonnees_administratives,
-    representantLegal: typeof apiData.representant_legal === 'string'
-      ? JSON.parse(apiData.representant_legal)
-      : apiData.representant_legal,
+    representantLegal: apiData.representant_legal
+      ? (typeof apiData.representant_legal === 'string'
+          ? JSON.parse(apiData.representant_legal)
+          : apiData.representant_legal)
+      : { nom: '', prenom: '', email: '', telephone: '' },
     domaineActivite: apiData.domaine_activite,
     adresseSiegeSocial: apiData.adresse_siege_social,
     capital: apiData.capital,

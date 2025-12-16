@@ -443,9 +443,11 @@ export const useAppStore = create<AppState>()(
                   articleImposition: d.article_imposition,
                   coordonneesFiscales: d.coordonnees_fiscales,
                   coordonneesAdministratives: d.coordonnees_administratives,
-                  representantLegal: typeof d.representant_legal === 'string'
-                    ? JSON.parse(d.representant_legal)
-                    : d.representant_legal,
+                  representantLegal: d.representant_legal
+                    ? (typeof d.representant_legal === 'string'
+                        ? JSON.parse(d.representant_legal)
+                        : d.representant_legal)
+                    : { nom: '', prenom: '', email: '', telephone: '' },
                   domaineActivite: d.domaine_activite,
                   adresseSiegeSocial: d.adresse_siege_social,
                   capital: d.capital,
