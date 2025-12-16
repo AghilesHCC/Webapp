@@ -429,9 +429,29 @@ class ApiClient {
   }
 
   async createDemandeDomiciliation(data: any) {
+    const apiData = {
+      raison_sociale: data.raisonSociale,
+      forme_juridique: data.formeJuridique,
+      capital: data.capital || null,
+      activite_principale: data.domaineActivite || data.activitePrincipale || null,
+      nif: data.nif || null,
+      nis: data.nis || null,
+      registre_commerce: data.registreCommerce || null,
+      article_imposition: data.articleImposition || null,
+      numero_auto_entrepreneur: data.numeroAutoEntrepreneur || null,
+      wilaya: data.wilaya || null,
+      commune: data.commune || null,
+      adresse_actuelle: data.adresseSiegeSocial || null,
+      representant_nom: data.representantLegal?.nom || null,
+      representant_prenom: data.representantLegal?.prenom || null,
+      representant_telephone: data.representantLegal?.telephone || null,
+      representant_email: data.representantLegal?.email || null,
+      montant_mensuel: data.montantMensuel || 5000
+    }
+
     return this.request('/domiciliations/create.php', {
       method: 'POST',
-      body: JSON.stringify(data)
+      body: JSON.stringify(apiData)
     })
   }
 
