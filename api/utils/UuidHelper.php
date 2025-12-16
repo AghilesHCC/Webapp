@@ -22,10 +22,10 @@ class UuidHelper {
     }
 
     /**
-     * Valider un UUID
+     * Valider un UUID (toutes versions)
      */
     public static function isValid($uuid) {
-        return preg_match('/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i', $uuid) === 1;
+        return preg_match('/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i', $uuid) === 1;
     }
 }
 ?>
