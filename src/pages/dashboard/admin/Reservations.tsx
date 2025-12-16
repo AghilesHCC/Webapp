@@ -1,382 +1,259 @@
-import React, { useState, useMemo } from 'react'
-import { motion } from 'framer-motion'
-import {
-  Calendar,
-  Search,
-  Filter,
-  Download,
-  CheckCircle,
-  XCircle,
-  Clock,
-  TrendingUp,
-  Users,
-  DollarSign,
-  MapPin
-} from 'lucide-react'
-import { useAppStore } from '../../../store/store'
+import { useState } from 'react'
+import { Calendar, MapPin, User } from 'lucide-react'
+import { useReservations, useUpdateReservation, useCancelReservation } from '../../../hooks/queries'
+import { AdminPageLayout } from '../../../components/admin/AdminPageLayout'
+import { DataTable, Column, getStatusBadge } from '../../../components/admin/DataTable'
+import Modal from '../../../components/ui/Modal'
 import Card from '../../../components/ui/Card'
-import Badge from '../../../components/ui/Badge'
 import Button from '../../../components/ui/Button'
-import Input from '../../../components/ui/Input'
-import { formatDate, formatCurrency } from '../../../utils/formatters'
-import toast from 'react-hot-toast'
-import { getReservationStatutColor, getReservationStatutLabel, RESERVATION_STATUTS } from '../../../constants'
+import { formatDate } from '../../../utils/formatters'
+import type { Reservation } from '../../../types'
 
-const Reservations = () => {
-  const { reservations, updateReservation, espaces } = useAppStore()
-  const [searchTerm, setSearchTerm] = useState('')
-  const [statutFilter, setStatutFilter] = useState<string>('tous')
-  const [espaceFilter, setEspaceFilter] = useState<string>('tous')
-  const [selectedIds, setSelectedIds] = useState<string[]>([])
+export default function Reservations() {
+  const { data: reservations = [], isLoading } = useReservations()
+  const updateReservationMutation = useUpdateReservation()
+  const cancelReservationMutation = useCancelReservation()
 
-  const handleStatusChange = async (id: string, statut: string) => {
-    try {
-      const result = await updateReservation(id, { statut: statut as any })
-      if (result?.success === false) {
-        toast.error(result.error || 'Erreur lors de la mise à jour')
-        return
-      }
-      toast.success(`Réservation ${statut === 'confirmee' ? 'confirmée' : 'refusée'}`)
-    } catch (error) {
-      toast.error('Erreur lors de la mise à jour')
+  const [selectedReservation, setSelectedReservation] = useState<Reservation | null>(null)
+  const [showDetailModal, setShowDetailModal] = useState(false)
+
+  const handleStatusChange = async (id: string, newStatus: string) => {
+    await updateReservationMutation.mutateAsync({
+      id,
+      data: { statut: newStatus as Reservation['statut'] },
+    })
+  }
+
+  const handleCancel = async (id: string) => {
+    if (window.confirm('Êtes-vous sûr de vouloir annuler cette réservation ?')) {
+      await cancelReservationMutation.mutateAsync(id)
     }
   }
 
-  const handleBulkAction = async (action: 'confirmer' | 'refuser') => {
-    if (selectedIds.length === 0) {
-      toast.error('Aucune réservation sélectionnée')
-      return
-    }
+  const columns: Column<Reservation>[] = [
+    {
+      key: 'utilisateur',
+      header: 'Client',
+      sortable: true,
+      render: (reservation) => (
+        <div>
+          <div className="font-medium text-gray-900">
+            {reservation.utilisateur?.nom} {reservation.utilisateur?.prenom}
+          </div>
+          <div className="text-sm text-gray-500">
+            {reservation.utilisateur?.email}
+          </div>
+        </div>
+      ),
+    },
+    {
+      key: 'espace',
+      header: 'Espace',
+      render: (reservation) => {
+        const espace = reservation.espace
+        return (
+          <span className="text-sm text-gray-900">
+            {typeof espace === 'object' && 'nom' in espace ? espace.nom : '-'}
+          </span>
+        )
+      },
+    },
+    {
+      key: 'dateDebut',
+      header: 'Date/Heure',
+      sortable: true,
+      render: (reservation) => (
+        <div className="text-sm">
+          <div className="text-gray-900">{formatDate(new Date(reservation.dateDebut))}</div>
+          <div className="text-gray-500">
+            {new Date(reservation.dateDebut).toLocaleTimeString('fr-FR', {
+              hour: '2-digit',
+              minute: '2-digit',
+            })}
+            {' - '}
+            {new Date(reservation.dateFin).toLocaleTimeString('fr-FR', {
+              hour: '2-digit',
+              minute: '2-digit',
+            })}
+          </div>
+        </div>
+      ),
+    },
+    {
+      key: 'statut',
+      header: 'Statut',
+      sortable: true,
+      render: (reservation) => (
+        <select
+          value={reservation.statut}
+          onChange={(e) => {
+            e.stopPropagation()
+            handleStatusChange(reservation.id, e.target.value)
+          }}
+          onClick={(e) => e.stopPropagation()}
+          className="px-3 py-1 border border-gray-300 rounded-lg text-sm"
+        >
+          <option value="en_attente">En attente</option>
+          <option value="confirmee">Confirmée</option>
+          <option value="annulee">Annulée</option>
+          <option value="terminee">Terminée</option>
+        </select>
+      ),
+    },
+    {
+      key: 'montantTotal',
+      header: 'Montant',
+      sortable: true,
+      render: (reservation) => (
+        <span className="text-sm font-medium text-gray-900">
+          {reservation.montantTotal.toLocaleString()} DA
+        </span>
+      ),
+    },
+    {
+      key: 'actions',
+      header: 'Actions',
+      render: (reservation) => (
+        <div className="flex gap-2">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={(e) => {
+              e.stopPropagation()
+              setSelectedReservation(reservation)
+              setShowDetailModal(true)
+            }}
+          >
+            Détails
+          </Button>
+          {reservation.statut !== 'annulee' && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={(e) => {
+                e.stopPropagation()
+                handleCancel(reservation.id)
+              }}
+              className="text-red-600"
+            >
+              Annuler
+            </Button>
+          )}
+        </div>
+      ),
+    },
+  ]
 
-    try {
-      const statut = action === 'confirmer' ? 'confirmee' : 'annulee'
-      const results = await Promise.all(
-        selectedIds.map(id => updateReservation(id, { statut: statut as any }))
-      )
-
-      const failed = results.filter(r => r?.success === false)
-      if (failed.length > 0) {
-        toast.error(`${failed.length} réservation(s) n'ont pas pu être mises à jour`)
-        return
-      }
-
-      toast.success(`${selectedIds.length} réservation(s) ${action === 'confirmer' ? 'confirmées' : 'refusées'}`)
-      setSelectedIds([])
-    } catch (error) {
-      toast.error('Erreur lors de l\'action groupée')
-    }
-  }
-
-  const toggleSelection = (id: string) => {
-    setSelectedIds(prev =>
-      prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]
-    )
-  }
-
-  const toggleSelectAll = () => {
-    if (selectedIds.length === filteredReservations.length) {
-      setSelectedIds([])
-    } else {
-      setSelectedIds(filteredReservations.map(r => r.id))
-    }
-  }
-
-  const filteredReservations = useMemo(() => {
-    return reservations.filter(res => {
-      const matchSearch = searchTerm === '' ||
-        res.utilisateur?.nom?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        res.utilisateur?.prenom?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        res.espace?.nom?.toLowerCase().includes(searchTerm.toLowerCase())
-
-      const matchStatut = statutFilter === 'tous' || res.statut === statutFilter
-      const matchEspace = espaceFilter === 'tous' || res.espace?.id === espaceFilter
-
-      return matchSearch && matchStatut && matchEspace
-    }).sort((a, b) => new Date(b.dateCreation).getTime() - new Date(a.dateCreation).getTime())
-  }, [reservations, searchTerm, statutFilter, espaceFilter])
-
-  const stats = useMemo(() => {
-    const total = reservations.length
-    const enAttente = reservations.filter(r => r.statut === 'en_attente').length
-    const confirmees = reservations.filter(r => r.statut === 'confirmee').length
-    const annulees = reservations.filter(r => r.statut === 'annulee').length
-    const revenuTotal = reservations
-      .filter(r => r.statut === 'confirmee')
-      .reduce((sum, r) => sum + r.montantTotal, 0)
-
-    return { total, enAttente, confirmees, annulees, revenuTotal }
-  }, [reservations])
-
-  const exportToCSV = () => {
-    const headers = ['Date', 'Utilisateur', 'Espace', 'Début', 'Fin', 'Montant', 'Statut']
-    const rows = filteredReservations.map(r => [
-      formatDate(r.dateCreation),
-      `${r.utilisateur?.prenom || ''} ${r.utilisateur?.nom || ''}`,
-      r.espace?.nom || '',
-      formatDate(r.dateDebut),
-      formatDate(r.dateFin),
-      r.montantTotal,
-      r.statut
-    ])
-
-    const csv = [headers, ...rows].map(row => row.join(',')).join('\n')
-    const blob = new Blob([csv], { type: 'text/csv' })
-    const url = URL.createObjectURL(blob)
-    const a = document.createElement('a')
-    a.href = url
-    a.download = `reservations-${new Date().toISOString().split('T')[0]}.csv`
-    a.click()
-    toast.success('Export réussi')
+  const stats = {
+    total: reservations.length,
+    enAttente: reservations.filter(r => r.statut === 'en_attente').length,
+    confirmees: reservations.filter(r => r.statut === 'confirmee').length,
+    totalRevenu: reservations
+      .filter(r => r.statut !== 'annulee')
+      .reduce((sum, r) => sum + r.montantTotal, 0),
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <h1 className="text-3xl font-bold text-gray-900">Gestion des Réservations</h1>
-        <Button onClick={exportToCSV} variant="ghost" className="gap-2">
-          <Download className="w-4 h-4" />
-          Exporter CSV
-        </Button>
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <Card className="p-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-gray-600">Total</p>
-              <p className="text-2xl font-bold text-gray-900">{stats.total}</p>
-            </div>
-            <div className="w-12 h-12 bg-blue-50 rounded-lg flex items-center justify-center">
-              <Calendar className="w-6 h-6 text-blue-600" />
-            </div>
-          </div>
+    <AdminPageLayout
+      title="Gestion des Réservations"
+      description="Gérez toutes les réservations"
+      isLoading={isLoading}
+    >
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
+        <Card className="p-6">
+          <p className="text-sm text-gray-600">Total Réservations</p>
+          <p className="text-2xl font-bold text-gray-900 mt-1">{stats.total}</p>
         </Card>
 
-        <Card className="p-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-gray-600">En attente</p>
-              <p className="text-2xl font-bold text-amber-600">{stats.enAttente}</p>
-            </div>
-            <div className="w-12 h-12 bg-amber-50 rounded-lg flex items-center justify-center">
-              <Clock className="w-6 h-6 text-amber-600" />
-            </div>
-          </div>
+        <Card className="p-6">
+          <p className="text-sm text-gray-600">En Attente</p>
+          <p className="text-2xl font-bold text-orange-600 mt-1">{stats.enAttente}</p>
         </Card>
 
-        <Card className="p-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-gray-600">Confirmées</p>
-              <p className="text-2xl font-bold text-green-600">{stats.confirmees}</p>
-            </div>
-            <div className="w-12 h-12 bg-green-50 rounded-lg flex items-center justify-center">
-              <CheckCircle className="w-6 h-6 text-green-600" />
-            </div>
-          </div>
+        <Card className="p-6">
+          <p className="text-sm text-gray-600">Confirmées</p>
+          <p className="text-2xl font-bold text-green-600 mt-1">{stats.confirmees}</p>
         </Card>
 
-        <Card className="p-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-gray-600">Revenus</p>
-              <p className="text-2xl font-bold text-teal-600">{formatCurrency(stats.revenuTotal)}</p>
-            </div>
-            <div className="w-12 h-12 bg-teal-50 rounded-lg flex items-center justify-center">
-              <DollarSign className="w-6 h-6 text-teal-600" />
-            </div>
-          </div>
+        <Card className="p-6">
+          <p className="text-sm text-gray-600">Revenu Total</p>
+          <p className="text-2xl font-bold text-blue-600 mt-1">
+            {stats.totalRevenu.toLocaleString()} DA
+          </p>
         </Card>
       </div>
 
-      <Card className="p-6">
-        <div className="space-y-4">
-          <div className="flex flex-col md:flex-row gap-4">
-            <div className="flex-1">
-              <Input
-                icon={<Search className="w-5 h-5" />}
-                placeholder="Rechercher par nom ou espace..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-              />
+      <DataTable
+        data={reservations}
+        columns={columns}
+        searchPlaceholder="Rechercher par client..."
+        searchFields={['utilisateur']}
+        filters={[
+          {
+            key: 'statut',
+            label: 'Tous les statuts',
+            options: [
+              { value: 'en_attente', label: 'En attente' },
+              { value: 'confirmee', label: 'Confirmée' },
+              { value: 'annulee', label: 'Annulée' },
+              { value: 'terminee', label: 'Terminée' },
+            ],
+          },
+        ]}
+        emptyMessage="Aucune réservation trouvée"
+      />
+
+      {selectedReservation && (
+        <Modal
+          isOpen={showDetailModal}
+          onClose={() => setShowDetailModal(false)}
+          title="Détails de la réservation"
+        >
+          <div className="space-y-4">
+            <div>
+              <h3 className="text-lg font-semibold mb-2">Client</h3>
+              <p className="text-gray-900">
+                {selectedReservation.utilisateur?.nom} {selectedReservation.utilisateur?.prenom}
+              </p>
+              <p className="text-sm text-gray-600">{selectedReservation.utilisateur?.email}</p>
             </div>
 
-            <select
-              value={statutFilter}
-              onChange={(e) => setStatutFilter(e.target.value)}
-              className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent"
-            >
-              <option value="tous">Tous les statuts</option>
-              <option value={RESERVATION_STATUTS.EN_ATTENTE}>En attente</option>
-              <option value={RESERVATION_STATUTS.CONFIRMEE}>Confirmees</option>
-              <option value={RESERVATION_STATUTS.ANNULEE}>Annulees</option>
-              <option value={RESERVATION_STATUTS.EN_COURS}>En cours</option>
-              <option value={RESERVATION_STATUTS.TERMINEE}>Terminees</option>
-            </select>
-
-            <select
-              value={espaceFilter}
-              onChange={(e) => setEspaceFilter(e.target.value)}
-              className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent"
-            >
-              <option value="tous">Tous les espaces</option>
-              {espaces.map(espace => (
-                <option key={espace.id} value={espace.id}>{espace.nom}</option>
-              ))}
-            </select>
-          </div>
-
-          {selectedIds.length > 0 && (
-            <div className="flex items-center gap-4 p-4 bg-blue-50 rounded-lg">
-              <span className="text-sm font-medium text-blue-900">
-                {selectedIds.length} sélectionnée(s)
-              </span>
-              <div className="flex gap-2">
-                <Button
-                  size="sm"
-                  variant="success"
-                  onClick={() => handleBulkAction('confirmer')}
-                >
-                  Confirmer la sélection
-                </Button>
-                <Button
-                  size="sm"
-                  variant="danger"
-                  onClick={() => handleBulkAction('refuser')}
-                >
-                  Refuser la sélection
-                </Button>
-                <Button
-                  size="sm"
-                  variant="ghost"
-                  onClick={() => setSelectedIds([])}
-                >
-                  Annuler
-                </Button>
-              </div>
-            </div>
-          )}
-        </div>
-      </Card>
-
-      <div className="space-y-4">
-        {filteredReservations.length === 0 ? (
-          <Card className="p-12">
-            <div className="text-center">
-              <Calendar className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-              <h3 className="text-lg font-medium text-gray-900 mb-2">Aucune réservation</h3>
-              <p className="text-gray-500">
-                {searchTerm || statutFilter !== 'tous' || espaceFilter !== 'tous'
-                  ? 'Aucune réservation ne correspond à vos filtres'
-                  : 'Aucune réservation enregistrée'}
+            <div>
+              <h3 className="text-lg font-semibold mb-2">Espace</h3>
+              <p className="text-gray-900">
+                {typeof selectedReservation.espace === 'object' && 'nom' in selectedReservation.espace
+                  ? selectedReservation.espace.nom
+                  : '-'}
               </p>
             </div>
-          </Card>
-        ) : (
-          <>
-            <div className="flex items-center gap-2 text-sm text-gray-600">
-              <input
-                type="checkbox"
-                checked={selectedIds.length === filteredReservations.length && filteredReservations.length > 0}
-                onChange={toggleSelectAll}
-                className="rounded border-gray-300"
-              />
-              <span>{filteredReservations.length} résultat(s)</span>
+
+            <div>
+              <h3 className="text-lg font-semibold mb-2">Date et Heure</h3>
+              <p className="text-gray-900">
+                {formatDate(new Date(selectedReservation.dateDebut))}
+              </p>
+              <p className="text-sm text-gray-600">
+                {new Date(selectedReservation.dateDebut).toLocaleTimeString('fr-FR')} -{' '}
+                {new Date(selectedReservation.dateFin).toLocaleTimeString('fr-FR')}
+              </p>
             </div>
 
-            {filteredReservations.map((res, index) => (
-              <motion.div
-                key={res.id}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: index * 0.05 }}
-              >
-                <Card className="p-6 hover:shadow-md transition-shadow">
-                  <div className="flex items-start gap-4">
-                    <input
-                      type="checkbox"
-                      checked={selectedIds.includes(res.id)}
-                      onChange={() => toggleSelection(res.id)}
-                      className="mt-1 rounded border-gray-300"
-                    />
+            <div>
+              <h3 className="text-lg font-semibold mb-2">Montant</h3>
+              <p className="text-xl font-bold text-blue-600">
+                {selectedReservation.montantTotal.toLocaleString()} DA
+              </p>
+            </div>
 
-                    <div className="flex-1 grid grid-cols-1 md:grid-cols-4 gap-4">
-                      <div>
-                        <p className="text-sm text-gray-500 mb-1">Utilisateur</p>
-                        <p className="font-medium text-gray-900">
-                          {res.utilisateur?.prenom} {res.utilisateur?.nom}
-                        </p>
-                        <p className="text-xs text-gray-500">{res.utilisateur?.email}</p>
-                      </div>
-
-                      <div>
-                        <p className="text-sm text-gray-500 mb-1">Espace</p>
-                        <div className="flex items-center gap-2">
-                          <MapPin className="w-4 h-4 text-gray-400" />
-                          <p className="font-medium text-gray-900">{res.espace?.nom}</p>
-                        </div>
-                        <p className="text-xs text-gray-500">{res.participants} participant(s)</p>
-                      </div>
-
-                      <div>
-                        <p className="text-sm text-gray-500 mb-1">Période</p>
-                        <p className="text-sm font-medium text-gray-900">
-                          {formatDate(res.dateDebut)}
-                        </p>
-                        <p className="text-xs text-gray-500">
-                          → {formatDate(res.dateFin)}
-                        </p>
-                      </div>
-
-                      <div>
-                        <p className="text-sm text-gray-500 mb-1">Montant</p>
-                        <p className="text-lg font-bold text-teal-600">
-                          {formatCurrency(res.montantTotal)}
-                        </p>
-                      </div>
-                    </div>
-
-                    <div className="flex flex-col items-end gap-2">
-                      <Badge variant={getReservationStatutColor(res.statut)}>
-                        {getReservationStatutLabel(res.statut)}
-                      </Badge>
-
-                      {res.statut === 'en_attente' && (
-                        <div className="flex gap-2">
-                          <Button
-                            size="sm"
-                            variant="success"
-                            onClick={() => handleStatusChange(res.id, 'confirmee')}
-                          >
-                            <CheckCircle className="w-4 h-4" />
-                          </Button>
-                          <Button
-                            size="sm"
-                            variant="danger"
-                            onClick={() => handleStatusChange(res.id, 'annulee')}
-                          >
-                            <XCircle className="w-4 h-4" />
-                          </Button>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-
-                  {res.notes && (
-                    <div className="mt-4 pt-4 border-t border-gray-100">
-                      <p className="text-sm text-gray-600">
-                        <span className="font-medium">Notes:</span> {res.notes}
-                      </p>
-                    </div>
-                  )}
-                </Card>
-              </motion.div>
-            ))}
-          </>
-        )}
-      </div>
-    </div>
+            {selectedReservation.notes && (
+              <div>
+                <h3 className="text-lg font-semibold mb-2">Notes</h3>
+                <p className="text-gray-600">{selectedReservation.notes}</p>
+              </div>
+            )}
+          </div>
+        </Modal>
+      )}
+    </AdminPageLayout>
   )
 }
-
-export default Reservations
