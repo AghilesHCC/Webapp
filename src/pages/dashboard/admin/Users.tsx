@@ -1,9 +1,8 @@
-import React, { useState, useMemo } from 'react'
+import React, { useState, useMemo, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import {
   Users as UsersIcon,
   Search,
-  Filter,
   Download,
   UserCheck,
   UserX,
@@ -13,7 +12,8 @@ import {
   Building,
   Calendar,
   Activity,
-  TrendingUp
+  TrendingUp,
+  RefreshCw
 } from 'lucide-react'
 import { useAppStore } from '../../../store/store'
 import Card from '../../../components/ui/Card'
@@ -24,7 +24,35 @@ import { formatDate } from '../../../utils/formatters'
 import toast from 'react-hot-toast'
 
 const Users = () => {
-  const { users, updateUser, deleteUser, reservations } = useAppStore()
+  const { users, updateUser, deleteUser, reservations, loadUsers, loadReservations } = useAppStore()
+  const [isLoading, setIsLoading] = useState(true)
+
+  useEffect(() => {
+    const fetchData = async () => {
+      setIsLoading(true)
+      try {
+        await Promise.all([loadUsers(), loadReservations()])
+      } catch (error) {
+        console.error('Erreur chargement utilisateurs:', error)
+        toast.error('Erreur lors du chargement des utilisateurs')
+      } finally {
+        setIsLoading(false)
+      }
+    }
+    fetchData()
+  }, [])
+
+  const handleRefresh = async () => {
+    setIsLoading(true)
+    try {
+      await Promise.all([loadUsers(), loadReservations()])
+      toast.success('Donnees actualisees')
+    } catch (error) {
+      toast.error('Erreur lors de l\'actualisation')
+    } finally {
+      setIsLoading(false)
+    }
+  }
   const [searchTerm, setSearchTerm] = useState('')
   const [roleFilter, setRoleFilter] = useState<string>('tous')
   const [statutFilter, setStatutFilter] = useState<string>('tous')
@@ -117,10 +145,16 @@ const Users = () => {
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <h1 className="text-3xl font-bold text-gray-900">Gestion des Utilisateurs</h1>
-        <Button onClick={exportToCSV} variant="ghost" className="gap-2">
-          <Download className="w-4 h-4" />
-          Exporter CSV
-        </Button>
+        <div className="flex gap-2">
+          <Button onClick={handleRefresh} variant="ghost" className="gap-2" disabled={isLoading}>
+            <RefreshCw className={`w-4 h-4 ${isLoading ? 'animate-spin' : ''}`} />
+            Actualiser
+          </Button>
+          <Button onClick={exportToCSV} variant="ghost" className="gap-2">
+            <Download className="w-4 h-4" />
+            Exporter CSV
+          </Button>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
@@ -152,10 +186,10 @@ const Users = () => {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm text-gray-600">Admins</p>
-              <p className="text-2xl font-bold text-purple-600">{stats.admins}</p>
+              <p className="text-2xl font-bold text-teal-600">{stats.admins}</p>
             </div>
-            <div className="w-12 h-12 bg-purple-50 rounded-lg flex items-center justify-center">
-              <Shield className="w-6 h-6 text-purple-600" />
+            <div className="w-12 h-12 bg-teal-50 rounded-lg flex items-center justify-center">
+              <Shield className="w-6 h-6 text-teal-600" />
             </div>
           </div>
         </Card>
@@ -207,15 +241,23 @@ const Users = () => {
       </Card>
 
       <div className="space-y-4">
-        {filteredUsers.length === 0 ? (
+        {isLoading ? (
+          <Card className="p-12">
+            <div className="text-center">
+              <RefreshCw className="w-12 h-12 text-accent mx-auto mb-4 animate-spin" />
+              <h3 className="text-lg font-medium text-gray-900 mb-2">Chargement...</h3>
+              <p className="text-gray-500">Recuperation des utilisateurs</p>
+            </div>
+          </Card>
+        ) : filteredUsers.length === 0 ? (
           <Card className="p-12">
             <div className="text-center">
               <UsersIcon className="w-16 h-16 text-gray-300 mx-auto mb-4" />
               <h3 className="text-lg font-medium text-gray-900 mb-2">Aucun utilisateur</h3>
               <p className="text-gray-500">
                 {searchTerm || roleFilter !== 'tous' || statutFilter !== 'tous'
-                  ? 'Aucun utilisateur ne correspond à vos filtres'
-                  : 'Aucun utilisateur enregistré'}
+                  ? 'Aucun utilisateur ne correspond a vos filtres'
+                  : 'Aucun utilisateur enregistre'}
               </p>
             </div>
           </Card>

@@ -99,7 +99,7 @@ const NotificationCenter: React.FC = () => {
       case 'parrainage':
         return <Gift className="w-5 h-5 text-accent" />
       case 'domiciliation':
-        return <Building className="w-5 h-5 text-purple-600" />
+        return <Building className="w-5 h-5 text-teal-600" />
       case 'promo':
         return <Gift className="w-5 h-5 text-orange-600" />
       default:

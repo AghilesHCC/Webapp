@@ -719,10 +719,10 @@ const ERPSystem = () => {
             <p className="text-xs text-gray-500 mt-2">{users.length} au total</p>
           </Card>
 
-          <Card className="p-5 bg-gradient-to-br from-purple-50 to-white border-purple-200">
+          <Card className="p-5 bg-gradient-to-br from-teal-50 to-white border-teal-200">
             <div className="flex items-center justify-between mb-3">
-              <BarChart3 className="w-10 h-10 text-purple-600" />
-              <div className="text-sm font-semibold text-purple-600">{tauxConfirmation}% confirmé</div>
+              <BarChart3 className="w-10 h-10 text-teal-600" />
+              <div className="text-sm font-semibold text-teal-600">{tauxConfirmation}% confirme</div>
             </div>
             <p className="text-3xl font-bold text-gray-900 mb-1">{stats.tauxOccupation}%</p>
             <p className="text-sm text-gray-600">Taux d'occupation</p>
@@ -762,15 +762,15 @@ const ERPSystem = () => {
 
           <Card className="p-5">
             <div className="flex items-center mb-3">
-              <div className="w-12 h-12 bg-indigo-100 rounded-lg flex items-center justify-center mr-3">
-                <Building className="w-6 h-6 text-indigo-600" />
+              <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mr-3">
+                <Building className="w-6 h-6 text-blue-600" />
               </div>
               <div className="flex-1">
                 <p className="text-lg font-bold text-gray-900 truncate">{espacePlusReserve.nom}</p>
-                <p className="text-sm text-gray-600">Espace le plus réservé</p>
+                <p className="text-sm text-gray-600">Espace le plus reserve</p>
               </div>
             </div>
-            <p className="text-xs text-gray-500">{espacePlusReserve.count} réservations</p>
+            <p className="text-xs text-gray-500">{espacePlusReserve.count} reservations</p>
           </Card>
         </div>
 

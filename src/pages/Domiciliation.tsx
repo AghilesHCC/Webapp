@@ -80,7 +80,7 @@ const DomiciliationPublic = () => {
       name: 'Création d\'Entreprise',
       tagline: 'Accompagnement complet de A à Z',
       description: 'Nous vous accompagnons dans toutes les démarches de création de votre entreprise',
-      color: 'from-blue-500 to-indigo-500',
+      color: 'from-blue-500 to-blue-600',
       textColor: 'text-blue-600',
       bgColor: 'bg-blue-50',
       features: [
@@ -114,9 +114,9 @@ const DomiciliationPublic = () => {
       name: 'Comptabilité & Fiscalité',
       tagline: 'Gestion administrative complète',
       description: 'Prenez soin de votre business, on s\'occupe de votre compta',
-      color: 'from-violet-500 to-purple-500',
-      textColor: 'text-violet-600',
-      bgColor: 'bg-violet-50',
+      color: 'from-teal-500 to-teal-600',
+      textColor: 'text-teal-600',
+      bgColor: 'bg-teal-50',
       features: [
         'Tenue de comptabilité complète',
         'Déclarations fiscales et sociales',
@@ -428,7 +428,7 @@ const DomiciliationPublic = () => {
       </section>
 
       {/* Novihost Partnership Section */}
-      <section className="py-20 px-4 bg-gradient-to-br from-blue-50 to-indigo-50">
+      <section className="py-20 px-4 bg-gradient-to-br from-blue-50 to-blue-100">
         <div className="container mx-auto max-w-6xl">
           <div className="text-center mb-12">
             <Badge className="mb-4">Partenariat inclus</Badge>
@@ -461,7 +461,7 @@ const DomiciliationPublic = () => {
             ))}
           </div>
 
-          <Card className="p-8 bg-gradient-to-r from-blue-600 to-indigo-600 text-white">
+          <Card className="p-8 bg-gradient-to-r from-blue-600 to-blue-700 text-white">
             <div className="flex flex-col md:flex-row items-center justify-between gap-6">
               <div className="flex-1">
                 <h3 className="text-2xl font-bold mb-3">Pourquoi Novihost?</h3>
@@ -532,7 +532,7 @@ const DomiciliationPublic = () => {
                 <span className="text-gray-500 text-lg">{pricingPlan.period}</span>
               </div>
 
-              <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl p-6 mb-8">
+              <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl p-6 mb-8">
                 <div className="flex items-center gap-3 mb-4">
                   <div className="w-12 h-12 bg-blue-600 rounded-full flex items-center justify-center">
                     <Server className="w-6 h-6 text-white" />

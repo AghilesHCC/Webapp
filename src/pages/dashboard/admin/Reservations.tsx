@@ -188,10 +188,10 @@ const Reservations = () => {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm text-gray-600">Revenus</p>
-              <p className="text-2xl font-bold text-purple-600">{formatCurrency(stats.revenuTotal)}</p>
+              <p className="text-2xl font-bold text-teal-600">{formatCurrency(stats.revenuTotal)}</p>
             </div>
-            <div className="w-12 h-12 bg-purple-50 rounded-lg flex items-center justify-center">
-              <DollarSign className="w-6 h-6 text-purple-600" />
+            <div className="w-12 h-12 bg-teal-50 rounded-lg flex items-center justify-center">
+              <DollarSign className="w-6 h-6 text-teal-600" />
             </div>
           </div>
         </Card>
@@ -336,7 +336,7 @@ const Reservations = () => {
 
                       <div>
                         <p className="text-sm text-gray-500 mb-1">Montant</p>
-                        <p className="text-lg font-bold text-purple-600">
+                        <p className="text-lg font-bold text-teal-600">
                           {formatCurrency(res.montantTotal)}
                         </p>
                       </div>

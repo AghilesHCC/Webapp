@@ -151,8 +151,8 @@ const Reports = () => {
       value: `${stats.activeUsers}/${stats.totalUsers}`,
       subtitle: `+${stats.newUsersThisMonth} ce mois`,
       icon: Users,
-      color: 'text-purple-600',
-      bgColor: 'bg-purple-50'
+      color: 'text-teal-600',
+      bgColor: 'bg-teal-50'
     },
     {
       title: 'Taux d\'Occupation',
@@ -342,10 +342,10 @@ const Reports = () => {
         <Card className="p-6">
           <h3 className="font-bold text-gray-900 mb-4">Revenus Domiciliation</h3>
           <div className="text-center">
-            <p className="text-4xl font-bold text-purple-600">
+            <p className="text-4xl font-bold text-teal-600">
               {formatCurrency(stats.revenuDomiciliation)}
             </p>
-            <p className="text-sm text-gray-500 mt-2">Revenu mensuel récurrent</p>
+            <p className="text-sm text-gray-500 mt-2">Revenu mensuel recurrent</p>
             <p className="text-sm font-medium text-gray-700 mt-4">
               {stats.domiciliationsActives} domiciliation(s) active(s)
             </p>

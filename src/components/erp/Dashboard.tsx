@@ -237,18 +237,18 @@ const ERPDashboard = () => {
             )}
             
             {stats.pendingInvoices > 0 && (
-              <div className="flex items-center justify-between p-4 bg-purple-50 rounded-lg">
+              <div className="flex items-center justify-between p-4 bg-blue-50 rounded-lg">
                 <div className="flex items-center space-x-3">
-                  <div className="w-10 h-10 bg-purple-100 rounded-full flex items-center justify-center">
-                    <FileText className="w-5 h-5 text-purple-600" />
+                  <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
+                    <FileText className="w-5 h-5 text-blue-600" />
                   </div>
                   <div>
                     <p className="font-medium text-primary">{stats.pendingInvoices} factures en attente</p>
-                    <p className="text-sm text-gray-600">À envoyer aux clients</p>
+                    <p className="text-sm text-gray-600">A envoyer aux clients</p>
                   </div>
                 </div>
                 <Button variant="outline" size="sm">
-                  Gérer les factures
+                  Gerer les factures
                 </Button>
               </div>
             )}

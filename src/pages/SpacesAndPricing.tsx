@@ -84,9 +84,9 @@ const SpacesAndPricing = () => {
       price: 'À partir de 5 000 DA TTC',
       priceValue: 5000,
       period: 'jour',
-      color: 'from-violet-500 to-purple-500',
-      textColor: 'text-violet-600',
-      bgColor: 'bg-violet-50',
+      color: 'from-amber-500 to-amber-600',
+      textColor: 'text-amber-600',
+      bgColor: 'bg-amber-50',
       features: [
         { icon: Building2, text: 'Aurès : 6m² pour 2-4 personnes' },
         { icon: Building2, text: 'Atlas : 6m² pour 2-4 personnes' },
@@ -399,29 +399,29 @@ const SpacesAndPricing = () => {
                           </div>
                           <p className="text-gray-600 text-sm mb-4">{booth.description}</p>
 
-                          <div className="mb-6 p-3 bg-violet-50 rounded-lg">
+                          <div className="mb-6 p-3 bg-amber-50 rounded-lg">
                             <div className="flex justify-between items-center mb-2">
-                              <span className="text-sm text-gray-600">Journée complète</span>
-                              <span className="font-bold text-violet-600">{booth.priceFullDay}</span>
+                              <span className="text-sm text-gray-600">Journee complete</span>
+                              <span className="font-bold text-amber-600">{booth.priceFullDay}</span>
                             </div>
                             <div className="flex justify-between items-center">
-                              <span className="text-sm text-gray-600">Demi-journée</span>
-                              <span className="font-bold text-violet-600">{booth.priceHalfDay}</span>
+                              <span className="text-sm text-gray-600">Demi-journee</span>
+                              <span className="font-bold text-amber-600">{booth.priceHalfDay}</span>
                             </div>
                           </div>
 
                           <Link
                             to="/inscription"
-                            className="block text-center px-6 py-3 bg-gradient-to-r from-violet-500 to-purple-500 text-white rounded-lg font-semibold hover:opacity-90 transition-all"
+                            className="block text-center px-6 py-3 bg-gradient-to-r from-amber-500 to-amber-600 text-white rounded-lg font-semibold hover:opacity-90 transition-all"
                           >
-                            Réserver
+                            Reserver
                           </Link>
                         </div>
                       </motion.div>
                     ))}
                   </div>
 
-                  <div className="mt-10 p-6 bg-violet-50 rounded-xl border-2 border-violet-200">
+                  <div className="mt-10 p-6 bg-amber-50 rounded-xl border-2 border-amber-200">
                     <h4 className="font-bold text-primary mb-4 text-lg">Équipements inclus dans tous les booths :</h4>
                     <div className="grid md:grid-cols-2 gap-3">
                       {activeSpaceData.features.map((feature, idx) => (
