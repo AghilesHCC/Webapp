@@ -3,6 +3,8 @@
  * Remplace complètement Supabase
  */
 
+import { objectToSnakeCase } from '../utils/case-converter'
+
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost/api'
 
 interface ApiResponse<T = any> {
@@ -290,7 +292,7 @@ class ApiClient {
   }) {
     return this.request('/auth/register.php', {
       method: 'POST',
-      body: JSON.stringify(data)
+      body: JSON.stringify(objectToSnakeCase(data))
     })
   }
 
@@ -325,7 +327,7 @@ class ApiClient {
   async updateUser(id: string, data: any) {
     return this.request(`/users/update.php?id=${id}`, {
       method: 'PUT',
-      body: JSON.stringify(data)
+      body: JSON.stringify(objectToSnakeCase(data))
     })
   }
 
@@ -347,14 +349,14 @@ class ApiClient {
   async createEspace(data: any) {
     return this.request('/espaces/create.php', {
       method: 'POST',
-      body: JSON.stringify(data)
+      body: JSON.stringify(objectToSnakeCase(data))
     })
   }
 
   async updateEspace(id: string, data: any) {
     return this.request('/espaces/update.php', {
       method: 'PUT',
-      body: JSON.stringify({ id, ...data })
+      body: JSON.stringify({ id, ...objectToSnakeCase(data) })
     })
   }
 
@@ -384,14 +386,9 @@ class ApiClient {
     codePromo?: string
     montantTotal?: number
   }) {
-    // Conversion camelCase → snake_case pour l'API PHP
     const apiData = {
-      espace_id: data.espaceId,
-      date_debut: data.dateDebut,
-      date_fin: data.dateFin,
+      ...objectToSnakeCase(data),
       participants: data.participants || 1,
-      notes: data.notes,
-      code_promo: data.codePromo,
       montant_total: data.montantTotal || 0,
       statut: 'en_attente',
       type_reservation: 'heure',
@@ -408,7 +405,7 @@ class ApiClient {
   async updateReservation(id: string, data: any) {
     return this.request('/reservations/update.php', {
       method: 'PUT',
-      body: JSON.stringify({ id, ...data })
+      body: JSON.stringify({ id, ...objectToSnakeCase(data) })
     })
   }
 
@@ -456,9 +453,22 @@ class ApiClient {
   }
 
   async updateDemandeDomiciliation(id: string, data: any) {
+    const apiData: any = { id }
+
+    if (data.representantLegal) {
+      apiData.representant_nom = data.representantLegal.nom
+      apiData.representant_prenom = data.representantLegal.prenom
+      apiData.representant_telephone = data.representantLegal.telephone
+      apiData.representant_email = data.representantLegal.email
+      const { representantLegal, ...rest } = data
+      Object.assign(apiData, objectToSnakeCase(rest))
+    } else {
+      Object.assign(apiData, objectToSnakeCase(data))
+    }
+
     return this.request('/domiciliations/update.php', {
       method: 'PUT',
-      body: JSON.stringify({ id, ...data })
+      body: JSON.stringify(apiData)
     })
   }
 
@@ -470,14 +480,14 @@ class ApiClient {
   async createAbonnement(data: any) {
     return this.request('/abonnements/create.php', {
       method: 'POST',
-      body: JSON.stringify(data)
+      body: JSON.stringify(objectToSnakeCase(data))
     })
   }
 
   async updateAbonnement(id: string, data: any) {
     return this.request('/abonnements/update.php', {
       method: 'PUT',
-      body: JSON.stringify({ id, ...data })
+      body: JSON.stringify({ id, ...objectToSnakeCase(data) })
     })
   }
 
@@ -516,14 +526,14 @@ class ApiClient {
   async createCodePromo(data: any) {
     return this.request('/codes-promo/create.php', {
       method: 'POST',
-      body: JSON.stringify(data)
+      body: JSON.stringify(objectToSnakeCase(data))
     })
   }
 
   async updateCodePromo(id: string, data: any) {
     return this.request(`/codes-promo/update.php?id=${encodeURIComponent(id)}`, {
       method: 'PUT',
-      body: JSON.stringify(data)
+      body: JSON.stringify(objectToSnakeCase(data))
     })
   }
 
