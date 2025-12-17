@@ -1,9 +1,10 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
-import { apiClient } from '../lib/api-client'
+import { supabase } from '../lib/supabase'
+import type { User as SupabaseUser } from '@supabase/supabase-js'
 import toast from 'react-hot-toast'
 
-interface User {
+interface UserProfile {
   id: string
   email: string
   nom: string
@@ -36,16 +37,17 @@ interface User {
 }
 
 interface AuthState {
-  user: User | null
+  user: UserProfile | null
   isLoading: boolean
   isInitialized: boolean
   isAdmin: boolean
 
   initialize: () => Promise<void>
   login: (email: string, password: string) => Promise<void>
+  loginWithGoogle: () => Promise<void>
   register: (data: RegisterData) => Promise<void>
   logout: () => Promise<void>
-  updateProfile: (data: Partial<User>) => Promise<void>
+  updateProfile: (data: Partial<UserProfile>) => Promise<void>
   loadUser: () => Promise<void>
 }
 
@@ -71,31 +73,65 @@ export const useAuthStore = create<AuthState>()(
       initialize: async () => {
         try {
           set({ isLoading: true })
-          const token = apiClient.getToken()
 
-          if (!token) {
+          const { data: { session }, error } = await supabase.auth.getSession()
+
+          if (error || !session) {
             set({ user: null, isAdmin: false, isInitialized: true, isLoading: false })
             return
           }
 
-          // Vérifier le token avec l'API (sans redirection automatique)
-          const response = await apiClient.me()
+          const { data: profile, error: profileError } = await supabase
+            .from('profiles')
+            .select('*')
+            .eq('id', session.user.id)
+            .maybeSingle()
 
-          if (!response.success || !response.data) {
-            // Token invalide ou expiré - nettoyer SILENCIEUSEMENT
-            apiClient.setToken(null)
+          if (profileError || !profile) {
             set({ user: null, isAdmin: false, isInitialized: true, isLoading: false })
             return
+          }
+
+          const userProfile: UserProfile = {
+            id: profile.id,
+            email: profile.email,
+            nom: profile.nom,
+            prenom: profile.prenom,
+            telephone: profile.telephone,
+            role: profile.role,
+            statut: profile.statut,
+            avatar: profile.avatar,
+            profession: profile.profession,
+            entreprise: profile.entreprise,
+            adresse: profile.adresse,
+            bio: profile.bio,
+            wilaya: profile.wilaya,
+            commune: profile.commune,
+            typeEntreprise: profile.type_entreprise,
+            nif: profile.nif,
+            nis: profile.nis,
+            registreCommerce: profile.registre_commerce,
+            articleImposition: profile.article_imposition,
+            numeroAutoEntrepreneur: profile.numero_auto_entrepreneur,
+            raisonSociale: profile.raison_sociale,
+            dateCreationEntreprise: profile.date_creation_entreprise,
+            capital: profile.capital?.toString(),
+            siegeSocial: profile.siege_social,
+            activitePrincipale: profile.activite_principale,
+            formeJuridique: profile.forme_juridique,
+            derniereConnexion: profile.derniere_connexion,
+            createdAt: profile.created_at,
+            updatedAt: profile.updated_at
           }
 
           set({
-            user: response.data as User,
-            isAdmin: (response.data as User).role === 'admin',
+            user: userProfile,
+            isAdmin: profile.role === 'admin',
             isInitialized: true,
             isLoading: false
           })
         } catch (error) {
-          apiClient.setToken(null)
+          console.error('Error initializing auth:', error)
           set({ user: null, isAdmin: false, isInitialized: true, isLoading: false })
         }
       },
@@ -104,19 +140,66 @@ export const useAuthStore = create<AuthState>()(
         try {
           set({ isLoading: true })
 
-          const response = await apiClient.login(email, password)
+          const { data, error } = await supabase.auth.signInWithPassword({
+            email,
+            password
+          })
 
-          if (!response.success || !response.data) {
-            throw new Error(response.error || 'Erreur de connexion')
+          if (error) {
+            throw new Error(error.message)
           }
 
-          // Sauvegarder les tokens
-          const responseData = response.data as any
-          apiClient.setToken(responseData.token, responseData.refreshToken)
+          if (!data.user) {
+            throw new Error('Erreur de connexion')
+          }
+
+          const { data: profile, error: profileError } = await supabase
+            .from('profiles')
+            .select('*')
+            .eq('id', data.user.id)
+            .maybeSingle()
+
+          if (profileError || !profile) {
+            throw new Error('Impossible de charger le profil')
+          }
+
+          await supabase
+            .from('profiles')
+            .update({ derniere_connexion: new Date().toISOString() })
+            .eq('id', data.user.id)
+
+          const userProfile: UserProfile = {
+            id: profile.id,
+            email: profile.email,
+            nom: profile.nom,
+            prenom: profile.prenom,
+            telephone: profile.telephone,
+            role: profile.role,
+            statut: profile.statut,
+            avatar: profile.avatar,
+            profession: profile.profession,
+            entreprise: profile.entreprise,
+            adresse: profile.adresse,
+            bio: profile.bio,
+            wilaya: profile.wilaya,
+            commune: profile.commune,
+            typeEntreprise: profile.type_entreprise,
+            nif: profile.nif,
+            nis: profile.nis,
+            registreCommerce: profile.registre_commerce,
+            articleImposition: profile.article_imposition,
+            numeroAutoEntrepreneur: profile.numero_auto_entrepreneur,
+            raisonSociale: profile.raison_sociale,
+            dateCreationEntreprise: profile.date_creation_entreprise,
+            capital: profile.capital?.toString(),
+            siegeSocial: profile.siege_social,
+            activitePrincipale: profile.activite_principale,
+            formeJuridique: profile.forme_juridique
+          }
 
           set({
-            user: responseData.user as User,
-            isAdmin: (responseData.user as User).role === 'admin',
+            user: userProfile,
+            isAdmin: profile.role === 'admin',
             isLoading: false
           })
 
@@ -128,29 +211,141 @@ export const useAuthStore = create<AuthState>()(
         }
       },
 
+      loginWithGoogle: async () => {
+        try {
+          set({ isLoading: true })
+
+          const { data, error } = await supabase.auth.signInWithOAuth({
+            provider: 'google',
+            options: {
+              redirectTo: `${window.location.origin}/dashboard`,
+              queryParams: {
+                access_type: 'offline',
+                prompt: 'consent'
+              }
+            }
+          })
+
+          if (error) {
+            throw new Error(error.message)
+          }
+
+          set({ isLoading: false })
+        } catch (error: any) {
+          set({ isLoading: false })
+          toast.error(error.message || 'Erreur de connexion avec Google')
+          throw error
+        }
+      },
+
       register: async (data: RegisterData) => {
         try {
           set({ isLoading: true })
 
-          const response = await apiClient.register(data)
+          const { data: authData, error: authError } = await supabase.auth.signUp({
+            email: data.email,
+            password: data.password,
+            options: {
+              data: {
+                nom: data.nom,
+                prenom: data.prenom,
+                telephone: data.telephone,
+                profession: data.profession,
+                entreprise: data.entreprise,
+                code_parrainage: data.codeParrainage
+              }
+            }
+          })
 
-          if (!response.success || !response.data) {
-            throw new Error(response.error || 'Erreur lors de l\'inscription')
+          if (authError) {
+            throw new Error(authError.message)
           }
 
-          // Sauvegarder les tokens
-          const responseData = response.data as any
-          apiClient.setToken(responseData.token, responseData.refreshToken)
+          if (!authData.user) {
+            throw new Error('Erreur lors de l\'inscription')
+          }
+
+          const codeParrain = 'COFFICE' + authData.user.id.substring(0, 6).toUpperCase()
+
+          const { error: profileError } = await supabase
+            .from('profiles')
+            .insert({
+              id: authData.user.id,
+              email: data.email,
+              nom: data.nom,
+              prenom: data.prenom,
+              telephone: data.telephone,
+              profession: data.profession,
+              entreprise: data.entreprise,
+              role: 'user',
+              statut: 'actif'
+            })
+
+          if (profileError) {
+            console.error('Error creating profile:', profileError)
+          }
+
+          const { error: parrainageError } = await supabase
+            .from('parrainages')
+            .insert({
+              parrain_id: authData.user.id,
+              code_parrain: codeParrain,
+              parraines: 0,
+              recompenses_totales: 0
+            })
+
+          if (parrainageError) {
+            console.error('Error creating parrainage:', parrainageError)
+          }
+
+          if (data.codeParrainage) {
+            const { data: parrainageData } = await supabase
+              .from('parrainages')
+              .select('id, parrain_id')
+              .eq('code_parrain', data.codeParrainage)
+              .maybeSingle()
+
+            if (parrainageData && parrainageData.parrain_id !== authData.user.id) {
+              await supabase
+                .from('parrainages')
+                .update({
+                  parraines: supabase.sql`parraines + 1`,
+                  recompenses_totales: supabase.sql`recompenses_totales + 3000`
+                })
+                .eq('id', parrainageData.id)
+
+              await supabase
+                .from('notifications')
+                .insert({
+                  user_id: parrainageData.parrain_id,
+                  type: 'parrainage',
+                  titre: 'Nouveau filleul!',
+                  message: 'Vous avez gagné 3000 DA grâce à votre code de parrainage',
+                  lue: false
+                })
+            }
+          }
+
+          const userProfile: UserProfile = {
+            id: authData.user.id,
+            email: data.email,
+            nom: data.nom,
+            prenom: data.prenom,
+            telephone: data.telephone,
+            profession: data.profession,
+            entreprise: data.entreprise,
+            role: 'user',
+            statut: 'actif'
+          }
 
           set({
-            user: responseData.user as User,
+            user: userProfile,
             isAdmin: false,
             isLoading: false
           })
 
-          // Message spécial si code parrainage utilisé
           if (data.codeParrainage) {
-            toast.success('Inscription réussie! Bonus parrainage appliqué 🎉')
+            toast.success('Inscription réussie! Bonus parrainage appliqué')
           } else {
             toast.success('Inscription réussie!')
           }
@@ -163,26 +358,16 @@ export const useAuthStore = create<AuthState>()(
 
       logout: async () => {
         try {
-          await apiClient.logout()
-
-          if (typeof window !== 'undefined') {
-            localStorage.removeItem('coffice-auth')
-          }
-
+          await supabase.auth.signOut()
           set({ user: null, isAdmin: false, isInitialized: true })
           toast.success('Déconnexion réussie')
-        } catch (error) {
-          apiClient.setToken(null, null)
-
-          if (typeof window !== 'undefined') {
-            localStorage.removeItem('coffice-auth')
-          }
-
+        } catch (error: any) {
           set({ user: null, isAdmin: false, isInitialized: true })
+          toast.error('Erreur lors de la déconnexion')
         }
       },
 
-      updateProfile: async (data: Partial<User>) => {
+      updateProfile: async (data: Partial<UserProfile>) => {
         try {
           set({ isLoading: true })
 
@@ -191,10 +376,37 @@ export const useAuthStore = create<AuthState>()(
             throw new Error('Utilisateur non connecté')
           }
 
-          const response = await apiClient.updateUser(currentUser.id, data)
+          const updateData: any = {}
+          if (data.nom) updateData.nom = data.nom
+          if (data.prenom) updateData.prenom = data.prenom
+          if (data.telephone !== undefined) updateData.telephone = data.telephone
+          if (data.profession !== undefined) updateData.profession = data.profession
+          if (data.entreprise !== undefined) updateData.entreprise = data.entreprise
+          if (data.adresse !== undefined) updateData.adresse = data.adresse
+          if (data.bio !== undefined) updateData.bio = data.bio
+          if (data.wilaya !== undefined) updateData.wilaya = data.wilaya
+          if (data.commune !== undefined) updateData.commune = data.commune
+          if (data.avatar !== undefined) updateData.avatar = data.avatar
+          if (data.typeEntreprise !== undefined) updateData.type_entreprise = data.typeEntreprise
+          if (data.nif !== undefined) updateData.nif = data.nif
+          if (data.nis !== undefined) updateData.nis = data.nis
+          if (data.registreCommerce !== undefined) updateData.registre_commerce = data.registreCommerce
+          if (data.articleImposition !== undefined) updateData.article_imposition = data.articleImposition
+          if (data.numeroAutoEntrepreneur !== undefined) updateData.numero_auto_entrepreneur = data.numeroAutoEntrepreneur
+          if (data.raisonSociale !== undefined) updateData.raison_sociale = data.raisonSociale
+          if (data.dateCreationEntreprise !== undefined) updateData.date_creation_entreprise = data.dateCreationEntreprise
+          if (data.capital !== undefined) updateData.capital = data.capital
+          if (data.siegeSocial !== undefined) updateData.siege_social = data.siegeSocial
+          if (data.activitePrincipale !== undefined) updateData.activite_principale = data.activitePrincipale
+          if (data.formeJuridique !== undefined) updateData.forme_juridique = data.formeJuridique
 
-          if (!response.success) {
-            throw new Error(response.error || 'Erreur lors de la mise à jour')
+          const { error } = await supabase
+            .from('profiles')
+            .update(updateData)
+            .eq('id', currentUser.id)
+
+          if (error) {
+            throw new Error(error.message)
           }
 
           set({
@@ -212,13 +424,50 @@ export const useAuthStore = create<AuthState>()(
 
       loadUser: async () => {
         try {
-          const response = await apiClient.me()
+          const { data: { session } } = await supabase.auth.getSession()
 
-          if (response.success && response.data) {
-            set({ user: response.data as User })
+          if (!session) return
+
+          const { data: profile } = await supabase
+            .from('profiles')
+            .select('*')
+            .eq('id', session.user.id)
+            .maybeSingle()
+
+          if (profile) {
+            const userProfile: UserProfile = {
+              id: profile.id,
+              email: profile.email,
+              nom: profile.nom,
+              prenom: profile.prenom,
+              telephone: profile.telephone,
+              role: profile.role,
+              statut: profile.statut,
+              avatar: profile.avatar,
+              profession: profile.profession,
+              entreprise: profile.entreprise,
+              adresse: profile.adresse,
+              bio: profile.bio,
+              wilaya: profile.wilaya,
+              commune: profile.commune,
+              typeEntreprise: profile.type_entreprise,
+              nif: profile.nif,
+              nis: profile.nis,
+              registreCommerce: profile.registre_commerce,
+              articleImposition: profile.article_imposition,
+              numeroAutoEntrepreneur: profile.numero_auto_entrepreneur,
+              raisonSociale: profile.raison_sociale,
+              dateCreationEntreprise: profile.date_creation_entreprise,
+              capital: profile.capital?.toString(),
+              siegeSocial: profile.siege_social,
+              activitePrincipale: profile.activite_principale,
+              formeJuridique: profile.forme_juridique
+            }
+
+            set({ user: userProfile })
           }
         } catch (error) {
-          // Erreur silencieuse
+          console.error('Error loading user:', error)
         }
       }
     }),
