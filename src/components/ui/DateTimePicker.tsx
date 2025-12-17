@@ -261,8 +261,8 @@ const DateTimePicker: React.FC<DateTimePickerProps> = ({
         </div>
 
         <div className="grid grid-cols-7 gap-0.5">
-          {daysOfWeek.map(day => (
-            <div key={day} className="text-center text-xs font-bold text-gray-500 py-2">
+          {daysOfWeek.map((day, index) => (
+            <div key={`day-${index}`} className="text-center text-xs font-bold text-gray-500 py-2">
               {day}
             </div>
           ))}
