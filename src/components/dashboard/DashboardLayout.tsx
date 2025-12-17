@@ -14,7 +14,10 @@ import {
   BarChart3,
   RefreshCw,
   Tag,
-  Gift
+  Gift,
+  Activity,
+  Shield,
+  CreditCard
 } from 'lucide-react'
 import { useAuthStore } from '../../store/authStore'
 import { useAppStore } from '../../store/store'
@@ -87,9 +90,12 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
     { name: 'Espaces', href: '/app/admin/spaces', icon: Building },
     { name: 'Réservations', href: '/app/admin/reservations', icon: Calendar },
     { name: 'Domiciliations', href: '/app/admin/domiciliations', icon: FileText },
+    { name: 'Abonnements', href: '/app/admin/abonnements', icon: CreditCard },
     { name: 'Codes Promo', href: '/app/admin/codes-promo', icon: Tag },
     { name: 'Parrainages', href: '/app/admin/parrainages', icon: Gift },
+    { name: 'Analytics', href: '/app/admin/analytics', icon: Activity },
     { name: 'Rapports', href: '/app/admin/reports', icon: BarChart3 },
+    { name: 'Audit Logs', href: '/app/admin/audit-logs', icon: Shield },
     { name: 'Paramètres', href: '/app/admin/settings', icon: Settings },
   ]
 
