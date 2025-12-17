@@ -1,6 +1,7 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 import { apiClient } from '../lib/api-client'
+import { useAuthStore } from './authStore'
 import toast from 'react-hot-toast'
 import type {
   User, Espace, Reservation,
@@ -573,7 +574,7 @@ export const useAppStore = create<AppState>()(
             throw new Error(response.error || 'Erreur mise a jour')
           }
 
-          const { user, loadUser } = (await import('./authStore')).useAuthStore.getState()
+          const { user, loadUser } = useAuthStore.getState()
 
           if (user?.id === userId) {
             await loadUser()
