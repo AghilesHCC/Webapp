@@ -1,7 +1,6 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
-import { supabase } from '../lib/supabase'
-import type { User as SupabaseUser } from '@supabase/supabase-js'
+import { apiClient } from '../lib/api-client'
 import toast from 'react-hot-toast'
 
 interface UserProfile {
@@ -44,7 +43,7 @@ interface AuthState {
 
   initialize: () => Promise<void>
   login: (email: string, password: string) => Promise<void>
-  loginWithGoogle: () => Promise<void>
+  loginWithGoogle: (credential: string) => Promise<void>
   register: (data: RegisterData) => Promise<void>
   logout: () => Promise<void>
   updateProfile: (data: Partial<UserProfile>) => Promise<void>
@@ -62,6 +61,40 @@ interface RegisterData {
   codeParrainage?: string
 }
 
+function transformUserData(userData: any): UserProfile {
+  return {
+    id: userData.id,
+    email: userData.email,
+    nom: userData.nom,
+    prenom: userData.prenom,
+    telephone: userData.telephone,
+    role: userData.role,
+    statut: userData.statut,
+    avatar: userData.avatar,
+    profession: userData.profession,
+    entreprise: userData.entreprise,
+    adresse: userData.adresse,
+    bio: userData.bio,
+    wilaya: userData.wilaya,
+    commune: userData.commune,
+    typeEntreprise: userData.type_entreprise,
+    nif: userData.nif,
+    nis: userData.nis,
+    registreCommerce: userData.registre_commerce,
+    articleImposition: userData.article_imposition,
+    numeroAutoEntrepreneur: userData.numero_auto_entrepreneur,
+    raisonSociale: userData.raison_sociale,
+    dateCreationEntreprise: userData.date_creation_entreprise,
+    capital: userData.capital?.toString(),
+    siegeSocial: userData.siege_social,
+    activitePrincipale: userData.activite_principale,
+    formeJuridique: userData.forme_juridique,
+    derniereConnexion: userData.derniere_connexion,
+    createdAt: userData.created_at,
+    updatedAt: userData.updated_at
+  }
+}
+
 export const useAuthStore = create<AuthState>()(
   persist(
     (set, get) => ({
@@ -74,59 +107,26 @@ export const useAuthStore = create<AuthState>()(
         try {
           set({ isLoading: true })
 
-          const { data: { session }, error } = await supabase.auth.getSession()
+          const token = apiClient.getToken()
 
-          if (error || !session) {
+          if (!token) {
             set({ user: null, isAdmin: false, isInitialized: true, isLoading: false })
             return
           }
 
-          const { data: profile, error: profileError } = await supabase
-            .from('profiles')
-            .select('*')
-            .eq('id', session.user.id)
-            .maybeSingle()
+          const response = await apiClient.me()
 
-          if (profileError || !profile) {
+          if (!response.success || !response.data) {
             set({ user: null, isAdmin: false, isInitialized: true, isLoading: false })
             return
           }
 
-          const userProfile: UserProfile = {
-            id: profile.id,
-            email: profile.email,
-            nom: profile.nom,
-            prenom: profile.prenom,
-            telephone: profile.telephone,
-            role: profile.role,
-            statut: profile.statut,
-            avatar: profile.avatar,
-            profession: profile.profession,
-            entreprise: profile.entreprise,
-            adresse: profile.adresse,
-            bio: profile.bio,
-            wilaya: profile.wilaya,
-            commune: profile.commune,
-            typeEntreprise: profile.type_entreprise,
-            nif: profile.nif,
-            nis: profile.nis,
-            registreCommerce: profile.registre_commerce,
-            articleImposition: profile.article_imposition,
-            numeroAutoEntrepreneur: profile.numero_auto_entrepreneur,
-            raisonSociale: profile.raison_sociale,
-            dateCreationEntreprise: profile.date_creation_entreprise,
-            capital: profile.capital?.toString(),
-            siegeSocial: profile.siege_social,
-            activitePrincipale: profile.activite_principale,
-            formeJuridique: profile.forme_juridique,
-            derniereConnexion: profile.derniere_connexion,
-            createdAt: profile.created_at,
-            updatedAt: profile.updated_at
-          }
+          const userData = response.data as any
+          const userProfile = transformUserData(userData)
 
           set({
             user: userProfile,
-            isAdmin: profile.role === 'admin',
+            isAdmin: userData.role === 'admin',
             isInitialized: true,
             isLoading: false
           })
@@ -140,106 +140,72 @@ export const useAuthStore = create<AuthState>()(
         try {
           set({ isLoading: true })
 
-          const { data, error } = await supabase.auth.signInWithPassword({
-            email,
-            password
-          })
+          const response = await apiClient.login(email, password)
 
-          if (error) {
+          if (!response.success || !response.data) {
             set({ isLoading: false })
-            if (error.message.includes('Invalid login credentials')) {
-              toast.error('Email ou mot de passe incorrect')
-            } else if (error.message.includes('Email not confirmed')) {
-              toast.error('Veuillez confirmer votre email')
-            } else {
-              toast.error(error.message)
-            }
-            throw error
+            const errorMsg = response.error || 'Email ou mot de passe incorrect'
+            toast.error(errorMsg)
+            throw new Error(errorMsg)
           }
 
-          if (!data.user) {
-            set({ isLoading: false })
-            throw new Error('Erreur de connexion')
-          }
+          const { token, refreshToken, user: userData } = response.data as any
 
-          const { data: profile, error: profileError } = await supabase
-            .from('profiles')
-            .select('*')
-            .eq('id', data.user.id)
-            .maybeSingle()
+          apiClient.setToken(token, refreshToken)
 
-          if (profileError || !profile) {
-            throw new Error('Impossible de charger le profil')
-          }
-
-          await supabase
-            .from('profiles')
-            .update({ derniere_connexion: new Date().toISOString() })
-            .eq('id', data.user.id)
-
-          const userProfile: UserProfile = {
-            id: profile.id,
-            email: profile.email,
-            nom: profile.nom,
-            prenom: profile.prenom,
-            telephone: profile.telephone,
-            role: profile.role,
-            statut: profile.statut,
-            avatar: profile.avatar,
-            profession: profile.profession,
-            entreprise: profile.entreprise,
-            adresse: profile.adresse,
-            bio: profile.bio,
-            wilaya: profile.wilaya,
-            commune: profile.commune,
-            typeEntreprise: profile.type_entreprise,
-            nif: profile.nif,
-            nis: profile.nis,
-            registreCommerce: profile.registre_commerce,
-            articleImposition: profile.article_imposition,
-            numeroAutoEntrepreneur: profile.numero_auto_entrepreneur,
-            raisonSociale: profile.raison_sociale,
-            dateCreationEntreprise: profile.date_creation_entreprise,
-            capital: profile.capital?.toString(),
-            siegeSocial: profile.siege_social,
-            activitePrincipale: profile.activite_principale,
-            formeJuridique: profile.forme_juridique
-          }
+          const userProfile = transformUserData(userData)
 
           set({
             user: userProfile,
-            isAdmin: profile.role === 'admin',
+            isAdmin: userData.role === 'admin',
             isLoading: false
           })
 
-          toast.success('Connexion réussie')
+          toast.success('Connexion reussie')
         } catch (error: any) {
           set({ isLoading: false })
-          toast.error(error.message || 'Erreur de connexion')
           throw error
         }
       },
 
-      loginWithGoogle: async () => {
+      loginWithGoogle: async (credential: string) => {
         try {
           set({ isLoading: true })
 
-          const { data, error } = await supabase.auth.signInWithOAuth({
-            provider: 'google',
-            options: {
-              redirectTo: `${window.location.origin}/dashboard`,
-              queryParams: {
-                access_type: 'offline',
-                prompt: 'consent'
-              }
-            }
+          const response = await fetch(`${import.meta.env.VITE_API_URL}/auth/google.php`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ credential })
           })
 
-          if (error) {
-            throw new Error(error.message)
+          const data = await response.json()
+
+          if (!data.success || !data.data) {
+            set({ isLoading: false })
+            const errorMsg = data.error || 'Erreur de connexion avec Google'
+            toast.error(errorMsg)
+            throw new Error(errorMsg)
           }
 
-          set({ isLoading: false })
+          const { token, refreshToken, user: userData, isNewUser } = data.data
+
+          apiClient.setToken(token, refreshToken)
+
+          const userProfile = transformUserData(userData)
+
+          set({
+            user: userProfile,
+            isAdmin: userData.role === 'admin',
+            isLoading: false
+          })
+
+          if (isNewUser) {
+            toast.success('Compte cree avec succes!')
+          } else {
+            toast.success('Connexion reussie')
+          }
         } catch (error: any) {
           set({ isLoading: false })
           toast.error(error.message || 'Erreur de connexion avec Google')
@@ -251,80 +217,29 @@ export const useAuthStore = create<AuthState>()(
         try {
           set({ isLoading: true })
 
-          const { data: authData, error: authError } = await supabase.auth.signUp({
+          const response = await apiClient.register({
             email: data.email,
             password: data.password,
-            options: {
-              data: {
-                nom: data.nom,
-                prenom: data.prenom,
-                telephone: data.telephone,
-                profession: data.profession,
-                entreprise: data.entreprise,
-                code_parrainage: data.codeParrainage
-              }
-            }
+            nom: data.nom,
+            prenom: data.prenom,
+            telephone: data.telephone,
+            profession: data.profession,
+            entreprise: data.entreprise,
+            codeParrainage: data.codeParrainage
           })
 
-          if (authError) {
-            throw new Error(authError.message)
+          if (!response.success || !response.data) {
+            set({ isLoading: false })
+            const errorMsg = response.error || 'Erreur lors de l\'inscription'
+            toast.error(errorMsg)
+            throw new Error(errorMsg)
           }
 
-          if (!authData.user) {
-            throw new Error('Erreur lors de l\'inscription')
-          }
+          const { token, refreshToken, user: userData } = response.data as any
 
-          await new Promise(resolve => setTimeout(resolve, 1000))
+          apiClient.setToken(token, refreshToken)
 
-          const { data: profile, error: profileError } = await supabase
-            .from('profiles')
-            .select('*')
-            .eq('id', authData.user.id)
-            .maybeSingle()
-
-          if (profileError || !profile) {
-            throw new Error('Impossible de charger le profil')
-          }
-
-          if (data.codeParrainage) {
-            const { data: parrainageData } = await supabase
-              .from('parrainages')
-              .select('id, parrain_id, parraines, recompenses_totales')
-              .eq('code_parrain', data.codeParrainage)
-              .maybeSingle()
-
-            if (parrainageData && parrainageData.parrain_id !== authData.user.id) {
-              await supabase
-                .from('parrainages')
-                .update({
-                  parraines: (parrainageData.parraines || 0) + 1,
-                  recompenses_totales: (parrainageData.recompenses_totales || 0) + 3000
-                })
-                .eq('id', parrainageData.id)
-
-              await supabase
-                .from('notifications')
-                .insert({
-                  user_id: parrainageData.parrain_id,
-                  type: 'parrainage',
-                  titre: 'Nouveau filleul!',
-                  message: 'Vous avez gagné 3000 DA grâce à votre code de parrainage',
-                  lue: false
-                })
-            }
-          }
-
-          const userProfile: UserProfile = {
-            id: profile.id,
-            email: profile.email,
-            nom: profile.nom,
-            prenom: profile.prenom,
-            telephone: profile.telephone,
-            profession: profile.profession,
-            entreprise: profile.entreprise,
-            role: profile.role,
-            statut: profile.statut
-          }
+          const userProfile = transformUserData(userData)
 
           set({
             user: userProfile,
@@ -333,25 +248,24 @@ export const useAuthStore = create<AuthState>()(
           })
 
           if (data.codeParrainage) {
-            toast.success('Inscription réussie! Bonus parrainage appliqué')
+            toast.success('Inscription reussie! Bonus parrainage applique')
           } else {
-            toast.success('Inscription réussie!')
+            toast.success('Inscription reussie!')
           }
         } catch (error: any) {
           set({ isLoading: false })
-          toast.error(error.message || 'Erreur lors de l\'inscription')
           throw error
         }
       },
 
       logout: async () => {
         try {
-          await supabase.auth.signOut()
+          await apiClient.logout()
           set({ user: null, isAdmin: false, isInitialized: true })
-          toast.success('Déconnexion réussie')
+          toast.success('Deconnexion reussie')
         } catch (error: any) {
           set({ user: null, isAdmin: false, isInitialized: true })
-          toast.error('Erreur lors de la déconnexion')
+          toast.error('Erreur lors de la deconnexion')
         }
       },
 
@@ -361,40 +275,13 @@ export const useAuthStore = create<AuthState>()(
 
           const currentUser = get().user
           if (!currentUser) {
-            throw new Error('Utilisateur non connecté')
+            throw new Error('Utilisateur non connecte')
           }
 
-          const updateData: any = {}
-          if (data.nom) updateData.nom = data.nom
-          if (data.prenom) updateData.prenom = data.prenom
-          if (data.telephone !== undefined) updateData.telephone = data.telephone
-          if (data.profession !== undefined) updateData.profession = data.profession
-          if (data.entreprise !== undefined) updateData.entreprise = data.entreprise
-          if (data.adresse !== undefined) updateData.adresse = data.adresse
-          if (data.bio !== undefined) updateData.bio = data.bio
-          if (data.wilaya !== undefined) updateData.wilaya = data.wilaya
-          if (data.commune !== undefined) updateData.commune = data.commune
-          if (data.avatar !== undefined) updateData.avatar = data.avatar
-          if (data.typeEntreprise !== undefined) updateData.type_entreprise = data.typeEntreprise
-          if (data.nif !== undefined) updateData.nif = data.nif
-          if (data.nis !== undefined) updateData.nis = data.nis
-          if (data.registreCommerce !== undefined) updateData.registre_commerce = data.registreCommerce
-          if (data.articleImposition !== undefined) updateData.article_imposition = data.articleImposition
-          if (data.numeroAutoEntrepreneur !== undefined) updateData.numero_auto_entrepreneur = data.numeroAutoEntrepreneur
-          if (data.raisonSociale !== undefined) updateData.raison_sociale = data.raisonSociale
-          if (data.dateCreationEntreprise !== undefined) updateData.date_creation_entreprise = data.dateCreationEntreprise
-          if (data.capital !== undefined) updateData.capital = data.capital
-          if (data.siegeSocial !== undefined) updateData.siege_social = data.siegeSocial
-          if (data.activitePrincipale !== undefined) updateData.activite_principale = data.activitePrincipale
-          if (data.formeJuridique !== undefined) updateData.forme_juridique = data.formeJuridique
+          const response = await apiClient.updateUser(currentUser.id, data)
 
-          const { error } = await supabase
-            .from('profiles')
-            .update(updateData)
-            .eq('id', currentUser.id)
-
-          if (error) {
-            throw new Error(error.message)
+          if (!response.success) {
+            throw new Error(response.error || 'Erreur lors de la mise a jour')
           }
 
           set({
@@ -402,57 +289,30 @@ export const useAuthStore = create<AuthState>()(
             isLoading: false
           })
 
-          toast.success('Profil mis à jour')
+          toast.success('Profil mis a jour')
         } catch (error: any) {
           set({ isLoading: false })
-          toast.error(error.message || 'Erreur lors de la mise à jour')
+          toast.error(error.message || 'Erreur lors de la mise a jour')
           throw error
         }
       },
 
       loadUser: async () => {
         try {
-          const { data: { session } } = await supabase.auth.getSession()
+          const token = apiClient.getToken()
 
-          if (!session) return
+          if (!token) return
 
-          const { data: profile } = await supabase
-            .from('profiles')
-            .select('*')
-            .eq('id', session.user.id)
-            .maybeSingle()
+          const response = await apiClient.me()
 
-          if (profile) {
-            const userProfile: UserProfile = {
-              id: profile.id,
-              email: profile.email,
-              nom: profile.nom,
-              prenom: profile.prenom,
-              telephone: profile.telephone,
-              role: profile.role,
-              statut: profile.statut,
-              avatar: profile.avatar,
-              profession: profile.profession,
-              entreprise: profile.entreprise,
-              adresse: profile.adresse,
-              bio: profile.bio,
-              wilaya: profile.wilaya,
-              commune: profile.commune,
-              typeEntreprise: profile.type_entreprise,
-              nif: profile.nif,
-              nis: profile.nis,
-              registreCommerce: profile.registre_commerce,
-              articleImposition: profile.article_imposition,
-              numeroAutoEntrepreneur: profile.numero_auto_entrepreneur,
-              raisonSociale: profile.raison_sociale,
-              dateCreationEntreprise: profile.date_creation_entreprise,
-              capital: profile.capital?.toString(),
-              siegeSocial: profile.siege_social,
-              activitePrincipale: profile.activite_principale,
-              formeJuridique: profile.forme_juridique
-            }
+          if (response.success && response.data) {
+            const userData = response.data as any
+            const userProfile = transformUserData(userData)
 
-            set({ user: userProfile })
+            set({
+              user: userProfile,
+              isAdmin: userData.role === 'admin'
+            })
           }
         } catch (error) {
           console.error('Error loading user:', error)

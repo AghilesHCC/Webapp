@@ -167,16 +167,14 @@ Si vous avez déjà créé un compte précédemment :
 - **Tailwind CSS** pour le design
 
 ### Backend
-- **Supabase** pour tout le backend
+- **PHP** avec API REST
   - Authentication (email/password + Google OAuth)
-  - Base de données PostgreSQL
-  - Row Level Security (RLS)
-  - API automatique
-  - Temps réel
+  - Base de donnees MySQL
+  - Validation et securite JWT
+  - API structuree
 
 ### Sécurité
-- Authentification sécurisée via Supabase Auth
-- Row Level Security (RLS) sur toutes les tables
+- Authentification securisee avec JWT
 - Validation côté client et serveur
 - Sessions sécurisées avec JWT
 - Protection CORS automatique

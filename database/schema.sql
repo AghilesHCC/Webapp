@@ -22,6 +22,7 @@ CREATE TABLE `users` (
     `role` ENUM('user', 'admin') NOT NULL DEFAULT 'user',
     `statut` ENUM('actif', 'inactif', 'suspendu') NOT NULL DEFAULT 'actif',
     `avatar` VARCHAR(500) DEFAULT NULL,
+    `google_id` VARCHAR(255) DEFAULT NULL,
     `profession` VARCHAR(100) DEFAULT NULL,
     `entreprise` VARCHAR(200) DEFAULT NULL,
     `adresse` TEXT DEFAULT NULL,
@@ -49,7 +50,8 @@ CREATE TABLE `users` (
     UNIQUE KEY `uk_users_email` (`email`),
     KEY `idx_users_role` (`role`),
     KEY `idx_users_statut` (`statut`),
-    KEY `idx_users_created_at` (`created_at`)
+    KEY `idx_users_created_at` (`created_at`),
+    KEY `idx_users_google_id` (`google_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- ============================================
