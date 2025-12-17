@@ -1,7 +1,4 @@
-/**
- * Client API pour MySQL/PHP Backend
- * Remplace complètement Supabase
- */
+import { isTokenExpired as isTokenExpiredUtil, isTokenExpiringSoon as isTokenExpiringSoonUtil } from '../utils/jwt'
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost/api'
 
@@ -56,40 +53,11 @@ class ApiClient {
   }
 
   private isTokenExpired(): boolean {
-    const token = this.getToken()
-    if (!token) return true
-
-    try {
-      const parts = token.split('.')
-      if (parts.length !== 3) return true
-
-      const payload = JSON.parse(atob(parts[1].replace(/-/g, '+').replace(/_/g, '/')))
-      const exp = payload.exp * 1000
-      const now = Date.now()
-
-      return now >= exp
-    } catch {
-      return true
-    }
+    return isTokenExpiredUtil(this.getToken())
   }
 
   private isTokenExpiringSoon(): boolean {
-    const token = this.getToken()
-    if (!token) return false
-
-    try {
-      const parts = token.split('.')
-      if (parts.length !== 3) return false
-
-      const payload = JSON.parse(atob(parts[1].replace(/-/g, '+').replace(/_/g, '/')))
-      const exp = payload.exp * 1000
-      const now = Date.now()
-      const timeLeft = exp - now
-
-      return timeLeft < 5 * 60 * 1000
-    } catch {
-      return false
-    }
+    return isTokenExpiringSoonUtil(this.getToken())
   }
 
   private async refreshAccessToken(): Promise<string> {

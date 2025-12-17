@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react'
+import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
-import { Tag, Copy, CheckCircle, Gift, Search } from 'lucide-react'
+import { Tag, Copy, CheckCircle, Gift } from 'lucide-react'
 import { apiClient } from '../../lib/api-client'
 import Card from '../../components/ui/Card'
 import Badge from '../../components/ui/Badge'
@@ -10,8 +10,21 @@ import LoadingSpinner from '../../components/ui/LoadingSpinner'
 import toast from 'react-hot-toast'
 import { format } from 'date-fns'
 
+interface PromoCode {
+  id: string
+  code: string
+  type: 'pourcentage' | 'montant'
+  valeur: number
+  description?: string
+  date_fin: string
+  montant_min?: number
+  utilisations_max?: number
+  utilisations_actuelles?: number
+  types_application?: string | string[]
+}
+
 const CodesPromo = () => {
-  const [codes, setCodes] = useState<any[]>([])
+  const [codes, setCodes] = useState<PromoCode[]>([])
   const [loading, setLoading] = useState(true)
   const [verifyCode, setVerifyCode] = useState('')
   const [verifying, setVerifying] = useState(false)
@@ -25,13 +38,13 @@ const CodesPromo = () => {
     try {
       const response = await apiClient.getPublicCodesPromo()
       if (response.success && response.data) {
-        const responseData = response.data as any
+        const responseData = response.data as PromoCode[] | { data: PromoCode[] }
         const codesData = Array.isArray(responseData) ? responseData : (responseData.data || [])
         setCodes(codesData)
       } else {
         setCodes([])
       }
-    } catch (error) {
+    } catch {
       toast.error('Erreur lors du chargement')
       setCodes([])
     } finally {
@@ -54,7 +67,7 @@ const CodesPromo = () => {
         toast.error(result.error || 'Code invalide ou expiré')
       }
       setVerifyCode('')
-    } catch (error) {
+    } catch {
       toast.error('Code invalide ou expiré')
     } finally {
       setVerifying(false)
@@ -172,9 +185,9 @@ const CodesPromo = () => {
                     <div className="pt-4 border-t">
                       <p className="text-xs text-gray-500 mb-2">Applicable à:</p>
                       <Badge variant="default" className="text-xs">
-                        {code.types_application ? 
-                          (typeof code.types_application === 'string' ? 
-                            JSON.parse(code.types_application).join(', ') : 
+                        {code.types_application ?
+                          (typeof code.types_application === 'string' ?
+                            (JSON.parse(code.types_application) as string[]).join(', ') :
                             code.types_application.join(', ')
                           ) : 'Tous les services'}
                       </Badge>

@@ -1,4 +1,3 @@
-import React from 'react'
 import { motion } from 'framer-motion'
 import { Users, Target, Heart } from 'lucide-react'
 import { useSEO } from '../hooks/useSEO'

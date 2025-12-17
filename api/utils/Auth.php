@@ -195,110 +195,74 @@ class Auth {
      * Récupérer le token Bearer depuis les headers
      * Compatible avec tous les serveurs (Apache, Nginx, etc.)
      */
-    public static function getBearerToken($debug = false) {
+    public static function getBearerToken() {
         $auth_header = null;
-        $method_used = null;
 
-        // Méthode 1: getallheaders() (Apache, Nginx avec PHP-FPM)
         if (function_exists('getallheaders')) {
             $headers = getallheaders();
             $auth_header = isset($headers['Authorization']) ? $headers['Authorization'] :
                           (isset($headers['authorization']) ? $headers['authorization'] : null);
-            if ($auth_header) $method_used = 'getallheaders()';
         }
 
-        // Méthode 2: $_SERVER['HTTP_AUTHORIZATION'] (Nginx, lighttpd)
         if (!$auth_header && isset($_SERVER['HTTP_AUTHORIZATION'])) {
             $auth_header = $_SERVER['HTTP_AUTHORIZATION'];
-            $method_used = '$_SERVER[HTTP_AUTHORIZATION]';
         }
 
-        // Méthode 3: apache_request_headers() (Apache uniquement)
         if (!$auth_header && function_exists('apache_request_headers')) {
             $headers = apache_request_headers();
             $auth_header = isset($headers['Authorization']) ? $headers['Authorization'] :
                           (isset($headers['authorization']) ? $headers['authorization'] : null);
-            if ($auth_header) $method_used = 'apache_request_headers()';
         }
 
-        // Méthode 4: $_SERVER['REDIRECT_HTTP_AUTHORIZATION'] (Apache avec .htaccess RewriteRule)
         if (!$auth_header && isset($_SERVER['REDIRECT_HTTP_AUTHORIZATION'])) {
             $auth_header = $_SERVER['REDIRECT_HTTP_AUTHORIZATION'];
-            $method_used = '$_SERVER[REDIRECT_HTTP_AUTHORIZATION]';
         }
 
-        // Méthode 5: getenv() pour cPanel (variable d'environnement créée par RewriteRule)
         if (!$auth_header) {
             $env_auth = getenv('HTTP_AUTHORIZATION') ?: getenv('REDIRECT_HTTP_AUTHORIZATION');
             if ($env_auth) {
                 $auth_header = $env_auth;
-                $method_used = 'getenv()';
             }
         }
 
-        // Méthode 6: $_ENV pour compatibilité totale
         if (!$auth_header && isset($_ENV['HTTP_AUTHORIZATION'])) {
             $auth_header = $_ENV['HTTP_AUTHORIZATION'];
-            $method_used = '$_ENV[HTTP_AUTHORIZATION]';
         }
 
         if (!$auth_header && isset($_ENV['REDIRECT_HTTP_AUTHORIZATION'])) {
             $auth_header = $_ENV['REDIRECT_HTTP_AUTHORIZATION'];
-            $method_used = '$_ENV[REDIRECT_HTTP_AUTHORIZATION]';
-        }
-
-        if ($debug) {
-            error_log("AUTH DEBUG - Method used: " . ($method_used ?: 'NONE'));
-            error_log("AUTH DEBUG - Auth header: " . ($auth_header ?: 'NULL'));
         }
 
         if (empty($auth_header)) {
-            if ($debug) error_log("AUTH DEBUG - No auth header found");
             return null;
         }
 
-        // Extraire le token (format: "Bearer TOKEN")
         if (preg_match('/Bearer\s+(.*)$/i', $auth_header, $matches)) {
-            $token = trim($matches[1]);
-            if ($debug) error_log("AUTH DEBUG - Token extracted: " . substr($token, 0, 20) . "...");
-            return $token;
+            return trim($matches[1]);
         }
 
-        if ($debug) error_log("AUTH DEBUG - No Bearer token found in header");
         return null;
     }
 
     /**
      * Vérifier l'authentification et retourner les données utilisateur
      * Utiliser cette méthode dans tous les endpoints protégés
-     * Utilise uniquement la validation JWT (simplifié)
      */
-    public static function verifyAuth($debug = false) {
-        $token = self::getBearerToken($debug);
+    public static function verifyAuth() {
+        $token = self::getBearerToken();
 
         if (!$token) {
-            if ($debug) error_log("AUTH DEBUG - Token null, returning 401");
             require_once __DIR__ . '/Response.php';
             Response::error("Token d'authentification manquant", 401);
             exit;
         }
 
-        if ($debug) error_log("AUTH DEBUG - Validating token...");
         $userData = self::validateToken($token);
 
         if (!$userData) {
-            if ($debug) {
-                error_log("AUTH DEBUG - Token validation failed");
-                error_log("AUTH DEBUG - JWT_SECRET used: " . substr(self::getSecretKey(), 0, 20) . "...");
-            }
             require_once __DIR__ . '/Response.php';
             Response::error("Token invalide ou expiré", 401);
             exit;
-        }
-
-        if ($debug) {
-            error_log("AUTH DEBUG - Token valid for user: " . $userData->email);
-            error_log("AUTH DEBUG - User role: " . $userData->role);
         }
 
         return [

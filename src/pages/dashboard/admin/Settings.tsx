@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from 'react'
+import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import {
-  Settings as SettingsIcon, Building2, DollarSign, Clock, Mail, Bell,
-  Shield, Save, RefreshCw, Database, CheckCircle
+  Settings as SettingsIcon, Building2, Clock, Mail, Bell,
+  Shield, Save, RefreshCw, CheckCircle
 } from 'lucide-react'
 import Card from '../../../components/ui/Card'
 import Button from '../../../components/ui/Button'
@@ -149,7 +149,7 @@ const Settings = () => {
           return (
             <button
               key={tab.id}
-              onClick={() => setActiveTab(tab.id as any)}
+              onClick={() => setActiveTab(tab.id as 'general' | 'notifications' | 'security')}
               className={`px-6 py-3 font-medium transition-colors flex items-center gap-2 whitespace-nowrap ${
                 activeTab === tab.id
                   ? 'text-accent border-b-2 border-accent'

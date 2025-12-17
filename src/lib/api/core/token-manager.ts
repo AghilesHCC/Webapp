@@ -1,4 +1,5 @@
 import { API_URL, TOKEN_EXPIRY_THRESHOLD, PROTECTED_PATHS } from './constants'
+import { isTokenExpired as checkTokenExpired, isTokenExpiringSoon as checkTokenExpiringSoon } from '../../../utils/jwt'
 
 export class TokenManager {
   private token: string | null = null
@@ -50,40 +51,11 @@ export class TokenManager {
   }
 
   isTokenExpired(): boolean {
-    const token = this.getToken()
-    if (!token) return true
-
-    try {
-      const parts = token.split('.')
-      if (parts.length !== 3) return true
-
-      const payload = JSON.parse(atob(parts[1].replace(/-/g, '+').replace(/_/g, '/')))
-      const exp = payload.exp * 1000
-      const now = Date.now()
-
-      return now >= exp
-    } catch {
-      return true
-    }
+    return checkTokenExpired(this.getToken())
   }
 
   isTokenExpiringSoon(): boolean {
-    const token = this.getToken()
-    if (!token) return false
-
-    try {
-      const parts = token.split('.')
-      if (parts.length !== 3) return false
-
-      const payload = JSON.parse(atob(parts[1].replace(/-/g, '+').replace(/_/g, '/')))
-      const exp = payload.exp * 1000
-      const now = Date.now()
-      const timeLeft = exp - now
-
-      return timeLeft < TOKEN_EXPIRY_THRESHOLD
-    } catch {
-      return false
-    }
+    return checkTokenExpiringSoon(this.getToken(), TOKEN_EXPIRY_THRESHOLD)
   }
 
   async refreshAccessToken(): Promise<string> {

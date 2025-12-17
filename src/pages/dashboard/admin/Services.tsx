@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from 'react'
+import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import {
-  CreditCard, Building2, Plus, Edit2, Trash2, Search,
-  Filter, Download, CheckCircle, XCircle, Clock, Eye
+  CreditCard, Building2, Search,
+  Download, CheckCircle, XCircle, Eye
 } from 'lucide-react'
 import { apiClient } from '../../../lib/api-client'
 import Button from '../../../components/ui/Button'
@@ -14,14 +14,29 @@ import LoadingSpinner from '../../../components/ui/LoadingSpinner'
 import toast from 'react-hot-toast'
 import { format } from 'date-fns'
 
+interface ServiceItem {
+  id: string
+  user_nom?: string
+  user_prenom?: string
+  user_email?: string
+  entreprise?: string
+  type_abonnement?: string
+  statut: string
+  date_debut: string
+  date_fin?: string
+  montant: number
+  adresse_fiscale?: string
+  notes?: string
+}
+
 const Services = () => {
   const [activeTab, setActiveTab] = useState<'abonnements' | 'domiciliations'>('abonnements')
-  const [abonnements, setAbonnements] = useState<any[]>([])
-  const [domiciliations, setDomiciliations] = useState<any[]>([])
+  const [abonnements, setAbonnements] = useState<ServiceItem[]>([])
+  const [domiciliations, setDomiciliations] = useState<ServiceItem[]>([])
   const [loading, setLoading] = useState(true)
   const [searchQuery, setSearchQuery] = useState('')
   const [filterStatus, setFilterStatus] = useState<string>('all')
-  const [selectedItem, setSelectedItem] = useState<any>(null)
+  const [selectedItem, setSelectedItem] = useState<ServiceItem | null>(null)
   const [showDetailModal, setShowDetailModal] = useState(false)
 
   useEffect(() => {
@@ -33,12 +48,12 @@ const Services = () => {
     try {
       if (activeTab === 'abonnements') {
         const response = await apiClient.getAbonnements()
-        setAbonnements((response.data || []) as any[])
+        setAbonnements((response.data || []) as ServiceItem[])
       } else {
         const response = await apiClient.getDomiciliations()
-        setDomiciliations((response.data || []) as any[])
+        setDomiciliations((response.data || []) as ServiceItem[])
       }
-    } catch (error) {
+    } catch {
       toast.error('Erreur lors du chargement des données')
     } finally {
       setLoading(false)
@@ -55,13 +70,13 @@ const Services = () => {
         toast.success('Statut mis à jour')
       }
       loadData()
-    } catch (error) {
+    } catch {
       toast.error('Erreur lors de la mise à jour')
     }
   }
 
   const getStatusBadge = (statut: string) => {
-    const variants: Record<string, any> = {
+    const variants: Record<string, 'success' | 'danger' | 'warning' | 'secondary' | 'default'> = {
       actif: 'success',
       expire: 'danger',
       suspendu: 'warning',
