@@ -13,7 +13,6 @@ const Profile = () => {
   const { user, setUser } = useAuthStore()
   const [isEditing, setIsEditing] = useState(false)
   const [loading, setLoading] = useState(false)
-  const [generatingCode, setGeneratingCode] = useState(false)
   const [formData, setFormData] = useState({
     nom: user?.nom || '',
     prenom: user?.prenom || '',
@@ -64,27 +63,6 @@ const Profile = () => {
     }
   }
 
-  const handleGenerateCode = async () => {
-    if (!user) return
-
-    setGeneratingCode(true)
-    try {
-      const response = await apiClient.request('/parrainages/generate.php', { method: 'POST' })
-      if (response.success && response.data) {
-        const meResponse = await apiClient.me()
-        if (meResponse.success && meResponse.data) {
-          setUser(meResponse.data as any)
-        }
-        toast.success('Code de parrainage généré avec succès!')
-      } else {
-        toast.error(response.error || 'Erreur lors de la génération du code')
-      }
-    } catch (error: any) {
-      toast.error(error.message || 'Erreur lors de la génération du code')
-    } finally {
-      setGeneratingCode(false)
-    }
-  }
 
   const copyCodeToClipboard = () => {
     if (user?.parrainage?.codeParrain) {
@@ -232,74 +210,60 @@ const Profile = () => {
               </div>
             </div>
 
-            {user.parrainage?.codeParrain ? (
-              <motion.div
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="space-y-4"
-              >
-                <div className="bg-gradient-to-br from-orange-50 to-pink-50 p-4 rounded-lg border-2 border-orange-200">
-                  <p className="text-sm text-gray-600 mb-2">Votre code de parrainage</p>
-                  <div className="flex items-center justify-between">
-                    <p className="text-2xl font-bold text-gray-900 tracking-wider">
-                      {user.parrainage.codeParrain}
-                    </p>
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={copyCodeToClipboard}
-                      className="ml-2"
-                    >
-                      <Copy className="w-4 h-4" />
-                    </Button>
-                  </div>
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="space-y-4"
+            >
+              <div className="bg-gradient-to-br from-orange-50 to-pink-50 p-4 rounded-lg border-2 border-orange-200">
+                <p className="text-sm text-gray-600 mb-2">Votre code de parrainage</p>
+                <div className="flex items-center justify-between">
+                  <p className="text-2xl font-bold text-gray-900 tracking-wider">
+                    {user.parrainage?.codeParrain || 'Chargement...'}
+                  </p>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={copyCodeToClipboard}
+                    className="ml-2"
+                    disabled={!user.parrainage?.codeParrain}
+                  >
+                    <Copy className="w-4 h-4" />
+                  </Button>
                 </div>
-
-                <Button
-                  className="w-full"
-                  onClick={shareCode}
-                >
-                  <Share2 className="w-4 h-4 mr-2" />
-                  Partager mon code
-                </Button>
-
-                <div className="grid grid-cols-2 gap-3">
-                  <div className="bg-gray-50 p-3 rounded-lg text-center">
-                    <p className="text-2xl font-bold text-accent">{user.parrainage.parraines || 0}</p>
-                    <p className="text-xs text-gray-600">Parrainés</p>
-                  </div>
-                  <div className="bg-gray-50 p-3 rounded-lg text-center">
-                    <p className="text-2xl font-bold text-green-600">
-                      {(user.parrainage.recompensesTotales || 0).toLocaleString()}
-                    </p>
-                    <p className="text-xs text-gray-600">DA gagnés</p>
-                  </div>
-                </div>
-
-                <div className="text-xs text-gray-500 bg-blue-50 p-3 rounded-lg border border-blue-200">
-                  <p className="font-medium text-blue-900 mb-1">Comment ça marche?</p>
-                  <ul className="space-y-1 list-disc list-inside">
-                    <li>Partagez votre code avec vos contacts</li>
-                    <li>Ils s'inscrivent avec votre code</li>
-                    <li>Vous recevez des récompenses</li>
-                  </ul>
-                </div>
-              </motion.div>
-            ) : (
-              <div className="text-center py-6">
-                <p className="text-gray-600 mb-4 text-sm">
-                  Générez votre code de parrainage unique et commencez à gagner des récompenses
-                </p>
-                <Button
-                  onClick={handleGenerateCode}
-                  disabled={generatingCode}
-                  className="w-full"
-                >
-                  <Gift className="w-4 h-4 mr-2" />
-                  {generatingCode ? 'Génération...' : 'Générer mon code'}
-                </Button>
               </div>
-            )}
+
+              <Button
+                className="w-full"
+                onClick={shareCode}
+                disabled={!user.parrainage?.codeParrain}
+              >
+                <Share2 className="w-4 h-4 mr-2" />
+                Partager mon code
+              </Button>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div className="bg-gray-50 p-3 rounded-lg text-center">
+                  <p className="text-2xl font-bold text-accent">{user.parrainage?.parraines || 0}</p>
+                  <p className="text-xs text-gray-600">Parrainés</p>
+                </div>
+                <div className="bg-gray-50 p-3 rounded-lg text-center">
+                  <p className="text-2xl font-bold text-green-600">
+                    {(user.parrainage?.recompensesTotales || 0).toLocaleString()}
+                  </p>
+                  <p className="text-xs text-gray-600">DA gagnés</p>
+                </div>
+              </div>
+
+              <div className="text-xs text-gray-500 bg-blue-50 p-3 rounded-lg border border-blue-200">
+                <p className="font-medium text-blue-900 mb-1">Comment ça marche?</p>
+                <ul className="space-y-1 list-disc list-inside">
+                  <li>Partagez votre code avec vos contacts</li>
+                  <li>Ils s'inscrivent avec votre code</li>
+                  <li>Vous recevez des récompenses</li>
+                </ul>
+              </div>
+            </motion.div>
           </Card>
 
           <Card className="p-6">

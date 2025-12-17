@@ -189,33 +189,37 @@ export function UserDashboard() {
         </div>
 
         <div className="lg:col-span-1 space-y-6">
-          {user?.parrainage?.codeParrain && (
-            <Card className="p-6 bg-gradient-to-br from-orange-50 to-pink-50 border-2 border-orange-200">
-              <div className="flex items-center gap-3 mb-4">
-                <div className="w-10 h-10 bg-gradient-to-br from-orange-400 to-pink-500 rounded-xl flex items-center justify-center">
-                  <Gift className="w-5 h-5 text-white" />
-                </div>
-                <div>
-                  <h3 className="font-semibold text-gray-900">Mon Code</h3>
-                  <p className="text-sm text-gray-600">{user.parrainage.parraines} parrainés</p>
-                </div>
+          <Card className="p-6 bg-gradient-to-br from-orange-50 to-pink-50 border-2 border-orange-200">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-10 h-10 bg-gradient-to-br from-orange-400 to-pink-500 rounded-xl flex items-center justify-center">
+                <Gift className="w-5 h-5 text-white" />
               </div>
-              <div className="bg-white p-3 rounded-lg mb-3">
-                <p className="text-2xl font-bold text-center tracking-wider text-gray-900">
-                  {user.parrainage.codeParrain}
-                </p>
+              <div>
+                <h3 className="font-semibold text-gray-900">Mon Code</h3>
+                <p className="text-sm text-gray-600">{user?.parrainage?.parraines || 0} parrainés</p>
               </div>
-              <div className="grid grid-cols-2 gap-2">
-                <Button size="sm" variant="outline" onClick={copyCodeToClipboard} className="text-xs">
-                  <Share2 className="w-3 h-3 mr-1" />
-                  Copier
-                </Button>
-                <Button size="sm" onClick={() => navigate('/app/profil')} className="text-xs">
-                  Voir détails
-                </Button>
-              </div>
-            </Card>
-          )}
+            </div>
+            <div className="bg-white p-3 rounded-lg mb-3">
+              <p className="text-2xl font-bold text-center tracking-wider text-gray-900">
+                {user?.parrainage?.codeParrain || 'Chargement...'}
+              </p>
+            </div>
+            <div className="grid grid-cols-2 gap-2">
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={copyCodeToClipboard}
+                className="text-xs"
+                disabled={!user?.parrainage?.codeParrain}
+              >
+                <Share2 className="w-3 h-3 mr-1" />
+                Copier
+              </Button>
+              <Button size="sm" onClick={() => navigate('/app/profil')} className="text-xs">
+                Voir détails
+              </Button>
+            </div>
+          </Card>
 
           <Card className="p-6">
             <h3 className="text-lg font-semibold text-gray-900 mb-6">Actions rapides</h3>
