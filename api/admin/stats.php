@@ -123,7 +123,47 @@ try {
 
     $reservationsGrowth = $yesterdayReservations > 0 ? (int)($todayReservations - $yesterdayReservations) : $todayReservations;
 
+    // Calculer le revenu total (toutes périodes)
+    $query = "SELECT COALESCE(SUM(montant_total - COALESCE(reduction, 0)), 0) as total FROM reservations
+              WHERE statut IN ('confirmee', 'terminee')";
+    $stmt = $db->prepare($query);
+    $stmt->execute();
+    $totalRevenue = $stmt->fetch()['total'];
+
+    // Compter toutes les réservations
+    $query = "SELECT COUNT(*) as total FROM reservations";
+    $stmt = $db->prepare($query);
+    $stmt->execute();
+    $totalReservationsCount = $stmt->fetch()['total'];
+
+    // Espaces populaires
+    $query = "SELECT e.nom as name, COUNT(r.id) as count
+              FROM reservations r
+              JOIN espaces e ON r.espace_id = e.id
+              WHERE MONTH(r.created_at) = MONTH(NOW())
+              AND YEAR(r.created_at) = YEAR(NOW())
+              GROUP BY e.id, e.nom
+              ORDER BY count DESC
+              LIMIT 5";
+    $stmt = $db->prepare($query);
+    $stmt->execute();
+    $popularSpaces = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
     Response::success([
+        // Format attendu par le frontend
+        'totalUsers' => (int)$totalUsers,
+        'activeUsers' => (int)$activeUsers,
+        'totalReservations' => (int)$totalReservationsCount,
+        'monthlyRevenue' => (float)$monthRevenue,
+        'totalRevenue' => (float)$totalRevenue,
+        'occupancyRate' => $occupancyRate,
+        'tauxOccupation' => $occupancyRate,
+        'caMois' => (float)$monthRevenue,
+        'reservationsCeMois' => (int)$monthReservations,
+        'popularSpaces' => $popularSpaces,
+        'recentActivity' => [],
+
+        // Format détaillé pour compatibilité
         'users' => [
             'total' => (int)$totalUsers,
             'active' => (int)$activeUsers,
@@ -136,6 +176,7 @@ try {
         ],
         'revenue' => [
             'month' => (float)$monthRevenue,
+            'total' => (float)$totalRevenue,
             'growth' => $revenueGrowth
         ],
         'subscriptions' => [
