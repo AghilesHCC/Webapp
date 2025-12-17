@@ -210,7 +210,7 @@ export function UserDashboard() {
                   <Share2 className="w-3 h-3 mr-1" />
                   Copier
                 </Button>
-                <Button size="sm" onClick={() => navigate('/app/profile')} className="text-xs">
+                <Button size="sm" onClick={() => navigate('/app/profil')} className="text-xs">
                   Voir détails
                 </Button>
               </div>
@@ -228,7 +228,7 @@ export function UserDashboard() {
                 <Calendar className="w-5 h-5 mr-3" />
                 Mes réservations
               </Button>
-              <Button variant="outline" className="w-full justify-start" onClick={() => navigate('/app/profile')}>
+              <Button variant="outline" className="w-full justify-start" onClick={() => navigate('/app/profil')}>
                 <MapPin className="w-5 h-5 mr-3" />
                 Mon profil
               </Button>
