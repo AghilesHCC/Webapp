@@ -146,10 +146,19 @@ export const useAuthStore = create<AuthState>()(
           })
 
           if (error) {
-            throw new Error(error.message)
+            set({ isLoading: false })
+            if (error.message.includes('Invalid login credentials')) {
+              toast.error('Email ou mot de passe incorrect')
+            } else if (error.message.includes('Email not confirmed')) {
+              toast.error('Veuillez confirmer votre email')
+            } else {
+              toast.error(error.message)
+            }
+            throw error
           }
 
           if (!data.user) {
+            set({ isLoading: false })
             throw new Error('Erreur de connexion')
           }
 
