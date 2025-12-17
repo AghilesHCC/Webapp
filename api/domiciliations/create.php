@@ -71,36 +71,42 @@ try {
                :representant_email, 'en_attente', :montant_mensuel)";
 
     $stmt = $db->prepare($query);
-    $stmt->execute([
-        ':id' => $id,
-        ':user_id' => $auth['id'],
-        ':raison_sociale' => Sanitizer::sanitizeString($data->raison_sociale),
-        ':forme_juridique' => Sanitizer::sanitizeString($data->forme_juridique),
-        ':capital' => isset($data->capital) ? Sanitizer::sanitizeString($data->capital) : null,
-        ':activite_principale' => isset($data->activite_principale) ? Sanitizer::sanitizeString($data->activite_principale) : null,
-        ':nif' => isset($data->nif) ? Sanitizer::sanitizeString($data->nif) : null,
-        ':nis' => isset($data->nis) ? Sanitizer::sanitizeString($data->nis) : null,
-        ':registre_commerce' => isset($data->registre_commerce) ? Sanitizer::sanitizeString($data->registre_commerce) : null,
-        ':article_imposition' => isset($data->article_imposition) ? Sanitizer::sanitizeString($data->article_imposition) : null,
-        ':numero_auto_entrepreneur' => isset($data->numero_auto_entrepreneur) ? Sanitizer::sanitizeString($data->numero_auto_entrepreneur) : null,
-        ':wilaya' => isset($data->wilaya) ? Sanitizer::sanitizeString($data->wilaya) : null,
-        ':commune' => isset($data->commune) ? Sanitizer::sanitizeString($data->commune) : null,
-        ':adresse_actuelle' => isset($data->adresse_actuelle) ? Sanitizer::sanitizeString($data->adresse_actuelle) : null,
-        ':coordonnees_fiscales' => isset($data->coordonnees_fiscales) ? Sanitizer::sanitizeString($data->coordonnees_fiscales) : null,
-        ':coordonnees_administratives' => isset($data->coordonnees_administratives) ? Sanitizer::sanitizeString($data->coordonnees_administratives) : null,
-        ':date_creation_entreprise' => isset($data->date_creation_entreprise) ? $data->date_creation_entreprise : null,
-        ':representant_nom' => isset($data->representant_nom) ? Sanitizer::sanitizeString($data->representant_nom) : null,
-        ':representant_prenom' => isset($data->representant_prenom) ? Sanitizer::sanitizeString($data->representant_prenom) : null,
-        ':representant_fonction' => isset($data->representant_fonction) ? Sanitizer::sanitizeString($data->representant_fonction) : null,
-        ':representant_telephone' => isset($data->representant_telephone) ? Sanitizer::sanitizeString($data->representant_telephone) : null,
-        ':representant_email' => isset($data->representant_email) ? Sanitizer::sanitizeEmail($data->representant_email) : null,
-        ':montant_mensuel' => $data->montant_mensuel ?? 5000
-    ]);
+
+    try {
+        $stmt->execute([
+            ':id' => $id,
+            ':user_id' => $auth['id'],
+            ':raison_sociale' => Sanitizer::sanitizeString($data->raison_sociale),
+            ':forme_juridique' => Sanitizer::sanitizeString($data->forme_juridique),
+            ':capital' => isset($data->capital) ? Sanitizer::sanitizeString($data->capital) : null,
+            ':activite_principale' => isset($data->activite_principale) ? Sanitizer::sanitizeString($data->activite_principale) : null,
+            ':nif' => isset($data->nif) ? Sanitizer::sanitizeString($data->nif) : null,
+            ':nis' => isset($data->nis) ? Sanitizer::sanitizeString($data->nis) : null,
+            ':registre_commerce' => isset($data->registre_commerce) ? Sanitizer::sanitizeString($data->registre_commerce) : null,
+            ':article_imposition' => isset($data->article_imposition) ? Sanitizer::sanitizeString($data->article_imposition) : null,
+            ':numero_auto_entrepreneur' => isset($data->numero_auto_entrepreneur) ? Sanitizer::sanitizeString($data->numero_auto_entrepreneur) : null,
+            ':wilaya' => isset($data->wilaya) ? Sanitizer::sanitizeString($data->wilaya) : null,
+            ':commune' => isset($data->commune) ? Sanitizer::sanitizeString($data->commune) : null,
+            ':adresse_actuelle' => isset($data->adresse_actuelle) ? Sanitizer::sanitizeString($data->adresse_actuelle) : null,
+            ':coordonnees_fiscales' => isset($data->coordonnees_fiscales) ? Sanitizer::sanitizeString($data->coordonnees_fiscales) : null,
+            ':coordonnees_administratives' => isset($data->coordonnees_administratives) ? Sanitizer::sanitizeString($data->coordonnees_administratives) : null,
+            ':date_creation_entreprise' => isset($data->date_creation_entreprise) ? $data->date_creation_entreprise : null,
+            ':representant_nom' => isset($data->representant_nom) ? Sanitizer::sanitizeString($data->representant_nom) : null,
+            ':representant_prenom' => isset($data->representant_prenom) ? Sanitizer::sanitizeString($data->representant_prenom) : null,
+            ':representant_fonction' => isset($data->representant_fonction) ? Sanitizer::sanitizeString($data->representant_fonction) : null,
+            ':representant_telephone' => isset($data->representant_telephone) ? Sanitizer::sanitizeString($data->representant_telephone) : null,
+            ':representant_email' => isset($data->representant_email) ? Sanitizer::sanitizeEmail($data->representant_email) : null,
+            ':montant_mensuel' => $data->montant_mensuel ?? 5000
+        ]);
+    } catch (PDOException $e) {
+        error_log("Database error in domiciliation create: " . $e->getMessage());
+        Response::error("Erreur lors de la création de la demande: " . $e->getMessage(), 500);
+    }
 
     Response::success(['id' => $id], "Demande de domiciliation créée avec succès", 201);
 
 } catch (Exception $e) {
     error_log("Create domiciliation error: " . $e->getMessage());
-    Response::serverError();
+    Response::error("Erreur serveur: " . $e->getMessage(), 500);
 }
 ?>
