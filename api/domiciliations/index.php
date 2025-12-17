@@ -51,7 +51,7 @@ try {
             'updatedAt' => $d['updated_at'],
             'dateCreation' => $d['created_at']
         ];
-        
+
         if (isset($d['representant_nom'])) {
             $result['representantLegal'] = [
                 'nom' => $d['representant_nom'],
@@ -61,16 +61,18 @@ try {
                 'email' => $d['representant_email']
             ];
         }
-        
+
         if (isset($d['email'])) {
-            $result['user'] = [
+            $userData = [
                 'email' => $d['email'],
                 'nom' => $d['nom'],
                 'prenom' => $d['prenom'],
                 'telephone' => $d['telephone']
             ];
+            $result['user'] = $userData;
+            $result['utilisateur'] = $userData;
         }
-        
+
         return $result;
     }, $domiciliations);
 

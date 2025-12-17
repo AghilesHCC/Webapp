@@ -38,6 +38,13 @@ try {
     $reservations = $stmt->fetchAll(PDO::FETCH_ASSOC);
     
     $formatted = array_map(function($r) {
+        $userData = isset($r['user_nom']) ? [
+            'nom' => $r['user_nom'],
+            'prenom' => $r['user_prenom'],
+            'email' => $r['user_email'],
+            'telephone' => $r['user_telephone'] ?? null
+        ] : null;
+
         return [
             'id' => $r['id'],
             'userId' => $r['user_id'],
@@ -55,17 +62,14 @@ try {
             'participants' => (int)$r['participants'],
             'createdAt' => $r['created_at'],
             'updatedAt' => $r['updated_at'],
+            'dateCreation' => $r['created_at'],
             'espace' => [
                 'nom' => $r['espace_nom'] ?? null,
                 'type' => $r['espace_type'] ?? null,
                 'capacite' => isset($r['espace_capacite']) ? (int)$r['espace_capacite'] : null
             ],
-            'user' => isset($r['user_nom']) ? [
-                'nom' => $r['user_nom'],
-                'prenom' => $r['user_prenom'],
-                'email' => $r['user_email'],
-                'telephone' => $r['user_telephone'] ?? null
-            ] : null
+            'user' => $userData,
+            'utilisateur' => $userData
         ];
     }, $reservations);
     
