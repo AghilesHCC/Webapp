@@ -73,6 +73,20 @@ const Footer = () => {
         </div>
 
         <div className="border-t border-gray-800 mt-8 pt-8">
+          <div className="flex flex-col items-center gap-4 mb-4">
+            <div className="bg-yellow-500/10 border border-yellow-500/30 rounded-lg px-4 py-2 text-center">
+              <p className="text-yellow-400 text-sm font-medium">
+                VERSION BETA - Des bugs peuvent survenir
+              </p>
+              <p className="text-gray-400 text-xs mt-1">
+                Signalez tout problème à{' '}
+                <a href="mailto:admin@coffice.dz" className="text-yellow-400 hover:text-yellow-300 underline">
+                  admin@coffice.dz
+                </a>
+              </p>
+            </div>
+          </div>
+
           <div className="flex flex-col md:flex-row items-center justify-between gap-4">
             <p className="text-gray-400 text-sm">
               © 2025 Coffice. Tous droits réservés.

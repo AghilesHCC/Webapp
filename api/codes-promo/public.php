@@ -2,17 +2,14 @@
 /**
  * API: Liste des codes promo publics actifs
  * GET /api/codes-promo/public.php
- * Accessible aux utilisateurs authentifiés
+ * Endpoint public - pas d'authentification requise
  */
 
 require_once '../config/cors.php';
 require_once '../config/database.php';
-require_once '../utils/Auth.php';
 require_once '../utils/Response.php';
 
 try {
-    $auth = Auth::verifyAuth();
-
     $database = Database::getInstance();
     $db = $database->getConnection();
 

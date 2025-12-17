@@ -226,6 +226,15 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
               <NotificationCenter />
             </div>
           </div>
+
+          <div className="bg-yellow-50 border-b border-yellow-200 px-4 py-2">
+            <p className="text-yellow-800 text-sm text-center">
+              <span className="font-semibold">VERSION BETA</span> - Des bugs peuvent survenir. Signalez tout problème à{' '}
+              <a href="mailto:admin@coffice.dz" className="underline hover:text-yellow-900">
+                admin@coffice.dz
+              </a>
+            </p>
+          </div>
         </header>
 
         <main className="flex-1 p-6 overflow-auto">

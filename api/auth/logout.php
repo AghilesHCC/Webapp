@@ -1,29 +1,38 @@
 <?php
-/**
- * API: Déconnexion utilisateur
- * POST /api/auth/logout.php
- * Note: Avec JWT, la déconnexion est gérée côté client (suppression du token)
- * Cet endpoint permet de logger la déconnexion côté serveur
- */
+header('Access-Control-Allow-Origin: *');
+header('Access-Control-Allow-Methods: POST, OPTIONS');
+header('Access-Control-Allow-Headers: Content-Type, Authorization');
+header('Content-Type: application/json');
 
-require_once '../config/cors.php';
-require_once '../utils/Response.php';
+if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
+    http_response_code(200);
+    exit;
+}
+
 require_once '../utils/Auth.php';
 
 try {
-    // Vérifier l'authentification pour logger qui se déconnecte
-    $user = Auth::getCurrentUser();
+    $token = Auth::getBearerToken();
 
-    if ($user) {
-        // Logger la déconnexion
-        error_log("User logout: {$user['email']} (ID: {$user['id']})");
+    if ($token) {
+        $userData = Auth::validateToken($token);
+        if ($userData) {
+            error_log("User logout: {$userData->email} (ID: {$userData->id})");
+        }
     }
 
-    Response::success(null, "Déconnexion réussie");
+    http_response_code(200);
+    echo json_encode([
+        'success' => true,
+        'message' => 'Déconnexion réussie'
+    ]);
 
 } catch (Exception $e) {
     error_log("Logout error: " . $e->getMessage());
-    // Retourner success même en cas d'erreur car la déconnexion client doit fonctionner
-    Response::success(null, "Déconnexion réussie");
+    http_response_code(200);
+    echo json_encode([
+        'success' => true,
+        'message' => 'Déconnexion réussie'
+    ]);
 }
 ?>
