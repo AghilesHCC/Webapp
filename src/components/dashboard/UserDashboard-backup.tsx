@@ -1,18 +1,16 @@
 import { useMemo } from 'react'
 import { motion } from 'framer-motion'
-import { Calendar, MapPin, Plus, Clock, CheckCircle, Gift, Share2 } from 'lucide-react'
-import { useNavigate } from 'react-router-dom'
+import { Calendar, MapPin, Plus, Clock, CheckCircle } from 'lucide-react'
+import { Link } from 'react-router-dom'
 import Card from '../ui/Card'
 import Badge from '../ui/Badge'
 import Button from '../ui/Button'
 import { useAuthStore } from '../../store/authStore'
 import { useReservations, useEspaces } from '../../hooks/queries'
 import { formatDate } from '../../utils/formatters'
-import toast from 'react-hot-toast'
 
 export function UserDashboard() {
   const { user } = useAuthStore()
-  const navigate = useNavigate()
   const { data: allReservations = [] } = useReservations()
   const { data: espaces = [] } = useEspaces()
 
@@ -35,13 +33,6 @@ export function UserDashboard() {
     upcoming: upcomingReservations.length,
     confirmed: userReservations.filter(r => r.statut === 'confirmee').length,
     completed: userReservations.filter(r => r.statut === 'terminee').length,
-  }
-
-  const copyCodeToClipboard = () => {
-    if (user?.parrainage?.codeParrain) {
-      navigator.clipboard.writeText(user.parrainage.codeParrain)
-      toast.success('Code copié!')
-    }
   }
 
   return (
@@ -103,12 +94,12 @@ export function UserDashboard() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-gray-600">Espaces disponibles</p>
-                <p className="text-3xl font-bold text-blue-600 mt-1">
+                <p className="text-3xl font-bold text-purple-600 mt-1">
                   {espaces.filter(e => e.disponible).length}
                 </p>
               </div>
-              <div className="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center">
-                <MapPin className="w-6 h-6 text-blue-600" />
+              <div className="w-12 h-12 bg-purple-100 rounded-xl flex items-center justify-center">
+                <MapPin className="w-6 h-6 text-purple-600" />
               </div>
             </div>
           </Card>
@@ -120,9 +111,9 @@ export function UserDashboard() {
           <Card className="p-6">
             <div className="flex items-center justify-between mb-6">
               <h3 className="text-lg font-semibold text-gray-900">Réservations à venir</h3>
-              <Button variant="outline" size="sm" onClick={() => navigate('/app/reservations')}>
-                Voir tout
-              </Button>
+              <Link to="/app/reservations">
+                <Button variant="outline" size="sm">Voir tout</Button>
+              </Link>
             </div>
 
             <div className="space-y-4">
@@ -130,17 +121,18 @@ export function UserDashboard() {
                 <div className="text-center py-12">
                   <Calendar className="w-12 h-12 text-gray-400 mx-auto mb-4" />
                   <p className="text-gray-600 mb-4">Aucune réservation à venir</p>
-                  <Button onClick={() => navigate('/espaces')}>
-                    <Plus className="w-5 h-5 mr-2" />
-                    Réserver un espace
-                  </Button>
+                  <Link to="/espaces">
+                    <Button>
+                      <Plus className="w-5 h-5 mr-2" />
+                      Réserver un espace
+                    </Button>
+                  </Link>
                 </div>
               ) : (
                 upcomingReservations.map((reservation) => (
                   <div
                     key={reservation.id}
-                    className="flex items-center justify-between p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors cursor-pointer"
-                    onClick={() => navigate('/app/reservations')}
+                    className="flex items-center justify-between p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
                   >
                     <div>
                       <p className="font-medium text-gray-900">
@@ -175,7 +167,6 @@ export function UserDashboard() {
                       >
                         {reservation.statut === 'confirmee' && 'Confirmée'}
                         {reservation.statut === 'en_attente' && 'En attente'}
-                        {reservation.statut === 'en_cours' && 'En cours'}
                       </Badge>
                       <span className="font-semibold text-gray-900">
                         {reservation.montantTotal.toLocaleString()} DA
@@ -188,54 +179,34 @@ export function UserDashboard() {
           </Card>
         </div>
 
-        <div className="lg:col-span-1 space-y-6">
-          {user?.parrainage?.codeParrain && (
-            <Card className="p-6 bg-gradient-to-br from-orange-50 to-pink-50 border-2 border-orange-200">
-              <div className="flex items-center gap-3 mb-4">
-                <div className="w-10 h-10 bg-gradient-to-br from-orange-400 to-pink-500 rounded-xl flex items-center justify-center">
-                  <Gift className="w-5 h-5 text-white" />
-                </div>
-                <div>
-                  <h3 className="font-semibold text-gray-900">Mon Code</h3>
-                  <p className="text-sm text-gray-600">{user.parrainage.parraines} parrainés</p>
-                </div>
-              </div>
-              <div className="bg-white p-3 rounded-lg mb-3">
-                <p className="text-2xl font-bold text-center tracking-wider text-gray-900">
-                  {user.parrainage.codeParrain}
-                </p>
-              </div>
-              <div className="grid grid-cols-2 gap-2">
-                <Button size="sm" variant="outline" onClick={copyCodeToClipboard} className="text-xs">
-                  <Share2 className="w-3 h-3 mr-1" />
-                  Copier
-                </Button>
-                <Button size="sm" onClick={() => navigate('/app/profile')} className="text-xs">
-                  Voir détails
-                </Button>
-              </div>
-            </Card>
-          )}
-
+        <div className="lg:col-span-1">
           <Card className="p-6">
             <h3 className="text-lg font-semibold text-gray-900 mb-6">Actions rapides</h3>
             <div className="space-y-3">
-              <Button className="w-full justify-start" onClick={() => navigate('/espaces')}>
-                <Plus className="w-5 h-5 mr-3" />
-                Nouvelle réservation
-              </Button>
-              <Button variant="outline" className="w-full justify-start" onClick={() => navigate('/app/reservations')}>
-                <Calendar className="w-5 h-5 mr-3" />
-                Mes réservations
-              </Button>
-              <Button variant="outline" className="w-full justify-start" onClick={() => navigate('/app/profile')}>
-                <MapPin className="w-5 h-5 mr-3" />
-                Mon profil
-              </Button>
-              <Button variant="outline" className="w-full justify-start" onClick={() => navigate('/app/domiciliation')}>
-                <Calendar className="w-5 h-5 mr-3" />
-                Domiciliation
-              </Button>
+              <Link to="/espaces" className="block">
+                <Button className="w-full justify-start">
+                  <Plus className="w-5 h-5 mr-3" />
+                  Nouvelle réservation
+                </Button>
+              </Link>
+              <Link to="/app/reservations" className="block">
+                <Button variant="outline" className="w-full justify-start">
+                  <Calendar className="w-5 h-5 mr-3" />
+                  Mes réservations
+                </Button>
+              </Link>
+              <Link to="/app/profile" className="block">
+                <Button variant="outline" className="w-full justify-start">
+                  <MapPin className="w-5 h-5 mr-3" />
+                  Mon profil
+                </Button>
+              </Link>
+              <Link to="/domiciliation" className="block">
+                <Button variant="outline" className="w-full justify-start">
+                  <Calendar className="w-5 h-5 mr-3" />
+                  Domiciliation
+                </Button>
+              </Link>
             </div>
           </Card>
         </div>

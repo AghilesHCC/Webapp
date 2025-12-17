@@ -1,32 +1,43 @@
 <?php
-require_once __DIR__ . '/../bootstrap.php';
+/**
+ * API: Obtenir l'utilisateur courant
+ * GET /api/auth/me.php
+ */
+
+require_once '../config/cors.php';
+require_once '../config/database.php';
+require_once '../utils/Auth.php';
+require_once '../utils/Response.php';
 
 try {
+    // Vérifier l'authentification
     $auth = Auth::verifyAuth();
+
+    // Récupérer les informations complètes de l'utilisateur
     $db = Database::getInstance()->getConnection();
 
-    $query = "SELECT u.id, u.email, u.nom, u.prenom, u.telephone, u.role, u.statut, u.avatar,
-                     u.profession, u.entreprise, u.adresse, u.bio, u.wilaya, u.commune,
-                     u.type_entreprise, u.nif, u.nis, u.registre_commerce,
-                     u.article_imposition, u.numero_auto_entrepreneur, u.raison_sociale,
-                     u.date_creation_entreprise, u.capital, u.siege_social,
-                     u.activite_principale, u.forme_juridique, u.absences,
-                     u.banned_until, u.derniere_connexion, u.created_at, u.updated_at,
-                     p.code_parrain, p.parraines, p.recompenses_totales
-              FROM users u
-              LEFT JOIN parrainages p ON u.id = p.parrain_id
-              WHERE u.id = :id
+    $query = "SELECT id, email, nom, prenom, telephone, role, statut, avatar,
+                     profession, entreprise, adresse, bio, wilaya, commune,
+                     type_entreprise, nif, nis, registre_commerce,
+                     article_imposition, numero_auto_entrepreneur, raison_sociale,
+                     date_creation_entreprise, capital, siege_social,
+                     activite_principale, forme_juridique, absences,
+                     banned_until, derniere_connexion, created_at, updated_at
+              FROM users
+              WHERE id = :id
               LIMIT 1";
 
     $stmt = $db->prepare($query);
-    $stmt->execute([':id' => $auth['id']]);
+    $stmt->bindParam(':id', $auth['id']);
+    $stmt->execute();
 
     if ($stmt->rowCount() === 0) {
         Response::unauthorized("Utilisateur non trouvé");
     }
 
-    $user = $stmt->fetch(PDO::FETCH_ASSOC);
+    $user = $stmt->fetch();
 
+    // Convertir snake_case en camelCase pour le frontend
     $userResponse = [
         'id' => $user['id'],
         'email' => $user['email'],
@@ -54,21 +65,17 @@ try {
         'siegeSocial' => $user['siege_social'],
         'activitePrincipale' => $user['activite_principale'],
         'formeJuridique' => $user['forme_juridique'],
-        'absences' => (int)$user['absences'],
+        'absences' => $user['absences'],
         'bannedUntil' => $user['banned_until'],
         'derniereConnexion' => $user['derniere_connexion'],
         'createdAt' => $user['created_at'],
-        'updatedAt' => $user['updated_at'],
-        'parrainage' => $user['code_parrain'] ? [
-            'codeParrain' => $user['code_parrain'],
-            'parraines' => (int)$user['parraines'],
-            'recompensesTotales' => (float)$user['recompenses_totales']
-        ] : null
+        'updatedAt' => $user['updated_at']
     ];
 
     Response::success($userResponse);
 
 } catch (Exception $e) {
-    error_log("Get current user error: " . $e->getMessage() . "\n" . $e->getTraceAsString());
-    Response::serverError("Erreur lors de la récupération de l'utilisateur");
+    error_log("Get current user error: " . $e->getMessage());
+    Response::serverError();
 }
+?>
