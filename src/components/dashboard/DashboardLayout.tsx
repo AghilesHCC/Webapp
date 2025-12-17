@@ -95,6 +95,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
     { name: 'Parrainages', href: '/app/admin/parrainages', icon: Gift },
     { name: 'Analytics', href: '/app/admin/analytics', icon: Activity },
     { name: 'Rapports', href: '/app/admin/reports', icon: BarChart3 },
+    { name: 'Diagnostics', href: '/app/admin/diagnostics', icon: Activity },
     { name: 'Audit Logs', href: '/app/admin/audit-logs', icon: Shield },
     { name: 'Paramètres', href: '/app/admin/settings', icon: Settings },
   ]

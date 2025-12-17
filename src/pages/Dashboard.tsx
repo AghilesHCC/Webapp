@@ -23,6 +23,7 @@ import AdminSettings from './dashboard/admin/Settings'
 import AdminAnalytics from './dashboard/admin/Analytics'
 import AdminAuditLogs from './dashboard/admin/AuditLogs'
 import AdminAbonnements from './dashboard/admin/Abonnements'
+import AdminDiagnostics from './dashboard/admin/Diagnostics'
 
 const Dashboard = () => {
   const { user } = useAuthStore()
@@ -58,6 +59,7 @@ const Dashboard = () => {
               <Route path="admin/abonnements" element={<AdminAbonnements />} />
               <Route path="admin/analytics" element={<AdminAnalytics />} />
               <Route path="admin/reports" element={<AdminReports />} />
+              <Route path="admin/diagnostics" element={<AdminDiagnostics />} />
               <Route path="admin/audit-logs" element={<AdminAuditLogs />} />
               <Route path="admin/settings" element={<AdminSettings />} />
             </>

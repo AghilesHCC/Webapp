@@ -13,7 +13,8 @@ import {
   Info,
   Tag,
   X,
-  CheckCircle2
+  CheckCircle2,
+  AlertTriangle
 } from 'lucide-react'
 import { useForm } from 'react-hook-form'
 import toast from 'react-hot-toast'
@@ -22,6 +23,7 @@ import Button from '../ui/Button'
 import Input from '../ui/Input'
 import Card from '../ui/Card'
 import DateTimePicker from '../ui/DateTimePicker'
+import SeatAvailability from '../SeatAvailability'
 import { useAppStore } from '../../store/store'
 import { useAuthStore } from '../../store/authStore'
 import { ReservationForm as ReservationFormType, Espace } from '../../types'
@@ -45,6 +47,15 @@ const ReservationForm: React.FC<ReservationFormProps> = ({ isOpen, onClose, sele
   const [codePromoValid, setCodePromoValid] = useState<boolean | null>(null)
   const [selectedSpace, setSelectedSpace] = useState<Espace | undefined>(selectedEspace)
   const [duration, setDuration] = useState<number>(0)
+  const [availableSeats, setAvailableSeats] = useState<number | null>(null)
+  const [totalSeats, setTotalSeats] = useState<number | null>(null)
+
+  const isCoworkingSpace = selectedSpace?.type === 'open_space'
+
+  const handleAvailabilityChange = (available: number, total: number) => {
+    setAvailableSeats(available)
+    setTotalSeats(total)
+  }
 
   const {
     register,
@@ -244,6 +255,8 @@ const ReservationForm: React.FC<ReservationFormProps> = ({ isOpen, onClose, sele
     setCodePromoValid(null)
     setSelectedSpace(undefined)
     setDuration(0)
+    setAvailableSeats(null)
+    setTotalSeats(null)
     onClose()
   }
 
@@ -282,8 +295,18 @@ const ReservationForm: React.FC<ReservationFormProps> = ({ isOpen, onClose, sele
         }
 
         const participants = Number(watchedFields.participants) || 1
-        if (selectedSpace && participants > selectedSpace.capacite) {
-          toast.error(`Capacité maximale: ${selectedSpace.capacite} personnes`)
+
+        if (isCoworkingSpace && availableSeats !== null) {
+          if (availableSeats === 0) {
+            toast.error('Aucune place disponible pour ce creneau')
+            return
+          }
+          if (participants > availableSeats) {
+            toast.error(`Seulement ${availableSeats} place${availableSeats > 1 ? 's' : ''} disponible${availableSeats > 1 ? 's' : ''}`)
+            return
+          }
+        } else if (selectedSpace && participants > selectedSpace.capacite) {
+          toast.error(`Capacite maximale: ${selectedSpace.capacite} personnes`)
           return
         }
       }
@@ -489,6 +512,42 @@ const ReservationForm: React.FC<ReservationFormProps> = ({ isOpen, onClose, sele
                 }}
               />
 
+              {isCoworkingSpace && selectedSpace && watchedFields.dateDebut && (
+                <motion.div
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                >
+                  <SeatAvailability
+                    espaceId={selectedSpace.id}
+                    espaceName={selectedSpace.nom}
+                    dateDebut={watchedFields.dateDebut}
+                    dateFin={watchedFields.dateFin || watchedFields.dateDebut}
+                    onAvailabilityChange={handleAvailabilityChange}
+                  />
+                  {availableSeats !== null && totalSeats !== null && (
+                    <div className="mt-3">
+                      {availableSeats === 0 ? (
+                        <Card className="p-3 bg-red-50 border border-red-200">
+                          <div className="flex items-center gap-2 text-red-700">
+                            <AlertTriangle className="w-5 h-5" />
+                            <span className="font-medium">Aucune place disponible pour ce creneau</span>
+                          </div>
+                        </Card>
+                      ) : availableSeats < (watchedFields.participants || 1) ? (
+                        <Card className="p-3 bg-amber-50 border border-amber-200">
+                          <div className="flex items-center gap-2 text-amber-700">
+                            <AlertTriangle className="w-5 h-5" />
+                            <span className="font-medium">
+                              Seulement {availableSeats} place{availableSeats > 1 ? 's' : ''} disponible{availableSeats > 1 ? 's' : ''}
+                            </span>
+                          </div>
+                        </Card>
+                      ) : null}
+                    </div>
+                  )}
+                </motion.div>
+              )}
+
               {duration > 0 && (
                 <motion.div
                   initial={{ opacity: 0, y: 10 }}
@@ -521,17 +580,29 @@ const ReservationForm: React.FC<ReservationFormProps> = ({ isOpen, onClose, sele
                   type="number"
                   icon={<Users className="w-5 h-5" />}
                   min={1}
-                  max={selectedSpace?.capacite || 10}
+                  max={isCoworkingSpace && availableSeats !== null ? availableSeats : (selectedSpace?.capacite || 10)}
                   defaultValue={1}
                   {...register('participants', {
                     required: 'Le nombre de participants est requis',
                     min: { value: 1, message: 'Minimum 1 participant' },
-                    max: { value: selectedSpace?.capacite || 100, message: `Maximum ${selectedSpace?.capacite || 100} participants` },
+                    max: {
+                      value: isCoworkingSpace && availableSeats !== null ? availableSeats : (selectedSpace?.capacite || 100),
+                      message: isCoworkingSpace && availableSeats !== null
+                        ? `Maximum ${availableSeats} places disponibles`
+                        : `Maximum ${selectedSpace?.capacite || 100} participants`
+                    },
                     valueAsNumber: true
                   })}
-                  placeholder={`Max ${selectedSpace?.capacite || 10} personnes`}
+                  placeholder={isCoworkingSpace && availableSeats !== null
+                    ? `Max ${availableSeats} places disponibles`
+                    : `Max ${selectedSpace?.capacite || 10} personnes`}
                   error={errors.participants?.message}
                 />
+                {isCoworkingSpace && availableSeats !== null && (
+                  <p className="text-xs text-gray-500 mt-1">
+                    {availableSeats} place{availableSeats > 1 ? 's' : ''} disponible{availableSeats > 1 ? 's' : ''} sur {totalSeats} au total
+                  </p>
+                )}
               </div>
 
               <div>
