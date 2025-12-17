@@ -28,14 +28,8 @@
     RewriteRule ^(.*)$ index.php [L,QSA]
 </IfModule>
 
-# Headers CORS
-<IfModule mod_headers.c>
-    Header always set Access-Control-Allow-Origin "*"
-    Header always set Access-Control-Allow-Methods "GET, POST, PUT, DELETE, OPTIONS"
-    Header always set Access-Control-Allow-Headers "Content-Type, Authorization, X-Requested-With, X-Client-Info, Apikey"
-    Header always set Access-Control-Max-Age "3600"
-    Header always set Access-Control-Allow-Credentials "true"
-</IfModule>
+# Headers CORS - geres dynamiquement par cors.php
+# NE PAS definir ici pour eviter les conflits avec le code PHP
 
 # Configuration PHP pour production
 <IfModule mod_php.c>
@@ -43,7 +37,7 @@
     php_flag display_errors Off
     php_flag display_startup_errors Off
     php_flag log_errors On
-    php_value error_log /home/cofficed/test.coffice.dz/logs/php_errors.log
+    php_value error_log ../logs/php_errors.log
 
     # Performance
     php_value max_execution_time 120
