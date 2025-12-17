@@ -413,13 +413,14 @@ export const useAppStore = create<AppState>()(
         const diffDays = diffMs / (1000 * 60 * 60 * 24)
 
         let amount = 0
+        const HALF_DAY_HOURS = 4
 
-        if (diffDays >= 7) {
-          const weeks = Math.ceil(diffDays / 7)
-          amount = espace.prixSemaine * weeks
-        } else if (diffDays >= 1) {
+        if (diffDays >= 1) {
           const days = Math.ceil(diffDays)
           amount = espace.prixJour * days
+        } else if (diffHours >= HALF_DAY_HOURS && espace.prixDemiJournee > 0) {
+          const halfDays = Math.ceil(diffHours / HALF_DAY_HOURS)
+          amount = espace.prixDemiJournee * halfDays
         } else {
           const hours = Math.ceil(diffHours)
           amount = espace.prixHeure * hours

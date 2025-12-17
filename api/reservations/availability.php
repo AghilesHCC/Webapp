@@ -99,32 +99,65 @@ try {
 
     $availableSeats = max(0, $totalCapacity - $reservedSeats);
 
+    // Horaires d'ouverture: 8h30-18h30, Dimanche-Jeudi
+    $BUSINESS_OPEN = '08:30';
+    $BUSINESS_CLOSE = '18:30';
+    $WORKING_DAYS = [0, 1, 2, 3, 4]; // Dimanche=0 à Jeudi=4
+
     $timeSlots = [];
     if ($date) {
-        for ($hour = 8; $hour < 20; $hour++) {
-            $slotStart = $date . ' ' . sprintf('%02d:00:00', $hour);
-            $slotEnd = $date . ' ' . sprintf('%02d:00:00', $hour + 1);
+        $dayOfWeek = (int)date('w', strtotime($date));
+        $isWorkingDay = in_array($dayOfWeek, $WORKING_DAYS);
 
-            $slotReserved = 0;
-            foreach ($reservations as $r) {
-                $resStart = strtotime($r['date_debut']);
-                $resEnd = strtotime($r['date_fin']);
-                $slotStartTs = strtotime($slotStart);
-                $slotEndTs = strtotime($slotEnd);
+        // Créneaux de 30 minutes de 8h30 à 18h30
+        $startHour = 8;
+        $startMin = 30;
+        $endHour = 18;
+        $endMin = 30;
 
-                if ($resStart < $slotEndTs && $resEnd > $slotStartTs) {
-                    $slotReserved += (int)$r['participants'];
+        for ($hour = $startHour; $hour <= $endHour; $hour++) {
+            for ($min = 0; $min < 60; $min += 30) {
+                // Skip slots before 8:30
+                if ($hour == $startHour && $min < $startMin) continue;
+                // Skip slots after 18:00 (last slot is 18:00-18:30)
+                if ($hour == $endHour && $min >= $endMin) continue;
+
+                $slotStart = $date . ' ' . sprintf('%02d:%02d:00', $hour, $min);
+                $nextMin = $min + 30;
+                $nextHour = $hour;
+                if ($nextMin >= 60) {
+                    $nextMin = 0;
+                    $nextHour++;
                 }
-            }
+                $slotEnd = $date . ' ' . sprintf('%02d:%02d:00', $nextHour, $nextMin);
 
-            $timeSlots[] = [
-                'heure' => sprintf('%02d:00', $hour),
-                'heureDebut' => $slotStart,
-                'heureFin' => $slotEnd,
-                'placesReservees' => $slotReserved,
-                'placesDisponibles' => max(0, $totalCapacity - $slotReserved),
-                'disponible' => ($totalCapacity - $slotReserved) > 0
-            ];
+                $slotReserved = 0;
+                foreach ($reservations as $r) {
+                    $resStart = strtotime($r['date_debut']);
+                    $resEnd = strtotime($r['date_fin']);
+                    $slotStartTs = strtotime($slotStart);
+                    $slotEndTs = strtotime($slotEnd);
+
+                    if ($resStart < $slotEndTs && $resEnd > $slotStartTs) {
+                        $slotReserved += (int)$r['participants'];
+                    }
+                }
+
+                // Pour les booths (exclusifs), slotReserved > 0 signifie indisponible
+                $isExclusive = $espace['type'] === 'booth';
+                $availableSeatsSlot = $isExclusive
+                    ? ($slotReserved > 0 ? 0 : 1)
+                    : max(0, $totalCapacity - $slotReserved);
+
+                $timeSlots[] = [
+                    'heure' => sprintf('%02d:%02d', $hour, $min),
+                    'heureDebut' => $slotStart,
+                    'heureFin' => $slotEnd,
+                    'placesReservees' => $slotReserved,
+                    'placesDisponibles' => $availableSeatsSlot,
+                    'disponible' => $isWorkingDay && $availableSeatsSlot > 0
+                ];
+            }
         }
     }
 

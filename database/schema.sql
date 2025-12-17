@@ -116,7 +116,7 @@ CREATE TABLE `reservations` (
     `date_debut` DATETIME NOT NULL,
     `date_fin` DATETIME NOT NULL,
     `statut` ENUM('en_attente', 'confirmee', 'en_cours', 'terminee', 'annulee') NOT NULL DEFAULT 'en_attente',
-    `type_reservation` ENUM('heure', 'jour', 'semaine') NOT NULL DEFAULT 'heure',
+    `type_reservation` ENUM('heure', 'demi_journee', 'jour') NOT NULL DEFAULT 'heure',
     `montant_total` DECIMAL(10, 2) NOT NULL DEFAULT 0.00,
     `reduction` DECIMAL(10, 2) NOT NULL DEFAULT 0.00,
     `code_promo_id` VARCHAR(36) DEFAULT NULL,
@@ -301,12 +301,12 @@ INSERT INTO `users` (`id`, `email`, `password_hash`, `nom`, `prenom`, `role`, `s
 (UUID(), 'admin@coffice.dz', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'Admin', 'Coffice', 'admin', 'actif');
 
 -- Espaces de travail par defaut
+-- 3 Private Booths (exclusifs) + 1 Espace Coworking (12 places partagees)
 INSERT INTO `espaces` (`id`, `nom`, `type`, `description`, `capacite`, `equipements`, `prix_heure`, `prix_demi_journee`, `prix_jour`, `prix_semaine`, `disponible`, `image_url`) VALUES
-(UUID(), 'Booth Atlas', 'booth', 'Espace de travail individuel calme et confortable', 4, '["WiFi", "Prise électrique", "Climatisation", "Éclairage LED"]', 1000, 3500, 6000, 30000, 1, '/booth-atlas.jpeg'),
-(UUID(), 'Booth Aures', 'booth', 'Booth privatif pour appels et concentration', 4, '["WiFi", "Prise électrique", "Insonorisation", "Climatisation"]', 1000, 3500, 6000, 30000, 1, '/booth-aures.jpeg'),
-(UUID(), 'Booth Hoggar', 'booth', 'Espace de travail premium avec vue', 2, '["WiFi", "Prise électrique", "Climatisation", "Vue panoramique"]', 800, 3000, 5000, 25000, 1, '/booth-hoggar.jpeg'),
-(UUID(), 'Espace Coworking', 'open_space', 'Grand espace de coworking partagé avec 24 postes', 24, '["WiFi", "Imprimante", "Cuisine", "Climatisation", "Casiers", "Café et thé"]', 200, 600, 1200, 6000, 1, '/espace-coworking.jpeg'),
-(UUID(), 'Salle de Réunion', 'salle_reunion', 'Salle de réunion équipée pour vos meetings', 12, '["WiFi", "Vidéoprojecteur", "Tableau blanc", "Climatisation", "Système audio", "TV 75 pouces"]', 2500, 7000, 12000, 50000, 1, '/salle-reunion.jpeg');
+(UUID(), 'Booth Atlas', 'booth', 'Booth privatif calme et confortable pour travailler en toute concentration', 4, '["WiFi haut debit", "Prise electrique", "Climatisation", "Eclairage LED"]', 1000, 3500, 6000, 0, 1, '/booth-atlas.jpeg'),
+(UUID(), 'Booth Aures', 'booth', 'Booth privatif insonorise ideal pour les appels et visioconferences', 4, '["WiFi haut debit", "Prise electrique", "Insonorisation", "Climatisation"]', 1000, 3500, 6000, 0, 1, '/booth-aures.jpeg'),
+(UUID(), 'Booth Hoggar', 'booth', 'Booth premium compact avec vue panoramique', 2, '["WiFi haut debit", "Prise electrique", "Climatisation", "Vue panoramique"]', 800, 3000, 5000, 0, 1, '/booth-hoggar.jpeg'),
+(UUID(), 'Espace Coworking', 'open_space', 'Espace de coworking partage avec 12 postes individuels', 12, '["WiFi haut debit", "Imprimante", "Cuisine", "Climatisation", "Casiers", "Cafe et the"]', 200, 600, 1200, 0, 1, '/espace-coworking.jpeg');
 
 -- Abonnements par defaut
 INSERT INTO `abonnements` (`id`, `nom`, `type`, `prix`, `prix_avec_domiciliation`, `duree_mois`, `description`, `avantages`, `actif`, `ordre`) VALUES

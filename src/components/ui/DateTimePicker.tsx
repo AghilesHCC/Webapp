@@ -1,6 +1,6 @@
-import { useState } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { motion } from 'framer-motion'
-import { ChevronLeft, ChevronRight, X, Check, Clock } from 'lucide-react'
+import { ChevronLeft, ChevronRight, X, Check, Clock, AlertCircle } from 'lucide-react'
 import {
   format,
   addMonths,
@@ -20,53 +20,133 @@ import {
 import { fr } from 'date-fns/locale'
 import Card from './Card'
 
+interface AvailabilityData {
+  [dateKey: string]: {
+    available: boolean
+    placesDisponibles: number
+    placesReservees: number
+  }
+}
+
 interface DateTimePickerProps {
   selectedStart?: Date | null
   selectedEnd?: Date | null
   onDateChange: (start: Date | null, end: Date | null) => void
+  espaceId?: string
+  espaceType?: string
 }
+
+const WORKING_DAYS = [0, 1, 2, 3, 4]
+const BUSINESS_HOURS = { open: '08:30', close: '18:30' }
 
 const DateTimePicker: React.FC<DateTimePickerProps> = ({
   selectedStart,
   selectedEnd,
-  onDateChange
+  onDateChange,
+  espaceId,
+  espaceType
 }) => {
   const [currentMonth, setCurrentMonth] = useState(new Date())
   const [startDate, setStartDate] = useState<Date | null>(null)
   const [endDate, setEndDate] = useState<Date | null>(null)
-  const [startTime, setStartTime] = useState('09:00')
-  const [endTime, setEndTime] = useState('18:00')
+  const [startTime, setStartTime] = useState('08:30')
+  const [endTime, setEndTime] = useState('12:30')
   const [hoveredDate, setHoveredDate] = useState<Date | null>(null)
   const [isMultipleDays, setIsMultipleDays] = useState(false)
+  const [availability, setAvailability] = useState<AvailabilityData>({})
+  const [loadingAvailability, setLoadingAvailability] = useState(false)
 
-  const timeSlots = Array.from({ length: 28 }, (_, i) => {
-    const hour = Math.floor(i / 2) + 7
-    const minute = (i % 2) * 30
-    return `${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`
-  })
+  const isExclusiveSpace = espaceType === 'booth'
 
-  const daysOfWeek = ['L', 'M', 'M', 'J', 'V', 'S', 'D']
+  const generateTimeSlots = useCallback(() => {
+    const slots: string[] = []
+    for (let hour = 8; hour <= 18; hour++) {
+      for (let min = 0; min < 60; min += 30) {
+        if (hour === 8 && min === 0) continue
+        if (hour === 18 && min > 30) continue
+        slots.push(`${hour.toString().padStart(2, '0')}:${min.toString().padStart(2, '0')}`)
+      }
+    }
+    return slots
+  }, [])
+
+  const timeSlots = generateTimeSlots()
+
+  useEffect(() => {
+    if (!espaceId) return
+
+    const fetchMonthAvailability = async () => {
+      setLoadingAvailability(true)
+      const monthStart = startOfMonth(currentMonth)
+      const monthEnd = endOfMonth(currentMonth)
+      const newAvailability: AvailabilityData = {}
+
+      try {
+        const days = eachDayOfInterval({ start: monthStart, end: monthEnd })
+
+        for (const day of days) {
+          const dateStr = format(day, 'yyyy-MM-dd')
+          const dayOfWeek = day.getDay()
+
+          if (!WORKING_DAYS.includes(dayOfWeek)) {
+            newAvailability[dateStr] = { available: false, placesDisponibles: 0, placesReservees: 0 }
+            continue
+          }
+
+          try {
+            const response = await fetch(
+              `${import.meta.env.VITE_API_URL || '/api'}/reservations/availability.php?espace_id=${espaceId}&date=${dateStr}`
+            )
+            const result = await response.json()
+
+            if (result.success && result.data) {
+              const hasAvailability = result.data.placesDisponibles > 0
+              newAvailability[dateStr] = {
+                available: hasAvailability,
+                placesDisponibles: result.data.placesDisponibles,
+                placesReservees: result.data.placesReservees
+              }
+            }
+          } catch {
+            newAvailability[dateStr] = { available: true, placesDisponibles: 1, placesReservees: 0 }
+          }
+        }
+
+        setAvailability(newAvailability)
+      } catch {
+      } finally {
+        setLoadingAvailability(false)
+      }
+    }
+
+    fetchMonthAvailability()
+  }, [espaceId, currentMonth])
+
+  const daysOfWeek = ['D', 'L', 'M', 'M', 'J', 'V', 'S']
   const monthStart = startOfMonth(currentMonth)
   const monthEnd = endOfMonth(currentMonth)
   const monthDays = eachDayOfInterval({ start: monthStart, end: monthEnd })
   const firstDayOfMonth = monthStart.getDay()
-  const startPadding = firstDayOfMonth === 0 ? 6 : firstDayOfMonth - 1
   const now = new Date()
 
-  const applyDateTime = (date: Date | null, endDate: Date | null, startTimeStr: string, endTimeStr: string, isMultiDay: boolean) => {
+  const applyDateTime = (date: Date | null, endDateVal: Date | null, startTimeStr: string, endTimeStr: string, isMultiDay: boolean) => {
     if (!date) {
       onDateChange(null, null)
       return
     }
 
     if (isMultiDay) {
-      if (endDate) {
-        const start = setMinutes(setHours(new Date(date), 9), 0)
-        const end = setMinutes(setHours(new Date(endDate), 18), 0)
+      if (endDateVal) {
+        const [sH, sM] = BUSINESS_HOURS.open.split(':').map(Number)
+        const [eH, eM] = BUSINESS_HOURS.close.split(':').map(Number)
+        const start = setMinutes(setHours(new Date(date), sH), sM)
+        const end = setMinutes(setHours(new Date(endDateVal), eH), eM)
         onDateChange(start, end)
       } else {
-        const start = setMinutes(setHours(new Date(date), 9), 0)
-        const end = setMinutes(setHours(new Date(date), 18), 0)
+        const [sH, sM] = BUSINESS_HOURS.open.split(':').map(Number)
+        const [eH, eM] = BUSINESS_HOURS.close.split(':').map(Number)
+        const start = setMinutes(setHours(new Date(date), sH), sM)
+        const end = setMinutes(setHours(new Date(date), eH), eM)
         onDateChange(start, end)
       }
     } else {
@@ -85,6 +165,13 @@ const DateTimePicker: React.FC<DateTimePickerProps> = ({
   const handleDateClick = (date: Date) => {
     if (isBefore(startOfDay(date), startOfDay(now))) return
 
+    const dateKey = format(date, 'yyyy-MM-dd')
+    const dayAvailability = availability[dateKey]
+
+    if (dayAvailability && !dayAvailability.available && isExclusiveSpace) {
+      return
+    }
+
     if (isMultipleDays) {
       if (!startDate || (startDate && endDate)) {
         setStartDate(date)
@@ -96,6 +183,10 @@ const DateTimePicker: React.FC<DateTimePickerProps> = ({
           setEndDate(null)
           applyDateTime(date, null, startTime, endTime, true)
         } else {
+          const daysDiff = differenceInDays(date, startDate) + 1
+          if (daysDiff > 7) {
+            return
+          }
           setEndDate(date)
           applyDateTime(startDate, date, startTime, endTime, true)
         }
@@ -129,8 +220,8 @@ const DateTimePicker: React.FC<DateTimePickerProps> = ({
   const clearSelection = () => {
     setStartDate(null)
     setEndDate(null)
-    setStartTime('09:00')
-    setEndTime('18:00')
+    setStartTime('08:30')
+    setEndTime('12:30')
     setIsMultipleDays(false)
     onDateChange(null, null)
   }
@@ -181,6 +272,29 @@ const DateTimePicker: React.FC<DateTimePickerProps> = ({
     return `${hours}h${minutes.toString().padStart(2, '0')}`
   }
 
+  const getDateAvailabilityClass = (date: Date) => {
+    const dateKey = format(date, 'yyyy-MM-dd')
+    const dayAvailability = availability[dateKey]
+    const dayOfWeek = date.getDay()
+
+    if (!WORKING_DAYS.includes(dayOfWeek)) {
+      return 'bg-gray-100 text-gray-400'
+    }
+
+    if (!dayAvailability) return ''
+
+    if (isExclusiveSpace) {
+      return dayAvailability.available
+        ? 'bg-green-50 hover:bg-green-100'
+        : 'bg-red-100 text-red-400 cursor-not-allowed'
+    }
+
+    const ratio = dayAvailability.placesDisponibles / (dayAvailability.placesDisponibles + dayAvailability.placesReservees || 1)
+    if (ratio >= 0.5) return 'bg-green-50 hover:bg-green-100'
+    if (ratio > 0) return 'bg-amber-50 hover:bg-amber-100'
+    return 'bg-red-100 text-red-400'
+  }
+
   return (
     <div className="space-y-3">
       <div className="flex items-center justify-between">
@@ -201,9 +315,9 @@ const DateTimePicker: React.FC<DateTimePickerProps> = ({
         <div className="mb-4 p-3 bg-gradient-to-br from-accent/5 to-accent/10 rounded-xl border border-accent/20">
           <div className="flex items-center justify-between text-sm">
             <div className="flex-1">
-              <p className="text-xs text-gray-600 mb-0.5">Début</p>
+              <p className="text-xs text-gray-600 mb-0.5">Debut</p>
               <p className="font-bold text-gray-900">
-                {startDate ? format(startDate, 'd MMM', { locale: fr }) : 'Non sélectionnée'}
+                {startDate ? format(startDate, 'd MMM', { locale: fr }) : 'Non selectionnee'}
               </p>
               {!isMultipleDays && startDate && <p className="text-accent text-xs font-semibold">{startTime}</p>}
             </div>
@@ -211,7 +325,7 @@ const DateTimePicker: React.FC<DateTimePickerProps> = ({
             <div className="flex-1 text-right">
               <p className="text-xs text-gray-600 mb-0.5">Fin</p>
               <p className="font-bold text-gray-900">
-                {isMultipleDays && endDate ? format(endDate, 'd MMM', { locale: fr }) : !isMultipleDays && startDate ? 'Même jour' : 'Non sélectionnée'}
+                {isMultipleDays && endDate ? format(endDate, 'd MMM', { locale: fr }) : !isMultipleDays && startDate ? 'Meme jour' : 'Non selectionnee'}
               </p>
               {!isMultipleDays && startDate && <p className="text-accent text-xs font-semibold">{endTime}</p>}
             </div>
@@ -219,13 +333,13 @@ const DateTimePicker: React.FC<DateTimePickerProps> = ({
           {getDuration() && (
             <div className="mt-2 pt-2 border-t border-accent/20">
               <p className="text-xs text-gray-600">
-                Durée: <span className="font-bold text-accent">{getDuration()}</span>
+                Duree: <span className="font-bold text-accent">{getDuration()}</span>
               </p>
             </div>
           )}
         </div>
 
-        <div className="mb-3 flex items-center justify-center">
+        <div className="mb-3 flex items-center justify-center gap-2">
           <button
             type="button"
             onClick={toggleMultipleDays}
@@ -235,8 +349,15 @@ const DateTimePicker: React.FC<DateTimePickerProps> = ({
                 : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
             }`}
           >
-            {isMultipleDays ? 'Plusieurs jours (9h-18h)' : 'Journée avec horaires'}
+            {isMultipleDays ? 'Plusieurs jours' : 'Journee avec horaires'}
           </button>
+        </div>
+
+        <div className="mb-2 p-2 bg-blue-50 rounded-lg border border-blue-200">
+          <div className="flex items-center gap-2 text-xs text-blue-700">
+            <AlertCircle className="w-4 h-4" />
+            <span>Horaires: 8h30-18h30 | Dimanche-Jeudi | Max 7 jours</span>
+          </div>
         </div>
 
         <div className="flex items-center justify-between mb-3">
@@ -260,38 +381,47 @@ const DateTimePicker: React.FC<DateTimePickerProps> = ({
           </button>
         </div>
 
+        {loadingAvailability && (
+          <div className="text-center py-2 text-xs text-gray-500">Chargement...</div>
+        )}
+
         <div className="grid grid-cols-7 gap-0.5">
           {daysOfWeek.map((day, index) => (
             <div key={`day-${index}`} className="text-center text-xs font-bold text-gray-500 py-2">
               {day}
             </div>
           ))}
-          {Array.from({ length: startPadding }).map((_, i) => <div key={`pad-${i}`} />)}
+          {Array.from({ length: firstDayOfMonth }).map((_, i) => <div key={`pad-${i}`} />)}
           {monthDays.map(date => {
             const disabled = isBefore(startOfDay(date), startOfDay(now))
             const selected = (startDate && isSameDay(date, startDate)) || (endDate && isSameDay(date, endDate))
             const inRange = isInRange(date)
             const hovered = isHovered(date)
             const today = isToday(date)
+            const dateKey = format(date, 'yyyy-MM-dd')
+            const dayAvailability = availability[dateKey]
+            const isUnavailable = isExclusiveSpace && dayAvailability && !dayAvailability.available
+            const isWeekend = !WORKING_DAYS.includes(date.getDay())
 
             return (
               <motion.button
                 key={date.toISOString()}
                 type="button"
                 onClick={() => handleDateClick(date)}
-                onMouseEnter={() => !disabled && setHoveredDate(date)}
+                onMouseEnter={() => !disabled && !isUnavailable && setHoveredDate(date)}
                 onMouseLeave={() => setHoveredDate(null)}
-                disabled={disabled}
-                whileHover={!disabled ? { scale: 1.08 } : {}}
-                whileTap={!disabled ? { scale: 0.95 } : {}}
+                disabled={disabled || isUnavailable || isWeekend}
+                whileHover={!disabled && !isUnavailable && !isWeekend ? { scale: 1.08 } : {}}
+                whileTap={!disabled && !isUnavailable && !isWeekend ? { scale: 0.95 } : {}}
                 className={`
                   aspect-square rounded-lg font-semibold text-xs transition-all relative flex items-center justify-center
-                  ${disabled ? 'text-gray-300 cursor-not-allowed bg-gray-50' : 'hover:shadow-sm'}
+                  ${disabled || isWeekend ? 'text-gray-300 cursor-not-allowed bg-gray-50' : ''}
+                  ${isUnavailable && !disabled ? 'bg-red-100 text-red-400 cursor-not-allowed' : ''}
                   ${selected ? 'bg-accent text-white shadow-md z-10' : ''}
                   ${inRange && !selected ? 'bg-accent/15 text-accent' : ''}
                   ${hovered && !selected ? 'bg-accent/20 text-accent' : ''}
                   ${today && !selected ? 'border-2 border-accent' : ''}
-                  ${!disabled && !selected && !inRange && !hovered ? 'text-gray-900 hover:bg-gray-100' : ''}
+                  ${!disabled && !selected && !inRange && !hovered && !isUnavailable && !isWeekend ? getDateAvailabilityClass(date) : ''}
                 `}
               >
                 {format(date, 'd')}
@@ -309,12 +439,12 @@ const DateTimePicker: React.FC<DateTimePickerProps> = ({
           >
             <div className="flex items-center gap-2 mb-3">
               <Clock className="w-4 h-4 text-accent" />
-              <h4 className="text-sm font-bold">Horaires</h4>
+              <h4 className="text-sm font-bold">Horaires (8h30-18h30)</h4>
             </div>
 
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="block text-xs font-semibold text-gray-700 mb-2">Début</label>
+                <label className="block text-xs font-semibold text-gray-700 mb-2">Debut</label>
                 <div className="grid grid-cols-4 gap-1 max-h-40 overflow-y-auto p-2 bg-gray-50 rounded-lg">
                   {timeSlots.map(time => (
                     <button
@@ -372,18 +502,22 @@ const DateTimePicker: React.FC<DateTimePickerProps> = ({
 
       <div className="flex flex-wrap gap-3 text-xs">
         <div className="flex items-center gap-1.5">
+          <div className="w-5 h-5 bg-green-100 rounded border border-green-300"></div>
+          <span>Disponible</span>
+        </div>
+        <div className="flex items-center gap-1.5">
+          <div className="w-5 h-5 bg-amber-100 rounded border border-amber-300"></div>
+          <span>Peu de places</span>
+        </div>
+        <div className="flex items-center gap-1.5">
+          <div className="w-5 h-5 bg-red-100 rounded border border-red-300"></div>
+          <span>Complet</span>
+        </div>
+        <div className="flex items-center gap-1.5">
           <div className="w-5 h-5 bg-accent rounded flex items-center justify-center">
             <Check className="w-2.5 h-2.5 text-white" />
           </div>
-          <span>Sélectionné</span>
-        </div>
-        <div className="flex items-center gap-1.5">
-          <div className="w-5 h-5 bg-accent/15 rounded"></div>
-          <span>Période</span>
-        </div>
-        <div className="flex items-center gap-1.5">
-          <div className="w-5 h-5 border-2 border-accent rounded"></div>
-          <span>Aujourd'hui</span>
+          <span>Selection</span>
         </div>
       </div>
     </div>

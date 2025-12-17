@@ -21,7 +21,7 @@ try {
     $db = $database->getConnection();
 
     // Vérifier que la réservation existe
-    $query = "SELECT user_id, statut FROM reservations WHERE id = :id LIMIT 1";
+    $query = "SELECT user_id, statut, date_debut FROM reservations WHERE id = :id LIMIT 1";
     $stmt = $db->prepare($query);
     $stmt->bindParam(':id', $data->id);
     $stmt->execute();
@@ -40,6 +40,18 @@ try {
     // Vérifier qu'elle n'est pas déjà annulée
     if ($reservation['statut'] === 'annulee') {
         Response::error("Cette réservation est déjà annulée", 400);
+    }
+
+    // Vérifier la règle des 24h avant (sauf pour les admins)
+    if ($auth['role'] !== 'admin') {
+        $dateDebut = new DateTime($reservation['date_debut']);
+        $now = new DateTime();
+        $diff = $dateDebut->getTimestamp() - $now->getTimestamp();
+        $heuresRestantes = $diff / 3600;
+
+        if ($heuresRestantes < 24) {
+            Response::error("L'annulation n'est possible que 24h avant le début de la réservation", 400);
+        }
     }
 
     // Annuler la réservation

@@ -173,7 +173,7 @@ const ReservationForm = memo(({ isOpen, onClose, selectedEspace }: ReservationFo
         return
       }
 
-      toast.success('Reservation creee avec succes!')
+      toast.success('Demande de reservation envoyee! En attente de validation.')
       handleClose()
     } catch (error: unknown) {
       const errorMsg = error instanceof Error ? error.message : 'Erreur lors de la creation'
@@ -210,7 +210,7 @@ const ReservationForm = memo(({ isOpen, onClose, selectedEspace }: ReservationFo
   }
 
   return (
-    <Modal isOpen={isOpen} onClose={handleClose} title="Nouvelle Reservation" size="xl">
+    <Modal isOpen={isOpen} onClose={handleClose} title="Demande de Reservation" size="xl">
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-6" noValidate>
         <StepIndicator currentStep={currentStep} />
 
@@ -253,6 +253,8 @@ const ReservationForm = memo(({ isOpen, onClose, selectedEspace }: ReservationFo
                   setValue('dateDebut', start?.toISOString() || '')
                   setValue('dateFin', end?.toISOString() || '')
                 }}
+                espaceId={selectedSpace?.id}
+                espaceType={selectedSpace?.type}
               />
 
               {isCoworkingSpace && selectedSpace && watchedFields.dateDebut && (
@@ -311,9 +313,16 @@ const ReservationForm = memo(({ isOpen, onClose, selectedEspace }: ReservationFo
           {currentStep === 3 && (
             <motion.div key="step3" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="space-y-6">
               <div className="mb-4">
-                <h3 className="text-lg font-bold text-gray-900 mb-1">Verifiez votre reservation</h3>
-                <p className="text-sm text-gray-600">Confirmez les details avant de finaliser</p>
+                <h3 className="text-lg font-bold text-gray-900 mb-1">Verifiez votre demande</h3>
+                <p className="text-sm text-gray-600">Votre demande sera soumise a validation par un administrateur</p>
               </div>
+
+              <Card className="p-3 bg-amber-50 border border-amber-200 mb-4">
+                <div className="flex items-center gap-2 text-amber-700">
+                  <Info className="w-5 h-5 flex-shrink-0" />
+                  <p className="text-sm">Cette reservation necessite une validation. Vous recevrez une notification une fois approuvee.</p>
+                </div>
+              </Card>
 
               <Card className="p-6 bg-gradient-to-br from-accent/5 to-accent/10 border-2 border-accent/20">
                 <div className="space-y-4">
@@ -396,7 +405,7 @@ const ReservationForm = memo(({ isOpen, onClose, selectedEspace }: ReservationFo
             </Button>
           ) : (
             <Button type="submit" loading={isSubmitting} className="flex-1" disabled={currentStep !== 3}>
-              <Check className="w-4 h-4 mr-2" />Confirmer
+              <Check className="w-4 h-4 mr-2" />Envoyer la demande
             </Button>
           )}
         </div>

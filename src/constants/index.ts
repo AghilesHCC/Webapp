@@ -63,8 +63,44 @@ export type DomiciliationStatut = typeof DOMICILIATION_STATUTS[keyof typeof DOMI
 
 export const TYPE_RESERVATION = {
   HEURE: 'heure',
-  JOUR: 'jour',
-  SEMAINE: 'semaine'
+  DEMI_JOURNEE: 'demi_journee',
+  JOUR: 'jour'
 } as const
 
 export type TypeReservation = typeof TYPE_RESERVATION[keyof typeof TYPE_RESERVATION]
+
+export const BUSINESS_HOURS = {
+  OPEN_HOUR: 8,
+  OPEN_MINUTE: 30,
+  CLOSE_HOUR: 18,
+  CLOSE_MINUTE: 30,
+  WORKING_DAYS: [0, 1, 2, 3, 4] as const
+} as const
+
+export const HALF_DAY_HOURS = 4
+
+export const MAX_RESERVATION_DAYS = 7
+
+export const MIN_CANCELLATION_HOURS = 24
+
+export function isWorkingDay(date: Date): boolean {
+  return BUSINESS_HOURS.WORKING_DAYS.includes(date.getDay() as 0 | 1 | 2 | 3 | 4)
+}
+
+export function isWithinBusinessHours(date: Date): boolean {
+  const hours = date.getHours()
+  const minutes = date.getMinutes()
+  const timeValue = hours * 60 + minutes
+  const openTime = BUSINESS_HOURS.OPEN_HOUR * 60 + BUSINESS_HOURS.OPEN_MINUTE
+  const closeTime = BUSINESS_HOURS.CLOSE_HOUR * 60 + BUSINESS_HOURS.CLOSE_MINUTE
+  return timeValue >= openTime && timeValue <= closeTime
+}
+
+export function getNextBusinessDay(date: Date): Date {
+  const next = new Date(date)
+  next.setDate(next.getDate() + 1)
+  while (!isWorkingDay(next)) {
+    next.setDate(next.getDate() + 1)
+  }
+  return next
+}

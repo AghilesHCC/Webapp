@@ -45,7 +45,7 @@ try {
 
     try {
         // Récupérer les informations de l'espace
-        $query = "SELECT id, nom, prix_heure, prix_jour, prix_semaine, disponible, capacite
+        $query = "SELECT id, nom, type, prix_heure, prix_demi_journee, prix_jour, disponible, capacite
                   FROM espaces
                   WHERE id = :espace_id";
 
@@ -98,26 +98,31 @@ try {
             Response::error("Dates invalides", 400);
         }
 
-        // Calculer le montant
+        // Vérifier la durée maximale (7 jours)
+        $jours_max = 7;
+        if ($heures > ($jours_max * 24)) {
+            $db->rollBack();
+            Response::error("La durée maximale de réservation est de $jours_max jours", 400);
+        }
+
+        // Constantes métier
+        $HALF_DAY_HOURS = 4;
+
+        // Calculer le montant avec tarifs: heure, demi-journée (4h), journée
         $montant_total = 0;
         $type_reservation = 'heure';
 
-        if ($heures < 24) {
+        if ($heures >= 24) {
+            $jours = ceil($heures / 24);
+            $montant_total = $jours * $espace['prix_jour'];
+            $type_reservation = 'jour';
+        } else if ($heures >= $HALF_DAY_HOURS && !empty($espace['prix_demi_journee']) && $espace['prix_demi_journee'] > 0) {
+            $demi_journees = ceil($heures / $HALF_DAY_HOURS);
+            $montant_total = $demi_journees * $espace['prix_demi_journee'];
+            $type_reservation = 'demi_journee';
+        } else {
             $montant_total = ceil($heures) * $espace['prix_heure'];
             $type_reservation = 'heure';
-        } else {
-            $jours = ceil($heures / 24);
-
-            // Appliquer le tarif semaine si disponible et si >= 7 jours
-            if ($jours >= 7 && !empty($espace['prix_semaine'])) {
-                $semaines = floor($jours / 7);
-                $jours_restants = $jours % 7;
-                $montant_total = ($semaines * $espace['prix_semaine']) + ($jours_restants * $espace['prix_jour']);
-                $type_reservation = $semaines > 0 ? 'semaine' : 'jour';
-            } else {
-                $montant_total = $jours * $espace['prix_jour'];
-                $type_reservation = 'jour';
-            }
         }
 
         $reduction = 0;
