@@ -4,36 +4,93 @@
  * POST /api/auth/register.php
  */
 
-// Nettoyer tout output buffer existant
-if (ob_get_level()) {
-    ob_clean();
+// Nettoyer tout output buffer
+while (ob_get_level()) {
+    ob_end_clean();
 }
 
-require_once '../config/cors.php';
-require_once '../config/database.php';
-require_once '../utils/Auth.php';
-require_once '../utils/Response.php';
-require_once '../utils/UuidHelper.php';
-require_once '../utils/Validator.php';
-require_once '../utils/RateLimiter.php';
+// Démarrer un nouveau buffer
+ob_start();
+
+// Handler d'erreur global - TOUJOURS retourner du JSON
+function sendJsonError($message, $code = 500) {
+    while (ob_get_level()) {
+        ob_end_clean();
+    }
+    http_response_code($code);
+    header('Content-Type: application/json');
+    echo json_encode([
+        'success' => false,
+        'error' => $message,
+        'message' => $message
+    ]);
+    exit;
+}
+
+// Capturer toutes les erreurs
+set_error_handler(function($errno, $errstr, $errfile, $errline) {
+    error_log("PHP Error [$errno]: $errstr in $errfile:$errline");
+    if ($errno === E_ERROR || $errno === E_CORE_ERROR || $errno === E_COMPILE_ERROR) {
+        sendJsonError("Erreur serveur interne", 500);
+    }
+    return false;
+});
+
+// Capturer les erreurs fatales
+register_shutdown_function(function() {
+    $error = error_get_last();
+    if ($error && in_array($error['type'], [E_ERROR, E_CORE_ERROR, E_COMPILE_ERROR, E_PARSE])) {
+        error_log("Fatal error: " . print_r($error, true));
+        sendJsonError("Erreur serveur fatale", 500);
+    }
+});
 
 try {
-    // Rate limiting (non-bloquant en cas d'erreur)
-    try {
-        $rateLimiter = new RateLimiter();
-        $rateLimiter->checkLimit('register');
-    } catch (Exception $rateLimitError) {
-        error_log("RateLimiter warning: " . $rateLimitError->getMessage());
-        // Continue sans rate limiting
+    // Charger les dépendances
+    $basePath = __DIR__ . '/..';
+
+    if (!file_exists($basePath . '/config/cors.php')) {
+        throw new Exception("Fichier cors.php introuvable");
+    }
+    require_once $basePath . '/config/cors.php';
+
+    if (!file_exists($basePath . '/config/database.php')) {
+        throw new Exception("Fichier database.php introuvable");
+    }
+    require_once $basePath . '/config/database.php';
+
+    if (!file_exists($basePath . '/utils/Auth.php')) {
+        throw new Exception("Fichier Auth.php introuvable");
+    }
+    require_once $basePath . '/utils/Auth.php';
+
+    if (!file_exists($basePath . '/utils/Response.php')) {
+        throw new Exception("Fichier Response.php introuvable");
+    }
+    require_once $basePath . '/utils/Response.php';
+
+    if (!file_exists($basePath . '/utils/UuidHelper.php')) {
+        throw new Exception("Fichier UuidHelper.php introuvable");
+    }
+    require_once $basePath . '/utils/UuidHelper.php';
+
+    if (!file_exists($basePath . '/utils/Validator.php')) {
+        throw new Exception("Fichier Validator.php introuvable");
+    }
+    require_once $basePath . '/utils/Validator.php';
+
+    // Lire les données POST
+    $input = file_get_contents("php://input");
+    if (empty($input)) {
+        Response::error("Aucune donnée reçue", 400);
     }
 
-    $data = json_decode(file_get_contents("php://input"));
-
+    $data = json_decode($input);
     if (json_last_error() !== JSON_ERROR_NONE) {
-        Response::error("Données JSON invalides", 400);
+        Response::error("Données JSON invalides: " . json_last_error_msg(), 400);
     }
 
-    // Utiliser la classe Validator
+    // Validation des champs requis
     $validator = new Validator();
 
     $validator->validateRequired($data->email ?? '', 'email');
@@ -54,27 +111,40 @@ try {
         Response::error($validator->getFirstError(), 400);
     }
 
+    // Connexion base de données
     $db = Database::getInstance()->getConnection();
+    if (!$db) {
+        throw new Exception("Impossible de se connecter à la base de données");
+    }
 
+    // Vérifier si l'email existe déjà
     $query = "SELECT id FROM users WHERE email = :email";
     $stmt = $db->prepare($query);
     $stmt->bindParam(':email', $data->email);
     $stmt->execute();
 
     if ($stmt->rowCount() > 0) {
-        error_log("Email already exists: " . $data->email);
         Response::error("Cet email est déjà utilisé", 409);
     }
 
-    error_log("Hashing password...");
+    // Hasher le mot de passe
     $password_hash = Auth::hashPassword($data->password);
+    if (!$password_hash) {
+        throw new Exception("Erreur lors du hashage du mot de passe");
+    }
 
+    // Générer l'ID utilisateur
     $user_id = UuidHelper::generate();
-    error_log("Generated user ID: " . $user_id);
+    if (!$user_id) {
+        throw new Exception("Erreur lors de la génération de l'ID utilisateur");
+    }
 
+    // Préparer les données optionnelles
     $profession = $data->profession ?? null;
     $entreprise = $data->entreprise ?? null;
+    $telephone = $data->telephone ?? null;
 
+    // Insérer l'utilisateur
     $query = "INSERT INTO users (id, email, password_hash, nom, prenom, telephone, profession, entreprise, role, statut)
               VALUES (:id, :email, :password_hash, :nom, :prenom, :telephone, :profession, :entreprise, 'user', 'actif')";
 
@@ -85,18 +155,18 @@ try {
         ':password_hash' => $password_hash,
         ':nom' => $data->nom,
         ':prenom' => $data->prenom,
-        ':telephone' => $data->telephone ?? null,
+        ':telephone' => $telephone,
         ':profession' => $profession,
         ':entreprise' => $entreprise
     ]);
 
     if (!$result) {
-        error_log("Failed to insert user: " . print_r($stmt->errorInfo(), true));
-        Response::error("Erreur lors de la création de l'utilisateur", 500);
+        $errorInfo = $stmt->errorInfo();
+        error_log("Failed to insert user: " . print_r($errorInfo, true));
+        throw new Exception("Erreur lors de la création de l'utilisateur: " . $errorInfo[2]);
     }
 
-    error_log("User created successfully");
-
+    // Créer le code de parrainage pour ce nouvel utilisateur
     $code_parrain = 'COFFICE' . strtoupper(substr(str_replace('-', '', $user_id), 0, 6));
     $parrainage_id = UuidHelper::generate();
 
@@ -110,12 +180,8 @@ try {
         ':code_parrain' => $code_parrain
     ]);
 
-    error_log("Parrainage code created: " . $code_parrain);
-
     // Traiter le code parrainage si fourni
     if (!empty($data->codeParrainage)) {
-        error_log("Processing referral code: " . $data->codeParrainage);
-
         $query = "SELECT id, parrain_id FROM parrainages
                   WHERE code_parrain = :code
                   LIMIT 1";
@@ -146,18 +212,18 @@ try {
                 ':id' => $notif_id,
                 ':user_id' => $parrainage['parrain_id']
             ]);
-
-            error_log("Referral bonus credited to parrain: " . $parrainage['parrain_id']);
         }
     }
 
+    // Générer les tokens JWT
     $token = Auth::generateToken($user_id, $data->email, 'user');
     $refreshToken = Auth::generateRefreshToken($user_id, $data->email, 'user');
-    error_log("Tokens generated");
 
-    // Sessions table removed - using JWT only
-    error_log("Registration complete for: " . $data->email);
+    if (!$token || !$refreshToken) {
+        throw new Exception("Erreur lors de la génération des tokens");
+    }
 
+    // Retourner la réponse
     Response::success([
         'token' => $token,
         'refreshToken' => $refreshToken,
@@ -166,17 +232,21 @@ try {
             'email' => $data->email,
             'nom' => $data->nom,
             'prenom' => $data->prenom,
-            'role' => 'user'
+            'telephone' => $telephone,
+            'profession' => $profession,
+            'entreprise' => $entreprise,
+            'role' => 'user',
+            'statut' => 'actif'
         ]
     ], "Inscription réussie", 201);
 
 } catch (PDOException $e) {
     error_log("Database error in register: " . $e->getMessage());
     error_log("Stack trace: " . $e->getTraceAsString());
-    Response::serverError("Erreur lors de l'inscription");
+    sendJsonError("Erreur de base de données: " . $e->getMessage(), 500);
 } catch (Exception $e) {
     error_log("Register error: " . $e->getMessage());
     error_log("Stack trace: " . $e->getTraceAsString());
-    Response::serverError("Erreur lors de l'inscription");
+    sendJsonError($e->getMessage(), 500);
 }
 ?>
