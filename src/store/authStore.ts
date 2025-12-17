@@ -265,43 +265,22 @@ export const useAuthStore = create<AuthState>()(
             throw new Error('Erreur lors de l\'inscription')
           }
 
-          const codeParrain = 'COFFICE' + authData.user.id.substring(0, 6).toUpperCase()
+          await new Promise(resolve => setTimeout(resolve, 1000))
 
-          const { error: profileError } = await supabase
+          const { data: profile, error: profileError } = await supabase
             .from('profiles')
-            .insert({
-              id: authData.user.id,
-              email: data.email,
-              nom: data.nom,
-              prenom: data.prenom,
-              telephone: data.telephone,
-              profession: data.profession,
-              entreprise: data.entreprise,
-              role: 'user',
-              statut: 'actif'
-            })
+            .select('*')
+            .eq('id', authData.user.id)
+            .maybeSingle()
 
-          if (profileError) {
-            console.error('Error creating profile:', profileError)
-          }
-
-          const { error: parrainageError } = await supabase
-            .from('parrainages')
-            .insert({
-              parrain_id: authData.user.id,
-              code_parrain: codeParrain,
-              parraines: 0,
-              recompenses_totales: 0
-            })
-
-          if (parrainageError) {
-            console.error('Error creating parrainage:', parrainageError)
+          if (profileError || !profile) {
+            throw new Error('Impossible de charger le profil')
           }
 
           if (data.codeParrainage) {
             const { data: parrainageData } = await supabase
               .from('parrainages')
-              .select('id, parrain_id')
+              .select('id, parrain_id, parraines, recompenses_totales')
               .eq('code_parrain', data.codeParrainage)
               .maybeSingle()
 
@@ -309,8 +288,8 @@ export const useAuthStore = create<AuthState>()(
               await supabase
                 .from('parrainages')
                 .update({
-                  parraines: supabase.sql`parraines + 1`,
-                  recompenses_totales: supabase.sql`recompenses_totales + 3000`
+                  parraines: (parrainageData.parraines || 0) + 1,
+                  recompenses_totales: (parrainageData.recompenses_totales || 0) + 3000
                 })
                 .eq('id', parrainageData.id)
 
@@ -327,15 +306,15 @@ export const useAuthStore = create<AuthState>()(
           }
 
           const userProfile: UserProfile = {
-            id: authData.user.id,
-            email: data.email,
-            nom: data.nom,
-            prenom: data.prenom,
-            telephone: data.telephone,
-            profession: data.profession,
-            entreprise: data.entreprise,
-            role: 'user',
-            statut: 'actif'
+            id: profile.id,
+            email: profile.email,
+            nom: profile.nom,
+            prenom: profile.prenom,
+            telephone: profile.telephone,
+            profession: profile.profession,
+            entreprise: profile.entreprise,
+            role: profile.role,
+            statut: profile.statut
           }
 
           set({
