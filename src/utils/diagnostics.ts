@@ -1,4 +1,5 @@
 import type { ApiResponse } from '../types/api.types'
+import { API_URL } from '../config/api'
 
 interface DiagnosticResult {
   category: string
@@ -25,8 +26,6 @@ interface DiagnosticReport {
   }
   results: DiagnosticResult[]
 }
-
-const API_URL = import.meta.env.VITE_API_URL || '/api'
 
 async function fetchWithTimeout(url: string, options: RequestInit = {}, timeout = 10000): Promise<Response> {
   const controller = new AbortController()

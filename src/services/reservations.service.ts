@@ -80,7 +80,7 @@ export class ReservationsService {
   }
 
   static getReservationsByUser(reservations: Reservation[], userId: string): Reservation[] {
-    return reservations.filter(r => r.utilisateurId === userId);
+    return reservations.filter(r => r.userId === userId);
   }
 
   static getReservationsByEspace(reservations: Reservation[], espaceId: string): Reservation[] {

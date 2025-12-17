@@ -54,9 +54,8 @@ export const DOMICILIATION_STATUTS = {
   EN_COURS: 'en_cours',
   VALIDEE: 'validee',
   ACTIVE: 'active',
-  REFUSEE: 'refusee',
-  EXPIREE: 'expiree',
-  RESILIEE: 'resiliee'
+  REJETEE: 'rejetee',
+  EXPIREE: 'expiree'
 } as const
 
 export type DomiciliationStatut = typeof DOMICILIATION_STATUTS[keyof typeof DOMICILIATION_STATUTS]

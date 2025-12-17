@@ -1,6 +1,5 @@
 import { isTokenExpired as isTokenExpiredUtil, isTokenExpiringSoon as isTokenExpiringSoonUtil } from '../utils/jwt'
-
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost/api'
+import { API_URL } from '../config/api'
 
 interface ApiResponse<T = any> {
   success: boolean
@@ -468,8 +467,20 @@ class ApiClient {
     return this.request('/domiciliations/index.php')
   }
 
+  async getDomiciliation(id: string) {
+    return this.request(`/domiciliations/index.php?id=${id}`)
+  }
+
   async getUserDomiciliation(userId: string) {
     return this.request(`/domiciliations/user.php?user_id=${userId}`)
+  }
+
+  async createDomiciliation(data: any) {
+    return this.createDemandeDomiciliation(data)
+  }
+
+  async updateDomiciliation(id: string, data: any) {
+    return this.updateDemandeDomiciliation(id, data)
   }
 
   async createDemandeDomiciliation(data: any) {

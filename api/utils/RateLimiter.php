@@ -126,15 +126,21 @@ class RateLimiter {
     }
 
     private static function getData($key) {
-        self::ensureCacheDir();
+        if (!self::ensureCacheDir()) {
+            return ['attempts' => []];
+        }
 
         $file = self::$cacheDir . $key;
 
         if (file_exists($file)) {
-            $content = file_get_contents($file);
-            $data = json_decode($content, true);
-            if ($data) {
-                return $data;
+            try {
+                $content = @file_get_contents($file);
+                $data = json_decode($content, true);
+                if ($data) {
+                    return $data;
+                }
+            } catch (Exception $e) {
+                error_log("RateLimiter: Cannot read cache file: " . $e->getMessage());
             }
         }
 
@@ -142,16 +148,30 @@ class RateLimiter {
     }
 
     private static function saveData($key, $data) {
-        self::ensureCacheDir();
+        if (!self::ensureCacheDir()) {
+            return false;
+        }
 
         $file = self::$cacheDir . $key;
-        file_put_contents($file, json_encode($data));
+        try {
+            @file_put_contents($file, json_encode($data));
+            return true;
+        } catch (Exception $e) {
+            error_log("RateLimiter: Cannot write cache file: " . $e->getMessage());
+            return false;
+        }
     }
 
     private static function ensureCacheDir() {
         if (!is_dir(self::$cacheDir)) {
-            mkdir(self::$cacheDir, 0755, true);
+            try {
+                @mkdir(self::$cacheDir, 0755, true);
+            } catch (Exception $e) {
+                error_log("RateLimiter: Cannot create cache directory: " . $e->getMessage());
+                return false;
+            }
         }
+        return is_dir(self::$cacheDir) && is_writable(self::$cacheDir);
     }
 
     /**

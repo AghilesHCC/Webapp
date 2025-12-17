@@ -36,6 +36,7 @@ export interface User {
   telephone?: string
   role: 'admin' | 'user'
   statut?: 'actif' | 'inactif' | 'suspendu'
+  actif?: boolean
   dateCreation?: Date
   created_at?: string
   createdAt?: string
@@ -117,7 +118,7 @@ export interface Notification {
   utilisateur: User
   titre: string
   message: string
-  type: 'info' | 'success' | 'warning' | 'error'
+  type: 'parrainage' | 'reservation' | 'domiciliation' | 'abonnement' | 'system' | 'info' | 'success' | 'warning' | 'error'
   lu: boolean
   dateCreation: Date
 }
@@ -168,6 +169,7 @@ export interface DemandeDomiciliation {
   dateCreationEntreprise?: Date
   statut: 'en_attente' | 'validee' | 'rejetee'
   commentaireAdmin?: string
+  montantMensuel?: number
   dateValidation?: Date
   dateCreation: Date
   updatedAt: Date

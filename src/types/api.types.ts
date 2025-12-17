@@ -83,18 +83,6 @@ export interface ApiReservation {
   participants?: number
   created_at?: string
   updated_at?: string
-  userId?: string
-  espaceId?: string
-  dateDebut?: string
-  dateFin?: string
-  typeReservation?: string
-  montantTotal?: number
-  montantPaye?: number
-  modePaiement?: string
-  codePromoId?: string
-  createdAt?: string
-  updatedAt?: string
-  dateCreation?: string
   utilisateur?: ApiUser
   espace?: ApiEspace | { nom?: string; type?: string; capacite?: number }
   user?: { nom?: string; prenom?: string; email?: string; telephone?: string | null }

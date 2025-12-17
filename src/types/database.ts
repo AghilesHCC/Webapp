@@ -327,7 +327,7 @@ export interface Database {
           representant_prenom: string | null
           representant_telephone: string | null
           representant_email: string | null
-          statut: 'en_attente' | 'en_cours' | 'validee' | 'active' | 'refusee' | 'expiree' | 'resiliee'
+          statut: 'en_attente' | 'en_cours' | 'validee' | 'active' | 'rejetee' | 'expiree'
           date_debut: string | null
           date_fin: string | null
           montant_mensuel: number | null
