@@ -22,8 +22,14 @@ class RateLimiter {
     public function checkLimit($action = '') {
         $key = $this->identifier . ':' . $action;
         if (self::tooManyAttempts($key, $this->maxAttempts, $this->decayMinutes)) {
-            require_once __DIR__ . '/Response.php';
-            Response::error("Trop de tentatives. Réessayez plus tard.", 429);
+            http_response_code(429);
+            header('Content-Type: application/json');
+            echo json_encode([
+                'success' => false,
+                'error' => 'Trop de tentatives. Réessayez plus tard.',
+                'message' => 'Trop de tentatives. Réessayez plus tard.'
+            ]);
+            exit;
         }
         self::hit($key);
     }

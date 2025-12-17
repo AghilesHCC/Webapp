@@ -4,6 +4,11 @@
  * POST /api/auth/register.php
  */
 
+// Nettoyer tout output buffer existant
+if (ob_get_level()) {
+    ob_clean();
+}
+
 require_once '../config/cors.php';
 require_once '../config/database.php';
 require_once '../utils/Auth.php';
@@ -13,8 +18,14 @@ require_once '../utils/Validator.php';
 require_once '../utils/RateLimiter.php';
 
 try {
-    $rateLimiter = new RateLimiter();
-    $rateLimiter->checkLimit('register');
+    // Rate limiting (non-bloquant en cas d'erreur)
+    try {
+        $rateLimiter = new RateLimiter();
+        $rateLimiter->checkLimit('register');
+    } catch (Exception $rateLimitError) {
+        error_log("RateLimiter warning: " . $rateLimitError->getMessage());
+        // Continue sans rate limiting
+    }
 
     $data = json_decode(file_get_contents("php://input"));
 

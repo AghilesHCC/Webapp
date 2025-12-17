@@ -165,11 +165,21 @@ class ApiClient {
 
       let data: any
       const contentType = response.headers.get('content-type')
+      const responseText = await response.text()
 
       if (contentType && contentType.includes('application/json')) {
-        data = await response.json()
+        try {
+          data = JSON.parse(responseText)
+        } catch (jsonError) {
+          console.error('Erreur parsing JSON:', jsonError)
+          console.error('Réponse serveur brute:', responseText)
+          console.error('Status:', response.status)
+          throw new Error('Réponse JSON invalide du serveur')
+        }
       } else {
-        await response.text()
+        console.error('Réponse non-JSON reçue:', responseText)
+        console.error('Status:', response.status)
+        console.error('Content-Type:', contentType)
 
         // Retry sur erreurs serveur
         if (response.status >= 500 && retryCount < MAX_RETRIES) {
@@ -177,7 +187,7 @@ class ApiClient {
           return this.request<T>(endpoint, options, retryWithRefresh, retryCount + 1)
         }
 
-        throw new Error('Réponse serveur invalide')
+        throw new Error(`Réponse serveur invalide (${response.status}): ${responseText.substring(0, 200)}`)
       }
 
       // Gestion spéciale de l'erreur 401
