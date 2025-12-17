@@ -1,230 +1,201 @@
 <?php
-/**
- * API: Inscription utilisateur
- * POST /api/auth/register.php
- */
-
-// Nettoyer tout output buffer
-while (ob_get_level()) {
-    ob_end_clean();
-}
-
-// Démarrer un nouveau buffer
+// TOUT NETTOYER
+while (ob_get_level()) ob_end_clean();
 ob_start();
 
-// Handler d'erreur global - TOUJOURS retourner du JSON
-function sendJsonError($message, $code = 500) {
-    while (ob_get_level()) {
-        ob_end_clean();
-    }
+// Headers CORS et JSON en premier
+header('Access-Control-Allow-Origin: *');
+header('Access-Control-Allow-Methods: POST, OPTIONS');
+header('Access-Control-Allow-Headers: Content-Type, Authorization');
+header('Content-Type: application/json');
+
+// OPTIONS request
+if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
+    http_response_code(200);
+    exit;
+}
+
+// Fonction pour toujours retourner du JSON
+function sendJson($success, $data = null, $error = null, $code = 200) {
+    while (ob_get_level()) ob_end_clean();
     http_response_code($code);
     header('Content-Type: application/json');
-    echo json_encode([
-        'success' => false,
-        'error' => $message,
-        'message' => $message
-    ]);
+    $response = ['success' => $success];
+    if ($data) $response['data'] = $data;
+    if ($error) $response['error'] = $error;
+    echo json_encode($response);
     exit;
 }
 
 // Capturer toutes les erreurs
-set_error_handler(function($errno, $errstr, $errfile, $errline) {
-    error_log("PHP Error [$errno]: $errstr in $errfile:$errline");
-    if ($errno === E_ERROR || $errno === E_CORE_ERROR || $errno === E_COMPILE_ERROR) {
-        sendJsonError("Erreur serveur interne", 500);
-    }
-    return false;
-});
-
-// Capturer les erreurs fatales
 register_shutdown_function(function() {
     $error = error_get_last();
     if ($error && in_array($error['type'], [E_ERROR, E_CORE_ERROR, E_COMPILE_ERROR, E_PARSE])) {
-        error_log("Fatal error: " . print_r($error, true));
-        sendJsonError("Erreur serveur fatale", 500);
+        sendJson(false, null, 'Erreur PHP: ' . $error['message'] . ' dans ' . $error['file'], 500);
     }
 });
 
 try {
-    // Charger les dépendances
-    $basePath = __DIR__ . '/..';
-
-    if (!file_exists($basePath . '/config/cors.php')) {
-        throw new Exception("Fichier cors.php introuvable");
+    // 1. Vérifier la méthode
+    if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+        sendJson(false, null, 'Méthode non autorisée', 405);
     }
-    require_once $basePath . '/config/cors.php';
 
-    if (!file_exists($basePath . '/config/database.php')) {
-        throw new Exception("Fichier database.php introuvable");
-    }
-    require_once $basePath . '/config/database.php';
-
-    if (!file_exists($basePath . '/utils/Auth.php')) {
-        throw new Exception("Fichier Auth.php introuvable");
-    }
-    require_once $basePath . '/utils/Auth.php';
-
-    if (!file_exists($basePath . '/utils/Response.php')) {
-        throw new Exception("Fichier Response.php introuvable");
-    }
-    require_once $basePath . '/utils/Response.php';
-
-    if (!file_exists($basePath . '/utils/UuidHelper.php')) {
-        throw new Exception("Fichier UuidHelper.php introuvable");
-    }
-    require_once $basePath . '/utils/UuidHelper.php';
-
-    if (!file_exists($basePath . '/utils/Validator.php')) {
-        throw new Exception("Fichier Validator.php introuvable");
-    }
-    require_once $basePath . '/utils/Validator.php';
-
-    // Lire les données POST
+    // 2. Lire les données
     $input = file_get_contents("php://input");
     if (empty($input)) {
-        Response::error("Aucune donnée reçue", 400);
+        sendJson(false, null, 'Aucune donnée reçue', 400);
     }
 
     $data = json_decode($input);
     if (json_last_error() !== JSON_ERROR_NONE) {
-        Response::error("Données JSON invalides: " . json_last_error_msg(), 400);
+        sendJson(false, null, 'JSON invalide: ' . json_last_error_msg(), 400);
     }
 
-    // Validation des champs requis
-    $validator = new Validator();
+    // 3. Valider les champs de base
+    if (empty($data->email)) sendJson(false, null, 'Email requis', 400);
+    if (empty($data->password)) sendJson(false, null, 'Mot de passe requis', 400);
+    if (empty($data->nom)) sendJson(false, null, 'Nom requis', 400);
+    if (empty($data->prenom)) sendJson(false, null, 'Prénom requis', 400);
 
-    $validator->validateRequired($data->email ?? '', 'email');
-    $validator->validateEmail($data->email ?? '', 'email');
-    $validator->validateRequired($data->password ?? '', 'password');
-    $validator->validatePassword($data->password ?? '', 'password');
-    $validator->validateRequired($data->nom ?? '', 'nom');
-    $validator->validateMinLength($data->nom ?? '', 2, 'nom');
-    $validator->validateRequired($data->prenom ?? '', 'prenom');
-    $validator->validateMinLength($data->prenom ?? '', 2, 'prenom');
-
-    // Validation téléphone si fourni
-    if (!empty($data->telephone)) {
-        $validator->validatePhone($data->telephone, 'telephone', false);
+    if (!filter_var($data->email, FILTER_VALIDATE_EMAIL)) {
+        sendJson(false, null, 'Email invalide', 400);
     }
 
-    if ($validator->hasErrors()) {
-        Response::error($validator->getFirstError(), 400);
-    }
+    // 4. Connexion à la base de données
+    $host = getenv('DB_HOST') ?: 'localhost';
+    $dbname = getenv('DB_NAME') ?: 'cofficed_coffice';
+    $user = getenv('DB_USER') ?: 'cofficed_user';
+    $pass = getenv('DB_PASSWORD') ?: 'CofficeADMIN2025!';
 
-    // Connexion base de données
-    $db = Database::getInstance()->getConnection();
-    if (!$db) {
-        throw new Exception("Impossible de se connecter à la base de données");
-    }
+    $dsn = "mysql:host=$host;dbname=$dbname;charset=utf8mb4";
+    $pdo = new PDO($dsn, $user, $pass, [
+        PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+        PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC
+    ]);
 
-    // Vérifier si l'email existe déjà
-    $query = "SELECT id FROM users WHERE email = :email";
-    $stmt = $db->prepare($query);
-    $stmt->bindParam(':email', $data->email);
-    $stmt->execute();
-
+    // 5. Vérifier si l'email existe
+    $stmt = $pdo->prepare("SELECT id FROM users WHERE email = ?");
+    $stmt->execute([$data->email]);
     if ($stmt->rowCount() > 0) {
-        Response::error("Cet email est déjà utilisé", 409);
+        sendJson(false, null, 'Cet email est déjà utilisé', 409);
     }
 
-    // Hasher le mot de passe
-    $password_hash = Auth::hashPassword($data->password);
-    if (!$password_hash) {
-        throw new Exception("Erreur lors du hashage du mot de passe");
-    }
+    // 6. Créer l'utilisateur
+    $user_id = sprintf(
+        '%04x%04x-%04x-%04x-%04x-%04x%04x%04x',
+        mt_rand(0, 0xffff), mt_rand(0, 0xffff),
+        mt_rand(0, 0xffff),
+        mt_rand(0, 0x0fff) | 0x4000,
+        mt_rand(0, 0x3fff) | 0x8000,
+        mt_rand(0, 0xffff), mt_rand(0, 0xffff), mt_rand(0, 0xffff)
+    );
 
-    // Générer l'ID utilisateur
-    $user_id = UuidHelper::generate();
-    if (!$user_id) {
-        throw new Exception("Erreur lors de la génération de l'ID utilisateur");
-    }
+    $password_hash = password_hash($data->password, PASSWORD_BCRYPT);
 
-    // Préparer les données optionnelles
-    $profession = $data->profession ?? null;
-    $entreprise = $data->entreprise ?? null;
-    $telephone = $data->telephone ?? null;
+    $stmt = $pdo->prepare("
+        INSERT INTO users (id, email, password_hash, nom, prenom, telephone, profession, entreprise, role, statut)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'user', 'actif')
+    ");
 
-    // Insérer l'utilisateur
-    $query = "INSERT INTO users (id, email, password_hash, nom, prenom, telephone, profession, entreprise, role, statut)
-              VALUES (:id, :email, :password_hash, :nom, :prenom, :telephone, :profession, :entreprise, 'user', 'actif')";
-
-    $stmt = $db->prepare($query);
-    $result = $stmt->execute([
-        ':id' => $user_id,
-        ':email' => $data->email,
-        ':password_hash' => $password_hash,
-        ':nom' => $data->nom,
-        ':prenom' => $data->prenom,
-        ':telephone' => $telephone,
-        ':profession' => $profession,
-        ':entreprise' => $entreprise
-    ]);
-
-    if (!$result) {
-        $errorInfo = $stmt->errorInfo();
-        error_log("Failed to insert user: " . print_r($errorInfo, true));
-        throw new Exception("Erreur lors de la création de l'utilisateur: " . $errorInfo[2]);
-    }
-
-    // Créer le code de parrainage pour ce nouvel utilisateur
-    $code_parrain = 'COFFICE' . strtoupper(substr(str_replace('-', '', $user_id), 0, 6));
-    $parrainage_id = UuidHelper::generate();
-
-    $query = "INSERT INTO parrainages (id, parrain_id, code_parrain, parraines, recompenses_totales)
-              VALUES (:id, :parrain_id, :code_parrain, 0, 0)";
-
-    $stmt = $db->prepare($query);
     $stmt->execute([
-        ':id' => $parrainage_id,
-        ':parrain_id' => $user_id,
-        ':code_parrain' => $code_parrain
+        $user_id,
+        $data->email,
+        $password_hash,
+        $data->nom,
+        $data->prenom,
+        $data->telephone ?? null,
+        $data->profession ?? null,
+        $data->entreprise ?? null
     ]);
 
-    // Traiter le code parrainage si fourni
-    if (!empty($data->codeParrainage)) {
-        $query = "SELECT id, parrain_id FROM parrainages
-                  WHERE code_parrain = :code
-                  LIMIT 1";
+    // 7. Créer le code de parrainage
+    $code_parrain = 'COFFICE' . strtoupper(substr(str_replace('-', '', $user_id), 0, 6));
+    $parrainage_id = sprintf(
+        '%04x%04x-%04x-%04x-%04x-%04x%04x%04x',
+        mt_rand(0, 0xffff), mt_rand(0, 0xffff),
+        mt_rand(0, 0xffff),
+        mt_rand(0, 0x0fff) | 0x4000,
+        mt_rand(0, 0x3fff) | 0x8000,
+        mt_rand(0, 0xffff), mt_rand(0, 0xffff), mt_rand(0, 0xffff)
+    );
 
-        $stmt = $db->prepare($query);
-        $stmt->execute([':code' => $data->codeParrainage]);
+    $stmt = $pdo->prepare("
+        INSERT INTO parrainages (id, parrain_id, code_parrain, parraines, recompenses_totales)
+        VALUES (?, ?, ?, 0, 0)
+    ");
+    $stmt->execute([$parrainage_id, $user_id, $code_parrain]);
+
+    // 8. Traiter le code de parrainage si fourni
+    if (!empty($data->codeParrainage)) {
+        $stmt = $pdo->prepare("SELECT id, parrain_id FROM parrainages WHERE code_parrain = ? LIMIT 1");
+        $stmt->execute([$data->codeParrainage]);
         $parrainage = $stmt->fetch();
 
         if ($parrainage && $parrainage['parrain_id'] !== $user_id) {
-            // Incrémenter les compteurs du parrain
-            $query = "UPDATE parrainages
-                      SET parraines = parraines + 1,
-                          recompenses_totales = recompenses_totales + 3000,
-                          updated_at = NOW()
-                      WHERE id = :id";
+            $stmt = $pdo->prepare("
+                UPDATE parrainages
+                SET parraines = parraines + 1,
+                    recompenses_totales = recompenses_totales + 3000,
+                    updated_at = NOW()
+                WHERE id = ?
+            ");
+            $stmt->execute([$parrainage['id']]);
 
-            $stmt = $db->prepare($query);
-            $stmt->execute([':id' => $parrainage['id']]);
+            $notif_id = sprintf(
+                '%04x%04x-%04x-%04x-%04x-%04x%04x%04x',
+                mt_rand(0, 0xffff), mt_rand(0, 0xffff),
+                mt_rand(0, 0xffff),
+                mt_rand(0, 0x0fff) | 0x4000,
+                mt_rand(0, 0x3fff) | 0x8000,
+                mt_rand(0, 0xffff), mt_rand(0, 0xffff), mt_rand(0, 0xffff)
+            );
 
-            // Créer une notification pour le parrain
-            $notif_id = UuidHelper::generate();
-            $query = "INSERT INTO notifications (id, user_id, type, titre, message, lue)
-                      VALUES (:id, :user_id, 'parrainage', 'Nouveau filleul!',
-                              'Vous avez gagné 3000 DA grâce à votre code de parrainage', 0)";
-
-            $stmt = $db->prepare($query);
-            $stmt->execute([
-                ':id' => $notif_id,
-                ':user_id' => $parrainage['parrain_id']
-            ]);
+            $stmt = $pdo->prepare("
+                INSERT INTO notifications (id, user_id, type, titre, message, lue)
+                VALUES (?, ?, 'parrainage', 'Nouveau filleul!', 'Vous avez gagné 3000 DA grâce à votre code de parrainage', 0)
+            ");
+            $stmt->execute([$notif_id, $parrainage['parrain_id']]);
         }
     }
 
-    // Générer les tokens JWT
-    $token = Auth::generateToken($user_id, $data->email, 'user');
-    $refreshToken = Auth::generateRefreshToken($user_id, $data->email, 'user');
+    // 9. Générer les tokens JWT
+    $secret = getenv('JWT_SECRET') ?: 'lLghQl2WUH5z29yk4SzYaMcHu0jNJ3oymw5QZIChJ6yVxs63Q8UpjjFOeUKUxJKLvBaOc0Af38yhnojB2EaoMg==';
 
-    if (!$token || !$refreshToken) {
-        throw new Exception("Erreur lors de la génération des tokens");
-    }
+    $header = json_encode(['typ' => 'JWT', 'alg' => 'HS256']);
+    $payload = json_encode([
+        'sub' => $user_id,
+        'email' => $data->email,
+        'role' => 'user',
+        'iat' => time(),
+        'exp' => time() + (7 * 24 * 60 * 60) // 7 jours
+    ]);
 
-    // Retourner la réponse
-    Response::success([
+    $base64UrlHeader = str_replace(['+', '/', '='], ['-', '_', ''], base64_encode($header));
+    $base64UrlPayload = str_replace(['+', '/', '='], ['-', '_', ''], base64_encode($payload));
+    $signature = hash_hmac('sha256', $base64UrlHeader . "." . $base64UrlPayload, $secret, true);
+    $base64UrlSignature = str_replace(['+', '/', '='], ['-', '_', ''], base64_encode($signature));
+
+    $token = $base64UrlHeader . "." . $base64UrlPayload . "." . $base64UrlSignature;
+
+    // Refresh token (30 jours)
+    $refreshPayload = json_encode([
+        'sub' => $user_id,
+        'email' => $data->email,
+        'role' => 'user',
+        'iat' => time(),
+        'exp' => time() + (30 * 24 * 60 * 60),
+        'type' => 'refresh'
+    ]);
+
+    $base64UrlRefreshPayload = str_replace(['+', '/', '='], ['-', '_', ''], base64_encode($refreshPayload));
+    $refreshSignature = hash_hmac('sha256', $base64UrlHeader . "." . $base64UrlRefreshPayload, $secret, true);
+    $base64UrlRefreshSignature = str_replace(['+', '/', '='], ['-', '_', ''], base64_encode($refreshSignature));
+
+    $refreshToken = $base64UrlHeader . "." . $base64UrlRefreshPayload . "." . $base64UrlRefreshSignature;
+
+    // 10. Retourner la réponse
+    sendJson(true, [
         'token' => $token,
         'refreshToken' => $refreshToken,
         'user' => [
@@ -232,21 +203,19 @@ try {
             'email' => $data->email,
             'nom' => $data->nom,
             'prenom' => $data->prenom,
-            'telephone' => $telephone,
-            'profession' => $profession,
-            'entreprise' => $entreprise,
+            'telephone' => $data->telephone ?? null,
+            'profession' => $data->profession ?? null,
+            'entreprise' => $data->entreprise ?? null,
             'role' => 'user',
             'statut' => 'actif'
         ]
-    ], "Inscription réussie", 201);
+    ], null, 201);
 
 } catch (PDOException $e) {
-    error_log("Database error in register: " . $e->getMessage());
-    error_log("Stack trace: " . $e->getTraceAsString());
-    sendJsonError("Erreur de base de données: " . $e->getMessage(), 500);
+    error_log('DB Error: ' . $e->getMessage());
+    sendJson(false, null, 'Erreur de base de données: ' . $e->getMessage(), 500);
 } catch (Exception $e) {
-    error_log("Register error: " . $e->getMessage());
-    error_log("Stack trace: " . $e->getTraceAsString());
-    sendJsonError($e->getMessage(), 500);
+    error_log('Error: ' . $e->getMessage());
+    sendJson(false, null, $e->getMessage(), 500);
 }
 ?>

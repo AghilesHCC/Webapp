@@ -275,7 +275,7 @@ class ApiClient {
         telephone: data.telephone,
         profession: data.profession,
         entreprise: data.entreprise,
-        code_parrainage: data.codeParrainage
+        codeParrainage: data.codeParrainage
       })
     })
   }
