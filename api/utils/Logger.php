@@ -11,7 +11,19 @@ class Logger
     const LEVEL_ERROR = 'error';
     const LEVEL_SECURITY = 'security';
 
+    private static $instance = null;
     private static $db = null;
+
+    /**
+     * Obtenir l'instance singleton du Logger
+     */
+    public static function getInstance()
+    {
+        if (self::$instance === null) {
+            self::$instance = new self();
+        }
+        return self::$instance;
+    }
 
     /**
      * Initialiser la connexion à la base de données

@@ -6,6 +6,40 @@
 
 class RateLimiter {
     private static $cacheDir = __DIR__ . '/../.cache/ratelimit/';
+    private $identifier;
+    private $maxAttempts;
+    private $decayMinutes;
+
+    public function __construct($identifier = null, $maxAttempts = 60, $decayMinutes = 1) {
+        $this->identifier = $identifier ?? self::getClientIp();
+        $this->maxAttempts = $maxAttempts;
+        $this->decayMinutes = $decayMinutes;
+    }
+
+    /**
+     * Verifier la limite (methode d'instance) - alias pour tooManyAttempts
+     */
+    public function checkLimit($action = '') {
+        $key = $this->identifier . ':' . $action;
+        if (self::tooManyAttempts($key, $this->maxAttempts, $this->decayMinutes)) {
+            require_once __DIR__ . '/Response.php';
+            Response::error("Trop de tentatives. Réessayez plus tard.", 429);
+        }
+        self::hit($key);
+    }
+
+    /**
+     * Obtenir l'IP du client
+     */
+    private static function getClientIp() {
+        if (!empty($_SERVER['HTTP_CLIENT_IP'])) {
+            return $_SERVER['HTTP_CLIENT_IP'];
+        } elseif (!empty($_SERVER['HTTP_X_FORWARDED_FOR'])) {
+            $ips = explode(',', $_SERVER['HTTP_X_FORWARDED_FOR']);
+            return trim($ips[0]);
+        }
+        return $_SERVER['REMOTE_ADDR'] ?? '0.0.0.0';
+    }
 
     /**
      * Vérifie si une IP a dépassé la limite de requêtes

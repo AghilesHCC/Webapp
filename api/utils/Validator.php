@@ -280,5 +280,46 @@ class Validator {
         $validator = new self();
         return $validator->validatePassword($password);
     }
+
+    /**
+     * Valider une valeur numerique
+     */
+    public function validateNumeric($value, $fieldName = 'value', $required = false) {
+        if ($value === null || $value === '') {
+            if ($required) {
+                $this->errors[$fieldName] = "Le champ $fieldName est requis";
+                return false;
+            }
+            return true;
+        }
+
+        if (!is_numeric($value)) {
+            $this->errors[$fieldName] = "Le champ $fieldName doit être un nombre";
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
+     * Methode statique pour valider un email (alias pour isValidEmail)
+     */
+    public static function email($email) {
+        return filter_var($email, FILTER_VALIDATE_EMAIL) !== false;
+    }
+
+    /**
+     * Methode statique pour valider un telephone algerien
+     */
+    public static function algerianPhone($phone) {
+        if (empty($phone)) {
+            return false;
+        }
+
+        $phone = preg_replace('/[\s\-\(\)]/', '', $phone);
+        $pattern = '/^(\+213|0)?[5-7][0-9]{8}$/';
+
+        return preg_match($pattern, $phone) === 1;
+    }
 }
 ?>

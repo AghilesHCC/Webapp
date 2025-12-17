@@ -190,5 +190,49 @@ class Sanitizer
     {
         return str_replace(['\\', '%', '_'], ['\\\\', '\\%', '\\_'], $string);
     }
+
+    /**
+     * Alias pour cleanText - compatibilite avec anciens appels
+     *
+     * @param string|null $string
+     * @return string|null
+     */
+    public static function sanitizeString($string)
+    {
+        return self::cleanText($string);
+    }
+
+    /**
+     * Alias pour cleanText - compatibilite avec bootstrap.php
+     *
+     * @param string|null $string
+     * @return string|null
+     */
+    public static function cleanString($string)
+    {
+        return self::cleanText($string);
+    }
+
+    /**
+     * Alias pour cleanEmail - compatibilite avec anciens appels
+     *
+     * @param string|null $email
+     * @return string|null
+     */
+    public static function sanitizeEmail($email)
+    {
+        return self::cleanEmail($email);
+    }
+
+    /**
+     * Alias pour cleanEmail - compatibilite avec bootstrap.php
+     *
+     * @param string|null $email
+     * @return string|null
+     */
+    public static function email($email)
+    {
+        return self::cleanEmail($email);
+    }
 }
 ?>
