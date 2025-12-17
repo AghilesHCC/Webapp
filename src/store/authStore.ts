@@ -172,24 +172,16 @@ export const useAuthStore = create<AuthState>()(
         try {
           set({ isLoading: true })
 
-          const response = await fetch(`${import.meta.env.VITE_API_URL}/auth/google.php`, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ credential })
-          })
+          const response = await apiClient.loginWithGoogle(credential)
 
-          const data = await response.json()
-
-          if (!data.success || !data.data) {
+          if (!response.success || !response.data) {
             set({ isLoading: false })
-            const errorMsg = data.error || 'Erreur de connexion avec Google'
+            const errorMsg = response.error || 'Erreur de connexion avec Google'
             toast.error(errorMsg)
             throw new Error(errorMsg)
           }
 
-          const { token, refreshToken, user: userData, isNewUser } = data.data
+          const { token, refreshToken, user: userData, isNewUser } = response.data as any
 
           apiClient.setToken(token, refreshToken)
 

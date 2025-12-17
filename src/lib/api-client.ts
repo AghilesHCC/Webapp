@@ -117,8 +117,7 @@ class ApiClient {
       ...((options.headers as Record<string, string>) || {})
     }
 
-    // Endpoints qui ne nécessitent PAS d'authentification
-    const publicEndpoints = ['/auth/login.php', '/auth/register.php']
+    const publicEndpoints = ['/auth/login.php', '/auth/register.php', '/auth/google.php', '/parrainages/verify.php', '/codes-promo/public.php']
     const isPublicEndpoint = publicEndpoints.some(ep => endpoint.includes(ep))
 
     if (!isPublicEndpoint) {
@@ -252,6 +251,13 @@ class ApiClient {
     return this.request('/auth/login.php', {
       method: 'POST',
       body: JSON.stringify({ email, password })
+    })
+  }
+
+  async loginWithGoogle(credential: string) {
+    return this.request('/auth/google.php', {
+      method: 'POST',
+      body: JSON.stringify({ credential })
     })
   }
 

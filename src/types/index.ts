@@ -147,33 +147,35 @@ export interface DocumentLegal {
 export interface DemandeDomiciliation {
   id: string
   userId: string
-  utilisateur: User
+  utilisateur?: User
   raisonSociale: string
   formeJuridique: TypeEntreprise
-  nif: string
-  nis: string
-  registreCommerce: string
-  articleImposition: string
-  coordonneesFiscales: string
-  coordonneesAdministratives: string
-  representantLegal: {
+  nif?: string
+  nis?: string
+  registreCommerce?: string
+  articleImposition?: string
+  coordonneesFiscales?: string
+  coordonneesAdministratives?: string
+  representantLegal?: {
     nom: string
     prenom: string
     fonction: string
     telephone: string
     email: string
   }
-  activitePrincipale: string
-  adresseActuelle: string
+  activitePrincipale?: string
+  adresseActuelle?: string
   capital?: number
   dateCreationEntreprise?: Date
   statut: 'en_attente' | 'validee' | 'rejetee'
   commentaireAdmin?: string
   montantMensuel?: number
   dateValidation?: Date
-  dateCreation: Date
-  updatedAt: Date
+  dateCreation?: Date
+  updatedAt?: Date
 }
+
+export type Domiciliation = DemandeDomiciliation
 
 export interface DomiciliationService {
   id: string

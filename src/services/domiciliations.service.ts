@@ -1,52 +1,63 @@
-import { Domiciliation } from '../types';
+import { DemandeDomiciliation } from '../types';
 import { apiClient } from '../lib/api-client';
 
 export class DomiciliationsService {
-  static async getAll(): Promise<Domiciliation[]> {
+  static async getAll(): Promise<DemandeDomiciliation[]> {
     const response = await apiClient.getDomiciliations();
-    return response.data;
+    if (!response.success || !response.data) {
+      return [];
+    }
+    return response.data as DemandeDomiciliation[];
   }
 
-  static async getById(id: string): Promise<Domiciliation> {
+  static async getById(id: string): Promise<DemandeDomiciliation | null> {
     const response = await apiClient.getDomiciliation(id);
-    return response.data;
+    if (!response.success || !response.data) {
+      return null;
+    }
+    return response.data as DemandeDomiciliation;
   }
 
-  static async create(data: Partial<Domiciliation>): Promise<Domiciliation> {
+  static async create(data: Partial<DemandeDomiciliation>): Promise<DemandeDomiciliation | null> {
     const response = await apiClient.createDomiciliation(data);
-    return response.data;
+    if (!response.success || !response.data) {
+      return null;
+    }
+    return response.data as DemandeDomiciliation;
   }
 
-  static async update(id: string, data: Partial<Domiciliation>): Promise<Domiciliation> {
+  static async update(id: string, data: Partial<DemandeDomiciliation>): Promise<DemandeDomiciliation | null> {
     const response = await apiClient.updateDomiciliation(id, data);
-    return response.data;
+    if (!response.success || !response.data) {
+      return null;
+    }
+    return response.data as DemandeDomiciliation;
   }
 
-  static getByStatus(domiciliations: Domiciliation[], status: string): Domiciliation[] {
+  static getByStatus(domiciliations: DemandeDomiciliation[], status: string): DemandeDomiciliation[] {
     return domiciliations.filter(d => d.statut === status);
   }
 
-  static getPendingDomiciliations(domiciliations: Domiciliation[]): Domiciliation[] {
+  static getPendingDomiciliations(domiciliations: DemandeDomiciliation[]): DemandeDomiciliation[] {
     return this.getByStatus(domiciliations, 'en_attente');
   }
 
-  static getActiveDomiciliations(domiciliations: Domiciliation[]): Domiciliation[] {
-    return this.getByStatus(domiciliations, 'active');
+  static getActiveDomiciliations(domiciliations: DemandeDomiciliation[]): DemandeDomiciliation[] {
+    return this.getByStatus(domiciliations, 'validee');
   }
 
-  static calculateStats(domiciliations: Domiciliation[]) {
+  static calculateStats(domiciliations: DemandeDomiciliation[]) {
     return {
       total: domiciliations.length,
       pending: this.getPendingDomiciliations(domiciliations).length,
       active: this.getActiveDomiciliations(domiciliations).length,
       rejected: this.getByStatus(domiciliations, 'rejetee').length,
-      suspended: this.getByStatus(domiciliations, 'suspendue').length,
     };
   }
 
-  static calculateMonthlyRevenue(domiciliations: Domiciliation[]): number {
+  static calculateMonthlyRevenue(domiciliations: DemandeDomiciliation[]): number {
     return domiciliations
-      .filter(d => d.statut === 'active')
+      .filter(d => d.statut === 'validee')
       .reduce((sum, d) => sum + (d.montantMensuel || 0), 0);
   }
 }

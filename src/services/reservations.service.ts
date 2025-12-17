@@ -5,26 +5,39 @@ import { startOfDay, endOfDay, isWithinInterval, parseISO } from 'date-fns';
 export class ReservationsService {
   static async getAll(): Promise<Reservation[]> {
     const response = await apiClient.getReservations();
-    return response.data;
+    if (!response.success || !response.data) {
+      return [];
+    }
+    return response.data as Reservation[];
   }
 
-  static async getById(id: string): Promise<Reservation> {
+  static async getById(id: string): Promise<Reservation | null> {
     const response = await apiClient.getReservation(id);
-    return response.data;
+    if (!response.success || !response.data) {
+      return null;
+    }
+    return response.data as Reservation;
   }
 
-  static async create(data: Partial<Reservation>): Promise<Reservation> {
-    const response = await apiClient.createReservation(data);
-    return response.data;
+  static async create(data: Partial<Reservation>): Promise<Reservation | null> {
+    const response = await apiClient.createReservation(data as any);
+    if (!response.success || !response.data) {
+      return null;
+    }
+    return response.data as Reservation;
   }
 
-  static async update(id: string, data: Partial<Reservation>): Promise<Reservation> {
+  static async update(id: string, data: Partial<Reservation>): Promise<Reservation | null> {
     const response = await apiClient.updateReservation(id, data);
-    return response.data;
+    if (!response.success || !response.data) {
+      return null;
+    }
+    return response.data as Reservation;
   }
 
-  static async cancel(id: string): Promise<void> {
-    await apiClient.cancelReservation(id);
+  static async cancel(id: string): Promise<boolean> {
+    const response = await apiClient.cancelReservation(id);
+    return response.success;
   }
 
   static calculateTotalRevenue(reservations: Reservation[]): number {
@@ -50,7 +63,9 @@ export class ReservationsService {
   ): Reservation[] {
     return reservations.filter(r => {
       try {
-        const reservationDate = parseISO(r.dateDebut);
+        const dateStr = typeof r.dateDebut === 'string' ? r.dateDebut : r.dateDebut?.toISOString();
+        if (!dateStr) return false;
+        const reservationDate = parseISO(dateStr);
         return isWithinInterval(reservationDate, { start: startDate, end: endDate });
       } catch {
         return false;
@@ -71,7 +86,9 @@ export class ReservationsService {
     const now = new Date();
     return reservations.filter(r => {
       try {
-        const reservationDate = parseISO(r.dateDebut);
+        const dateStr = typeof r.dateDebut === 'string' ? r.dateDebut : r.dateDebut?.toISOString();
+        if (!dateStr) return false;
+        const reservationDate = parseISO(dateStr);
         return reservationDate > now && r.statut !== 'annulee';
       } catch {
         return false;

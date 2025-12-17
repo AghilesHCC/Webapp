@@ -1,9 +1,9 @@
-import { Reservation, Espace, User, Domiciliation } from '../types';
+import { Reservation, Espace, User, DemandeDomiciliation } from '../types';
 import { ReservationsService } from './reservations.service';
 import { EspacesService } from './espaces.service';
 import { UsersService } from './users.service';
 import { DomiciliationsService } from './domiciliations.service';
-import { parseISO, format, startOfMonth, endOfMonth, eachDayOfInterval } from 'date-fns';
+import { format, startOfMonth, endOfMonth, eachDayOfInterval } from 'date-fns';
 
 export interface DashboardStats {
   revenue: {
@@ -58,7 +58,7 @@ export class AnalyticsService {
     reservations: Reservation[],
     espaces: Espace[],
     users: User[],
-    domiciliations: Domiciliation[]
+    domiciliations: DemandeDomiciliation[]
   ): DashboardStats {
     const reservationStats = ReservationsService.calculateStats(reservations);
     const userStats = UsersService.calculateStats(users);
@@ -173,11 +173,13 @@ export class AnalyticsService {
     const userReservations: Record<string, { user: User; count: number; revenue: number }> = {};
 
     reservations.forEach(reservation => {
-      const userId = reservation.utilisateurId;
-      if (!userReservations[userId]) {
-        const user = users.find(u => u.id === userId);
+      const resUserId = reservation.userId;
+      if (!resUserId) return;
+
+      if (!userReservations[resUserId]) {
+        const user = users.find(u => u.id === resUserId);
         if (user) {
-          userReservations[userId] = {
+          userReservations[resUserId] = {
             user,
             count: 0,
             revenue: 0,
@@ -185,9 +187,9 @@ export class AnalyticsService {
         }
       }
 
-      if (userReservations[userId]) {
-        userReservations[userId].count++;
-        userReservations[userId].revenue += reservation.montantTotal || 0;
+      if (userReservations[resUserId]) {
+        userReservations[resUserId].count++;
+        userReservations[resUserId].revenue += reservation.montantTotal || 0;
       }
     });
 
