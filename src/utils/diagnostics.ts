@@ -181,7 +181,7 @@ function checkBrowserFeatures(): DiagnosticResult[] {
     { name: 'Array.includes', check: () => Array.prototype.includes !== undefined },
     { name: 'Object.entries', check: () => typeof Object.entries === 'function' },
     { name: 'Optional chaining', check: () => { const obj = { a: { b: 1 } }; return obj?.a?.b === 1 } },
-    { name: 'Nullish coalescing', check: () => { const x = null ?? 'default'; return x === 'default' } },
+    { name: 'Nullish coalescing', check: () => { const x: string | null = null; return (x ?? 'default') === 'default' } },
     { name: 'WebSocket', check: () => typeof WebSocket === 'function' },
     { name: 'IntersectionObserver', check: () => typeof IntersectionObserver === 'function' },
     { name: 'ResizeObserver', check: () => typeof ResizeObserver === 'function' },
@@ -270,7 +270,7 @@ function checkTypeConsistency(): DiagnosticResult[] {
   }
 
   try {
-    const disponible = sampleApiResponse.disponible === 1 || sampleApiResponse.disponible === true
+    const disponible = (sampleApiResponse.disponible as number | boolean) === 1 || sampleApiResponse.disponible === true
     results.push({
       category: 'Type Consistency',
       name: 'Boolean conversion (disponible)',

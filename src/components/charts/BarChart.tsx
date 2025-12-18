@@ -19,9 +19,9 @@ export function BarChart({
   showValues = true,
   formatValue = (v) => v.toString(),
 }: BarChartProps) {
-  const { bars, maxValue } = useMemo(() => {
+  const bars = useMemo(() => {
     if (!data.length) {
-      return { bars: [], maxValue: 0 };
+      return [];
     }
 
     const max = Math.max(...data.map(d => d.value));
@@ -29,7 +29,7 @@ export function BarChart({
     const gap = barWidth * 0.2;
     const actualBarWidth = barWidth - gap;
 
-    const barsData = data.map((d, i) => {
+    return data.map((d, i) => {
       const barHeight = max > 0 ? (d.value / max) * 70 : 0;
       const x = 10 + i * barWidth;
       const y = 80 - barHeight;
@@ -44,8 +44,6 @@ export function BarChart({
         color: d.color || '#3B82F6',
       };
     });
-
-    return { bars: barsData, maxValue: max };
   }, [data]);
 
   if (!data.length) {

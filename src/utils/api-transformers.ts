@@ -106,11 +106,11 @@ export const transformEspace = (apiEspace: ApiEspace): Espace => ({
 })
 
 export const transformReservation = (apiReservation: ApiReservation): Reservation => {
-  const userId = apiReservation.userId || apiReservation.user_id
-  const espaceId = apiReservation.espaceId || apiReservation.espace_id
-  const dateDebut = apiReservation.dateDebut || apiReservation.date_debut
-  const dateFin = apiReservation.dateFin || apiReservation.date_fin
-  const createdAt = apiReservation.createdAt || apiReservation.created_at || apiReservation.dateCreation
+  const userId = apiReservation.user_id
+  const espaceId = apiReservation.espace_id
+  const dateDebut = apiReservation.date_debut
+  const dateFin = apiReservation.date_fin
+  const createdAt = apiReservation.created_at
 
   let utilisateur: User | undefined
   if (apiReservation.user) {
@@ -125,7 +125,7 @@ export const transformReservation = (apiReservation: ApiReservation): Reservatio
     utilisateur = transformUser(apiReservation.utilisateur)
   }
 
-  let espace: Espace | { id: string; nom: string; type: string } | undefined
+  let espace: Espace | { id: string; nom: string; type: Espace['type'] } | undefined
   if (apiReservation.espace) {
     if ('prix_heure' in apiReservation.espace) {
       espace = transformEspace(apiReservation.espace as ApiEspace)
@@ -133,7 +133,7 @@ export const transformReservation = (apiReservation: ApiReservation): Reservatio
       espace = {
         id: espaceId,
         nom: (apiReservation.espace as any).nom || '',
-        type: (apiReservation.espace as any).type || ''
+        type: (apiReservation.espace as any).type as Espace['type'] || 'bureau'
       }
     }
   }
@@ -145,17 +145,17 @@ export const transformReservation = (apiReservation: ApiReservation): Reservatio
     dateDebut,
     dateFin,
     statut: apiReservation.statut as Reservation['statut'],
-    typeReservation: (apiReservation.typeReservation || apiReservation.type_reservation) as Reservation['typeReservation'],
-    montantTotal: toNumber(apiReservation.montantTotal ?? apiReservation.montant_total),
-    montantPaye: toNumber(apiReservation.montantPaye ?? apiReservation.montant_paye),
-    modePaiement: (apiReservation.modePaiement || apiReservation.mode_paiement) ?? undefined,
+    typeReservation: apiReservation.type_reservation as Reservation['typeReservation'],
+    montantTotal: toNumber(apiReservation.montant_total),
+    montantPaye: toNumber(apiReservation.montant_paye),
+    modePaiement: apiReservation.mode_paiement ?? undefined,
     reduction: toNumber(apiReservation.reduction),
-    codePromo: (apiReservation.codePromoId || apiReservation.code_promo_id) ?? undefined,
+    codePromo: apiReservation.code_promo_id ?? undefined,
     notes: apiReservation.notes ?? undefined,
     participants: toNumber(apiReservation.participants) || 1,
     dateCreation: createdAt ? new Date(createdAt) : new Date(),
     createdAt,
-    updatedAt: apiReservation.updatedAt || apiReservation.updated_at,
+    updatedAt: apiReservation.updated_at,
     utilisateur,
     espace
   }
@@ -221,7 +221,7 @@ export const transformCodePromo = (apiCode: ApiCodePromo): CodePromo => ({
   description: apiCode.description ?? undefined,
   conditions: apiCode.conditions ?? undefined,
   montantMin: toNumber(apiCode.montant_min),
-  typesApplication: parseJson<('reservation' | 'domiciliation')[]>(apiCode.types_application, undefined),
+  typesApplication: parseJson<('reservation' | 'domiciliation')[]>(apiCode.types_application, []),
   createdAt: new Date(apiCode.created_at || Date.now()),
   updatedAt: new Date(apiCode.updated_at || Date.now())
 })

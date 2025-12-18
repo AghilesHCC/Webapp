@@ -20,9 +20,9 @@ export function LineChart({
   showGrid = true,
   formatValue = (v) => v.toString(),
 }: LineChartProps) {
-  const { points, maxValue, minValue, yAxisLabels } = useMemo(() => {
+  const { points, yAxisLabels } = useMemo(() => {
     if (!data.length) {
-      return { points: '', maxValue: 0, minValue: 0, yAxisLabels: [] };
+      return { points: '', yAxisLabels: [] };
     }
 
     const values = data.map(d => d.value);
@@ -49,8 +49,6 @@ export function LineChart({
 
     return {
       points: pointsArray.join(' '),
-      maxValue: max,
-      minValue: min,
       yAxisLabels: yLabels,
     };
   }, [data, height]);

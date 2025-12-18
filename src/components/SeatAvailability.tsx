@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { Users, Clock, AlertTriangle, CheckCircle, XCircle } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { apiClient } from '../lib/api-client'
 import Card from './ui/Card'
 
 interface TimeSlot {

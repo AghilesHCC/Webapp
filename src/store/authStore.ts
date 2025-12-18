@@ -33,6 +33,10 @@ interface UserProfile {
   derniereConnexion?: string
   createdAt?: string
   updatedAt?: string
+  parrainage?: {
+    codeParrain: string
+    parraines: number
+  }
 }
 
 interface AuthState {

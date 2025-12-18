@@ -4,17 +4,17 @@ import { apiClient } from '../lib/api-client';
 export class UsersService {
   static async getAll(): Promise<User[]> {
     const response = await apiClient.getUsers();
-    return response.data;
+    return (response.data as User[]) || [];
   }
 
   static async getById(id: string): Promise<User> {
     const response = await apiClient.getUser(id);
-    return response.data;
+    return response.data as User;
   }
 
   static async update(id: string, data: Partial<User>): Promise<User> {
     const response = await apiClient.updateUser(id, data);
-    return response.data;
+    return response.data as User;
   }
 
   static async delete(id: string): Promise<void> {

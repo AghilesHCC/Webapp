@@ -67,6 +67,10 @@ export interface User {
   codeParrainage?: string
   parrainId?: string
   nombreParrainages?: number
+  parrainage?: {
+    codeParrain: string
+    parraines: number
+  }
   companyName?: string
   billingAddress?: string
 }
