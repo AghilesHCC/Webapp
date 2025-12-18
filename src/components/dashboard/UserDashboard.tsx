@@ -130,7 +130,7 @@ export function UserDashboard() {
                 <div className="text-center py-12">
                   <Calendar className="w-12 h-12 text-gray-400 mx-auto mb-4" />
                   <p className="text-gray-600 mb-4">Aucune réservation à venir</p>
-                  <Button onClick={() => navigate('/espaces')}>
+                  <Button onClick={() => navigate('/app/reservations')}>
                     <Plus className="w-5 h-5 mr-2" />
                     Réserver un espace
                   </Button>
@@ -224,7 +224,7 @@ export function UserDashboard() {
           <Card className="p-6">
             <h3 className="text-lg font-semibold text-gray-900 mb-6">Actions rapides</h3>
             <div className="space-y-3">
-              <Button className="w-full justify-start" onClick={() => navigate('/espaces')}>
+              <Button className="w-full justify-start" onClick={() => navigate('/app/reservations')}>
                 <Plus className="w-5 h-5 mr-3" />
                 Nouvelle réservation
               </Button>
